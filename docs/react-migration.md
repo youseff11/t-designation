@@ -16,7 +16,7 @@ frontend/src/
 ├── components/     مكونات مشتركة (Layout, Header, RequireStaff…)
 ├── features/
 │   ├── public/     B1 — الموقع العام
-│   ├── dashboard/  B1 — لوحة التحكم (DashboardLayout + صفحاتها)
+│   ├── dashboard/  B4 — لوحة التحكم (DashboardLayout + صفحاتها)
 │   ├── guests/     B2 — الضيوف، check-in، القاعة، العميل، التصريح
 │   └── invite/     B3 — عارض الدعوة
 ├── i18n/locales/{ar,en}/   core.json + ملف لكل ميزة
@@ -27,11 +27,12 @@ system/api/         views.py/serializers.py/http.py (أساس) + public.py dashb
 
 ## قواعد التوازي (عشان الجلسات ما تتعارضش)
 
-كل جلسة بتملك مجلد ميزتها وملفاتها في الجدول، وتكتب ملفات **جديدة** جواه:
+أربع جلسات (B1 … B4). كل جلسة بتملك مجلد ميزتها وملفاتها في الجدول، وتكتب ملفات **جديدة** جواه:
 
 | الجلسة | الملكية |
 |---|---|
-| **B1** | `features/public/`, `features/dashboard/`, `system/api/public.py`+`dashboard.py`, `locales/*/public.json`+`dashboard.json`, `system/tests/test_api_public.py`+`test_api_dashboard.py` |
+| **B1** (الموقع العام) | `features/public/`, `components/Header.tsx`/`Layout.tsx`/`ThemeToggle.tsx`/`LanguageSwitch.tsx`, `pages/HomePage.tsx`/`LoginPage.tsx`/`NotFoundPage.tsx`, `system/api/public.py`, `locales/*/public.json`, `system/tests/test_api_public.py` |
+| **B4** (لوحة التحكم) | `features/dashboard/`, `system/api/dashboard.py`, `locales/*/dashboard.json`, `system/tests/test_api_dashboard.py` |
 | **B2** | `features/guests/`, `system/api/guests.py`, `locales/*/guests.json`, `system/tests/test_api_guests.py` |
 | **B3** | `features/invite/`, `system/api/invite.py`, `locales/*/invite.json`, `system/tests/test_api_invite.py`، وكمان إعداد الـentry المنفصل (`vite.config.ts`, `templatetags/vite.py`, `system/spa.py`, `Core/urls.py`) |
 
@@ -72,9 +73,10 @@ system/api/         views.py/serializers.py/http.py (أساس) + public.py dashb
 ## التشغيل والفحص
 
 ```bash
-# تطوير
-VITE_DEV_SERVER=http://localhost:5173 DJANGO_DEBUG=1 python manage.py runserver   # Django
-cd frontend && npm run dev                                                       # Vite
+# تطوير — منافذ مخصصة لكل جلسة: B1 8101/5201، B2 8102/5202، B3 8103/5203، B4 8104/5204
+VITE_DEV_SERVER=http://localhost:5201 DJANGO_DEBUG=1 python manage.py runserver 8101   # Django
+cd frontend && VITE_PORT=5201 DJANGO_ORIGIN=http://127.0.0.1:8101 npm run dev            # Vite
+# أو من غير Vite: npm run build ثم Django لوحده (بيقرا static/app/manifest.json)
 # فحص قبل أي commit
 cd frontend && npm run typecheck && npm run lint && npm test && npm run build
 python manage.py test system.tests.test_api system.tests.<ملف-ميزتك>

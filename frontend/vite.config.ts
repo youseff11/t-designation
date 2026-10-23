@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
 const DJANGO = process.env.DJANGO_ORIGIN ?? 'http://127.0.0.1:8000'
+// منفذ مخصص لكل جلسة شغل متوازي (VITE_PORT) — لازم يطابق VITE_DEV_SERVER في Django
+const PORT = Number(process.env.VITE_PORT ?? 5173)
 
 // أثناء التطوير Django هو اللي بيقدّم الصفحة (الـshell) وبيحمّل السكربتات من
 // هنا بالـHMR؛ وقت الـbuild الملفات بتطلع في static/app/ وDjango بيقراها من
@@ -15,10 +17,10 @@ export default defineConfig(({ command }) => ({
   },
   server: {
     host: 'localhost',
-    port: 5173,
+    port: PORT,
     strictPort: true,
     // روابط الملفات لازم تبقى مطلقة لأن الصفحة نفسها جاية من منفذ Django
-    origin: 'http://localhost:5173',
+    origin: `http://localhost:${PORT}`,
     // لو فتحت 5173 مباشرة (من غير shell) الطلبات بتتحوّل لـDjango
     proxy: {
       '/api': DJANGO,
