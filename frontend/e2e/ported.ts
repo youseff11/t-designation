@@ -12,7 +12,10 @@ export const PORTED: ReadonlySet<string> = new Set([
   // 'dashboard-invitations',
 
   // ---- B2: الضيوف والحضور
-  // 'dashboard-guests',
+  // صفحات اللوحة (dashboard-guests / -guests-qr / -checkin) مش هنا عن قصد: بتتفعّل بعد دمج DashboardLayout بتاع B4.
+  'invite-demo1234-pass',
+  'invite-demo1234-client',
+  'invite-demo1234-venue',
 
   // ---- B3: عارض الدعوة
   'invite-demo1234',
