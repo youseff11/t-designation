@@ -86,7 +86,7 @@ _SOCIAL_HREF_RE = re.compile(r"^(?:https?://|mailto:|tel:)[^\s\"<>]{1,600}$", re
 _SOCIAL_COLOR_RE = re.compile(r"#[0-9a-fA-F]{3,8}|rgba?\([\d\s.,%]+\)")
 _SOCIALS = ("whatsapp", "facebook", "instagram")
 _SAFE_ICON = set(tags._ICONS)  # noqa: SLF001 — قايمة الأيقونات المعروفة
-_HEAD_TAG = re.compile(r"<(?:style|script)\b", re.I)
+_DATA_ATTR = re.compile(r"data-[a-zA-Z0-9_-]{1,64}")
 
 
 # ---------------------------------------------------------------- أدوات صغيرة
