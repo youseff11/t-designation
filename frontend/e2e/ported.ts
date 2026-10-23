@@ -15,5 +15,7 @@ export const PORTED: ReadonlySet<string> = new Set([
   // 'dashboard-guests',
 
   // ---- B3: عارض الدعوة
-  // 'invite-demo1234',
+  'invite-demo1234',
+  'invite-demo1234-guest',
+  'template-preview-golden-classic',
 ])

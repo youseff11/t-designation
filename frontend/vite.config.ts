@@ -34,7 +34,9 @@ export default defineConfig(({ command }) => ({
     outDir: '../static/app',
     emptyOutDir: true,
     manifest: 'manifest.json',
-    rollupOptions: { input: 'src/main.tsx' },
+    // entry منفصل لصفحة الدعوة: الضيف على موبايل ومايحتاجش لوحة التحكم ولا الراوتر
+    // ولا react-query/i18next. Django بيختار الـentry بوسم {% vite_assets 'src/…' %}.
+    rollupOptions: { input: { main: 'src/main.tsx', invite: 'src/invite-main.tsx' } },
   },
   test: {
     environment: 'jsdom',

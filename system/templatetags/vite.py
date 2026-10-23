@@ -22,7 +22,8 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
-ENTRY = "src/main.tsx"
+ENTRY = "src/main.tsx"            # التطبيق الكامل (الافتراضي)
+INVITE_ENTRY = "src/invite-main.tsx"  # عارض الدعوة: entry خفيف منفصل
 _cache: dict = {"mtime": None, "data": None}
 
 
@@ -54,7 +55,7 @@ def _collect(manifest: dict, key: str, seen: set, css: list, preload: list) -> N
         _collect(manifest, child, seen, css, preload)
 
 
-def _dev_tags(server: str):
+def _dev_tags(server: str, entry: str = ENTRY):
     return format_html(
         '<script type="module">\n'
         'import RefreshRuntime from "{0}/@react-refresh"\n'
@@ -65,22 +66,23 @@ def _dev_tags(server: str):
         "</script>\n"
         '<script type="module" src="{0}/@vite/client"></script>\n'
         '<script type="module" src="{0}/{1}"></script>',
-        server, ENTRY,
+        server, entry,
     )
 
 
 @register.simple_tag
-def vite_assets():
+def vite_assets(entry: str = ENTRY):
+    """يحمّل entry واحد من الـbuild (الافتراضي التطبيق الكامل)."""
     dev_server = getattr(settings, "VITE_DEV_SERVER", "")
     if settings.DEBUG and dev_server:
-        return _dev_tags(dev_server)
+        return _dev_tags(dev_server, entry)
 
     manifest = _manifest()
-    if ENTRY not in manifest:
-        raise ImproperlyConfigured(f"الـentry «{ENTRY}» مش موجود في manifest.json.")
+    if entry not in manifest:
+        raise ImproperlyConfigured(f"الـentry «{entry}» مش موجود في manifest.json.")
     css: list = []
     preload: list = []
-    _collect(manifest, ENTRY, set(), css, preload)
+    _collect(manifest, entry, set(), css, preload)
 
     def url(rel: str) -> str:
         return static(f"app/{rel}")
@@ -91,6 +93,6 @@ def vite_assets():
         format_html_join("\n", '<link rel="modulepreload" href="{}">',
                          ((url(f),) for f in dict.fromkeys(preload))),
         format_html('<script type="module" src="{}"></script>',
-                    url(manifest[ENTRY]["file"])),
+                    url(manifest[entry]["file"])),
     ]
     return mark_safe("\n".join(p for p in parts if p))
