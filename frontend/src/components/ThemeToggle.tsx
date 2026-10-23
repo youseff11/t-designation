@@ -1,22 +1,29 @@
 import { useTranslation } from 'react-i18next'
 
+import { warmOtherVariants } from '@/features/public/warm'
 import { useTheme } from '@/lib/theme'
 
 export function ThemeToggle() {
   const { t } = useTranslation()
   const toggle = useTheme((s) => s.toggle)
+
+  function onToggle() {
+    toggle()
+    // «التاني» بقى العكس — سخّنه للضغطة الجاية
+    warmOtherVariants()
+  }
+
   return (
     <button
       type="button"
       className="icon-btn"
-      onClick={toggle}
-      title={t('nav.theme')}
-      aria-label={t('nav.theme')}
+      onClick={onToggle}
+      // لو الزائر قرّب من الزرار قبل ما وقت الفراغ ييجي، نسخّن على طول
+      onPointerEnter={warmOtherVariants}
+      aria-label={t('public.nav.theme')}
     >
       <svg
         className="i-sun"
-        width="18"
-        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -29,8 +36,6 @@ export function ThemeToggle() {
       </svg>
       <svg
         className="i-moon"
-        width="18"
-        height="18"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
