@@ -374,8 +374,15 @@ class QrSheetAndCheckinTests(GuestsApiCase):
         self.assertEqual((body["arrived"], body["total"]), (1, 3))
         self.assertEqual(body["name"], "علي")
         self.assertNotIn("ok", body)
+        self.assertEqual(body["rsvpStatus"], "")
         self.ali.refresh_from_db()
         self.assertTrue(self.ali.checked_in)
+
+    def test_scan_reports_the_latest_rsvp_status_code(self):
+        self.staff_login()
+        RSVPResponse.objects.create(invitation=self.inv, guest=self.ali, name="علي",
+                                    status="maybe")
+        self.assertEqual(self.scan(self.ali.token).json()["rsvpStatus"], "maybe")
 
     def test_scan_accepts_pass_code_and_full_link(self):
         self.staff_login()

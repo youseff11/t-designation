@@ -11,7 +11,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import formats, timezone
 
-from ..models import Guest, Invitation
+from ..models import Guest, Invitation, RSVPResponse
 from ..views import _scan_entry
 from .http import ApiError
 
@@ -113,4 +113,9 @@ def scan_response(invitation: Invitation, raw: str) -> dict:
         code = "guest_not_found" if status == 404 else "invalid_token"
         raise ApiError(status, code, payload.get("error", ""))
     payload.pop("ok", None)
+    # الواجهة بتترجم الحالة بنفسها — الاسم العربي من السيرفر مش بيتبعت
+    payload.pop("rsvp", None)
+    payload["rsvpStatus"] = (RSVPResponse.objects.filter(guest_id=payload["id"])
+                             .order_by("-created_at")
+                             .values_list("status", flat=True).first() or "")
     return payload
