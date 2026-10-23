@@ -28,6 +28,7 @@
     "home": "Home",
     "invitations": "Invitations",
     "templates": "Templates",
+    "library": "Library",
     "fonts": "Fonts",
     "music": "Music",
     "intros": "Intros",
@@ -299,7 +300,18 @@
     "confirmDelete": "Remove “{{name}}” from the library?",
     "deleted": "Removed “{{name}}” from the library.",
     "shownDone": "Showed “{{name}}” again.",
-    "hiddenDone": "Hid “{{name}}”."
+    "hiddenDone": "Hid “{{name}}”.",
+    "dedupe": {
+      "button": "Remove duplicates ({{n}})",
+      "hint": "Removes duplicate copies (same name and same content), keeping one of each track",
+      "checking": "Checking…",
+      "none": "No real duplicates — some names match but the audio differs, so I left them alone.",
+      "confirm": "{{remove}} duplicate tracks will be deleted, keeping one copy of each track ({{keep}}). Any invitation or template using a deleted copy is switched to the kept one automatically. This can't be undone.",
+      "confirmLabel": "Remove duplicates",
+      "done": "Removed {{removed}} duplicate tracks and kept {{kept}}.",
+      "doneDocs": "{{docs}} documents were switched to the kept copy.",
+      "doneFreed": "Freed {{size}} MB of disk space."
+    }
   },
   "intros": {
     "pageTitle": "Intro library",

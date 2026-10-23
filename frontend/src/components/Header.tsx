@@ -7,17 +7,22 @@ import { pick, useLang } from '@/features/public/text'
 import { LanguageSwitch } from './LanguageSwitch'
 import { ThemeToggle } from './ThemeToggle'
 
+/** النزول (بالبكسل) اللي بعده الترويسة بتتقلّص، والرجوع اللي تحته بتكبر تاني. */
+const STUCK_ON = 24
+const STUCK_OFF = 4
+
 /** عرض الشاشة اللي بعده القايمة بتتحوّل من برجر لصف أفقي (نفس ‎site.js‎). */
 const DESKTOP_MIN = 900
 
 /** بيرجّع ‎true‎ بعد ما الصفحة تنزل شوية — الجزيرة بتتقلّص وتاخد ظل (‎is-stuck‎). */
 function useStuck(): boolean {
-  const [stuck, setStuck] = useState(() => window.scrollY > 12)
+  const [stuck, setStuck] = useState(() => window.scrollY > STUCK_ON)
   useEffect(() => {
     let ticking = false
     const update = () => {
       ticking = false
-      setStuck(window.scrollY > 12)
+      // عتبتين مختلفتين (تشغيل ≠ إيقاف): من غير كده التذبذب حوالين نقطة واحدة بيرعّش الترويسة
+      setStuck((was) => (was ? window.scrollY > STUCK_OFF : window.scrollY > STUCK_ON))
     }
     const onScroll = () => {
       if (ticking) return

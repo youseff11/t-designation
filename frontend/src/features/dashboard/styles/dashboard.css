@@ -89,12 +89,17 @@
 }
 
 /* ---------------------------------------------------------- الترويسة العائمة */
+/* ارتفاع الترويسة **ثابت** (16 + 62 + 16): التقلّص عند النزول شكلي بس (ارتفاع الجزيرة
+   وtransform) من غير ما يتغيّر مكان باقي الصفحة. لما كان الارتفاع نفسه بيتغيّر، الصفحة
+   القصيرة بتقصر 24px فترجع لفوق وتشيل «is-stuck» والترويسة تكبر تاني — اهتزاز في أول الصفحة. */
 .dash-root .nav {
   position: sticky;
   top: 0;
   z-index: 60;
-  padding: 16px 0;
-  transition: padding 0.28s ease;
+  box-sizing: border-box;
+  height: 94px;
+  /* padding مش margin: هامش الجزيرة كان بيتدمج مع الأب (margin collapse) */
+  padding: 16px 0 0;
   pointer-events: none; /* الفراغ حوالين الجزيرة ما يحجبش الضغط على الصفحة */
 }
 .dash-root .nav > * {
@@ -117,14 +122,13 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
   transition:
     height 0.28s ease,
+    transform 0.28s ease,
     background 0.28s ease,
     box-shadow 0.28s ease;
 }
-.dash-root .nav.is-stuck {
-  padding: 8px 0;
-}
 .dash-root .nav.is-stuck .nav-shell {
   height: 54px;
+  transform: translateY(-8px);
   background: color-mix(in srgb, var(--surface) 93%, transparent);
   box-shadow: var(--shadow-nav);
 }
@@ -195,6 +199,88 @@
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+}
+
+/* ---- مجموعة «المكتبة»: زرار بيفتح قايمة منسدلة (الخطوط، الموسيقى، الافتتاحيات) ---- */
+.dash-root .nav-group {
+  position: relative;
+}
+.dash-root .nav-group-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14.5px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+.dash-root .nav-group-btn:hover,
+.dash-root .nav-group.is-open .nav-group-btn {
+  color: var(--text);
+}
+.dash-root .nav-group-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
+}
+.dash-root .nav-group-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.dash-root .nav-group-caret {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+.dash-root .nav-group.is-open .nav-group-caret {
+  transform: rotate(180deg);
+}
+.dash-root .nav-sub {
+  position: absolute;
+  top: calc(100% + 12px);
+  inset-inline-start: 0;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-nav);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease,
+    visibility 0.18s;
+}
+.dash-root .nav-group.is-open .nav-sub {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+.dash-root .nav-sub a {
+  padding: 10px 14px;
+  border-radius: 12px;
+}
+.dash-root .nav-sub a:hover {
+  background: var(--accent-soft);
 }
 .dash-root .nav-cta-inline,
 .dash-root .nav-only-mobile {
@@ -348,7 +434,8 @@
 
 /* لوحة التحكم فيها ٩ روابط. بين ٧٨١ و١١٥٠ الشريط كان بيعدّي عرض الشاشة — نضيّق المسافات والخط */
 @media (min-width: 781px) and (max-width: 1150px) {
-  .dash-root .nav-links a {
+  .dash-root .nav-links a,
+  .dash-root .nav-group-btn {
     padding: 8px 9px;
     font-size: 13.5px;
   }
@@ -363,7 +450,8 @@
   }
 }
 @media (min-width: 781px) and (max-width: 980px) {
-  .dash-root .nav-links a {
+  .dash-root .nav-links a,
+  .dash-root .nav-group-btn {
     padding: 7px 6px;
     font-size: 12.5px;
   }
@@ -376,7 +464,8 @@
 /* ---- الموبايل ---- */
 @media (max-width: 780px) {
   .dash-root .nav {
-    padding: 12px 0;
+    height: 82px; /* 12 + 58 + 12 */
+    padding-top: 12px;
   }
   .dash-root .nav-shell {
     height: 58px;
@@ -384,6 +473,7 @@
   }
   .dash-root .nav.is-stuck .nav-shell {
     height: 54px;
+    transform: translateY(-4px);
   }
   .dash-root .nav-burger {
     display: flex;
@@ -448,6 +538,30 @@
     padding: 12px 15px;
     border-radius: 13px;
     font-size: 15px;
+  }
+  .dash-root .nav-group-btn {
+    width: 100%;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-radius: 13px;
+    font-size: 15px;
+  }
+  .dash-root .nav-sub {
+    position: static;
+    display: none;
+    min-width: 0;
+    padding: 2px 0 4px;
+    padding-inline-start: 12px;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .dash-root .nav-group.is-open .nav-sub {
+    display: flex;
   }
   .dash-root .brand {
     height: 34px;
@@ -1187,6 +1301,9 @@ html[lang='en'] .dash-root .tpl-meta {
   .dash-root .table-cards--lg .cell--actions::before {
     content: none;
   }
+  .dash-root .table-cards--lg .cell--wide {
+    grid-column: 1 / -1;
+  }
   .dash-root .table-cards--lg tr.is-empty {
     display: block;
     padding: 0;
@@ -1214,6 +1331,131 @@ html[lang='en'] .dash-root .tpl-meta {
   .dash-root .dash-head h1 {
     font-size: 22px;
   }
+}
+
+/* ---------------------------------------------------------- الباقات والإضافات (وتخطيط الجداول + نموذج الجنب)
+   عمودين (الجداول + نموذج الإضافة) على الشاشة الكبيرة، وعمود واحد تحت 1280px؛
+   الجداول كروت تحت 1180px زي جدول الدعوات، والمزايا بتلف على أكتر من سطر. */
+.dash-root .split-layout {
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  align-items: start;
+}
+@media (max-width: 1280px) {
+  .dash-root .split-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.dash-root .rows-table th,
+.dash-root .rows-table td {
+  padding: 12px 10px;
+}
+.dash-root .rows-table .cell--title,
+.dash-root .rows-table .cell--features,
+.dash-root .rows-table .cell--text {
+  white-space: normal;
+}
+.dash-root .rows-table .cell--title {
+  min-width: 140px;
+}
+.dash-root .rows-table .cell--features {
+  min-width: 190px;
+}
+.dash-root .rows-table .cell--text {
+  min-width: 90px;
+  max-width: 200px;
+}
+.dash-root .rows-table .cell-desc {
+  display: block;
+  font-size: 12.5px;
+}
+.dash-root .cell-input--name {
+  max-width: 190px;
+}
+.dash-root .plan-featured {
+  margin-top: 6px;
+}
+.dash-root .plan-price {
+  display: grid;
+  gap: 5px;
+}
+.dash-root .plan-price-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dash-root .plan-price .cell-input {
+  width: 100px;
+  max-width: 100%;
+}
+.dash-root .plan-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.dash-root .plan-features code {
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.dash-root .rows-table .row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.dash-root .list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.dash-root .music-audio {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: 34px;
+}
+.dash-root .rows-table .row-actions,
+.dash-root .rows-table .toolbar {
+  flex-wrap: wrap;
+}
+@media (max-width: 920px) {
+  .dash-root .music-audio {
+    width: 100%;
+  }
+}
+/* مجموعة مربعات اختيار بعنوانها (نموذج الإضافة: الباقات) */
+.dash-root .field--group {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.dash-root .field--group legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.dash-root .check-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.dash-root .check-row input {
+  width: auto;
+  flex: none;
+  accent-color: var(--accent);
+}
+.dash-root .check-row span {
+  font-size: 13.5px;
+  color: var(--text);
 }
 
 /* ---------------------------------------------------------- التنبيهات (toasts)

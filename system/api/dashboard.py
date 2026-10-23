@@ -19,6 +19,7 @@ from ..models import Customer, Guest, Invitation, Order, RSVPResponse, Template
 from . import (
     dashboard_invitations,
     dashboard_library,
+    dashboard_music_dedupe,
     dashboard_plans,
     dashboard_templates,
 )
@@ -155,4 +156,5 @@ urlpatterns = [
 urlpatterns += dashboard_invitations.urlpatterns
 urlpatterns += dashboard_templates.urlpatterns
 urlpatterns += dashboard_library.urlpatterns
+urlpatterns += dashboard_music_dedupe.urlpatterns
 urlpatterns += dashboard_plans.urlpatterns

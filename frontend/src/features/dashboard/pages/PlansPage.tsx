@@ -21,71 +21,70 @@ function PlanRowEditor({ plan, currency, pending }: { plan: PlanRow; currency: s
 
   return (
     <tr>
-      <td>
+      <td className="cell--title">
         <input
-          className="cell-input"
+          className="cell-input cell-input--name"
           form={formId}
           name="name"
           defaultValue={plan.name}
-          style={{ maxWidth: 170 }}
           aria-label={t('dashboard.plans.cols.plan')}
         />
-        {plan.isFeatured && (
-          <>
-            <br />
-            <span className="pill">{t('dashboard.plans.featured')}</span>
-          </>
+        {plan.isFeatured && <span className="pill plan-featured">{t('dashboard.plans.featured')}</span>}
+      </td>
+      <td data-label={t('dashboard.plans.cols.price')}>
+        <div className="plan-price">
+          <div className="plan-price-row">
+            <input
+              className="cell-input"
+              form={formId}
+              name="price"
+              type="number"
+              min={0}
+              step={1}
+              defaultValue={plan.price}
+              aria-label={t('dashboard.plans.cols.price')}
+            />
+            <small className="muted">{currency}</small>
+          </div>
+          <input
+            className="cell-input"
+            form={formId}
+            name="oldPrice"
+            type="number"
+            min={0}
+            step={1}
+            placeholder={t('dashboard.plans.oldPrice')}
+            defaultValue={plan.oldPrice}
+            aria-label={t('dashboard.plans.oldPrice')}
+          />
+        </div>
+      </td>
+      <td className="cell--wide cell--features" data-label={t('dashboard.plans.cols.features')}>
+        {plan.features.length === 0 ? (
+          <span className="muted">—</span>
+        ) : (
+          <div className="plan-features">
+            {plan.features.map((feature) => (
+              <code key={feature}>{feature}</code>
+            ))}
+          </div>
         )}
       </td>
-      <td style={{ whiteSpace: 'nowrap' }}>
-        <input
-          className="cell-input"
-          form={formId}
-          name="price"
-          type="number"
-          min={0}
-          step={1}
-          defaultValue={plan.price}
-          style={{ maxWidth: 92 }}
-          aria-label={t('dashboard.plans.cols.price')}
-        />{' '}
-        <small className="muted">{currency}</small>
-        <br />
-        <input
-          className="cell-input"
-          form={formId}
-          name="oldPrice"
-          type="number"
-          min={0}
-          step={1}
-          placeholder={t('dashboard.plans.oldPrice')}
-          defaultValue={plan.oldPrice}
-          style={{ maxWidth: 92, marginTop: 5 }}
-          aria-label={t('dashboard.plans.oldPrice')}
-        />
-      </td>
-      <td style={{ fontSize: 12.5 }}>
-        {plan.features.length === 0 && <span className="muted">—</span>}
-        {plan.features.map((feature, index) => (
-          <span key={feature}>
-            {index > 0 && ' '}
-            <code>{feature}</code>
-          </span>
-        ))}
-      </td>
-      <td>
+      <td data-label={t('dashboard.plans.cols.status')}>
         <label className="field field--check" style={{ margin: 0 }}>
           <input type="checkbox" form={formId} name="isActive" defaultChecked={plan.isActive} />
           <span>{t('dashboard.plans.displayed')}</span>
         </label>
       </td>
-      <td style={{ whiteSpace: 'nowrap' }}>
-        <button className="btn btn--gold btn--sm" type="submit" form={formId} disabled={pending}>
-          {t('dashboard.common.save')}
-        </button>{' '}
-        <a className="btn btn--ghost btn--sm" href={plan.adminUrl}>
-          {t('dashboard.plans.fullEdit')}
-        </a>
+      <td className="cell--actions">
+        <div className="row-actions">
+          <button className="btn btn--gold btn--sm" type="submit" form={formId} disabled={pending}>
+            {t('dashboard.common.save')}
+          </button>
+          <a className="btn btn--ghost btn--sm" href={plan.adminUrl}>
+            {t('dashboard.plans.fullEdit')}
+          </a>
+        </div>
       </td>
     </tr>
   )
@@ -209,10 +208,12 @@ export function PlansPage() {
 
       <QueryState loading={isPending} error={isError} />
       {data && (
-        <div className="grid" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(300px,1fr)', alignItems: 'start' }}>
+        <div className="grid split-layout">
           <div>
             <h2 style={{ fontSize: 18 }}>{t('dashboard.plans.addonsTitle', { n: data.addons.length })}</h2>
             <Table
+              cards="lg"
+              className="rows-table"
               head={[
                 t('dashboard.plans.cols.addon'),
                 t('dashboard.plans.cols.code'),
@@ -226,24 +227,17 @@ export function PlansPage() {
             >
               {data.addons.map((addon) => (
                 <tr key={addon.id}>
-                  <td>
-                    {addon.name}
-                    {addon.description && (
-                      <>
-                        <br />
-                        <span className="muted" style={{ fontSize: 12.5 }}>
-                          {addon.description}
-                        </span>
-                      </>
-                    )}
+                  <td className="cell--title">
+                    <strong>{addon.name}</strong>
+                    {addon.description && <span className="muted cell-desc">{addon.description}</span>}
                   </td>
-                  <td>
+                  <td data-label={t('dashboard.plans.cols.code')}>
                     {addon.code ? <code>{addon.code}</code> : <span className="muted">{t('dashboard.plans.service')}</span>}
                   </td>
-                  <td style={{ whiteSpace: 'nowrap' }}>
+                  <td data-label={t('dashboard.plans.cols.price')} style={{ whiteSpace: 'nowrap' }}>
                     <strong>{addon.price}</strong> <small className="muted">{currency}</small>
                   </td>
-                  <td>
+                  <td className="cell--text" data-label={t('dashboard.plans.cols.plans')}>
                     {addon.plans.length > 0 ? (
                       <span style={{ fontSize: 12.5 }}>{addon.plans.map((plan) => plan.name).join('، ')}</span>
                     ) : (
@@ -252,15 +246,15 @@ export function PlansPage() {
                       </span>
                     )}
                   </td>
-                  <td>
+                  <td data-label={t('dashboard.plans.cols.status')}>
                     {addon.isActive ? (
                       <Pill kind="published">{t('dashboard.plans.active')}</Pill>
                     ) : (
                       <Pill kind="archived">{t('dashboard.plans.stopped')}</Pill>
                     )}
                   </td>
-                  <td>
-                    <div className="toolbar" style={{ margin: 0, gap: 6 }}>
+                  <td className="cell--actions">
+                    <div className="row-actions">
                       <Link className="btn btn--ghost btn--sm" to={{ search: `?edit=${addon.id}` }}>
                         {t('dashboard.common.edit')}
                       </Link>
@@ -281,36 +275,28 @@ export function PlansPage() {
             {data.plans.map((plan) => (
               <form key={plan.id} id={`plan-${plan.id}`} hidden onSubmit={(event) => onSavePlan(plan, event)} />
             ))}
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>{t('dashboard.plans.cols.plan')}</th>
-                    <th>{t('dashboard.plans.cols.price')}</th>
-                    <th>{t('dashboard.plans.cols.features')}</th>
-                    <th>{t('dashboard.plans.cols.status')}</th>
-                    <th />
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.plans.map((plan) => (
-                    <PlanRowEditor
-                      key={`${plan.id}|${plan.name}|${plan.price}|${plan.oldPrice}|${plan.isActive}`}
-                      plan={plan}
-                      currency={currency}
-                      pending={savePlan.isPending}
-                    />
-                  ))}
-                  {data.plans.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="empty">
-                        {t('dashboard.plans.noPlans')}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <Table
+              cards="lg"
+              className="rows-table"
+              head={[
+                t('dashboard.plans.cols.plan'),
+                t('dashboard.plans.cols.price'),
+                t('dashboard.plans.cols.features'),
+                t('dashboard.plans.cols.status'),
+                null,
+              ]}
+              empty={t('dashboard.plans.noPlans')}
+              isEmpty={data.plans.length === 0}
+            >
+              {data.plans.map((plan) => (
+                <PlanRowEditor
+                  key={`${plan.id}|${plan.name}|${plan.price}|${plan.oldPrice}|${plan.isActive}`}
+                  plan={plan}
+                  currency={currency}
+                  pending={savePlan.isPending}
+                />
+              ))}
+            </Table>
             <p className="muted" style={{ fontSize: 12.5 }}>
               {t('dashboard.plans.plansNote')}
             </p>
@@ -364,25 +350,21 @@ export function PlansPage() {
                 defaultValue={editing?.description}
                 error={errors.fields.description}
               />
-              <div className="field field--check">
-                <div id={planChecksId}>
-                  {data.planChoices.map((plan, index) => (
-                    <div key={plan.id}>
-                      <label htmlFor={`${planChecksId}-${index}`}>
-                        <input
-                          type="checkbox"
-                          name="plans"
-                          value={plan.id}
-                          id={`${planChecksId}-${index}`}
-                          defaultChecked={editing?.planIds.includes(plan.id)}
-                        />{' '}
-                        {plan.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-                <span>{t('dashboard.plans.fields.plans')}</span>
-              </div>
+              <fieldset className="field field--group" id={planChecksId}>
+                <legend>{t('dashboard.plans.fields.plans')}</legend>
+                {data.planChoices.map((plan, index) => (
+                  <label key={plan.id} className="check-row" htmlFor={`${planChecksId}-${index}`}>
+                    <input
+                      type="checkbox"
+                      name="plans"
+                      value={plan.id}
+                      id={`${planChecksId}-${index}`}
+                      defaultChecked={editing?.planIds.includes(plan.id)}
+                    />
+                    <span>{plan.name}</span>
+                  </label>
+                ))}
+              </fieldset>
               <ErrorList message={errors.fields.plans} />
               <CheckField
                 name="isActive"

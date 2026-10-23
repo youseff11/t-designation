@@ -2,8 +2,9 @@ import type { FormEvent } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { useLibrary } from '../api'
+import { useDedupeMusic, useLibrary } from '../api'
 import { CheckField, ErrorList, FileField, MB, TextField, useFormErrors } from '../ui/forms'
+import { useConfirm } from '../ui/ConfirmDialog'
 import { LibraryActions } from '../ui/LibraryActions'
 import { PageHead, Pill, usePageTitle } from '../ui/page'
 import { QueryState, Table } from '../ui/table'
@@ -13,11 +14,34 @@ import { useToast } from '../ui/Toast'
 export function MusicPage() {
   const { t } = useTranslation()
   const toast = useToast()
+  const confirm = useConfirm()
   const { list, create, toggle, remove } = useLibrary('music')
+  const dedupe = useDedupeMusic()
   const errors = useFormErrors()
   usePageTitle(t('dashboard.music.pageTitle'))
 
   const tracks = list.data?.results ?? []
+  const duplicateExtra = list.data?.duplicateExtra ?? 0
+
+  /** يفحص الأول (من غير تغيير)، يعرض العدد الفعلي للتأكيد، وبعدها يمسح. */
+  async function onDedupe() {
+    try {
+      const plan = await dedupe.mutateAsync(true)
+      if (plan.removeCount === 0) {
+        toast.warning(t('dashboard.music.dedupe.none'))
+        return
+      }
+      const message = t('dashboard.music.dedupe.confirm', { remove: plan.removeCount, keep: plan.keepCount })
+      if (!(await confirm({ message, danger: true, confirmLabel: t('dashboard.music.dedupe.confirmLabel') }))) return
+      const done = await dedupe.mutateAsync(false)
+      let text = t('dashboard.music.dedupe.done', { removed: done.removeCount, kept: done.keepCount })
+      if (done.repointedDocs > 0) text += ' ' + t('dashboard.music.dedupe.doneDocs', { docs: done.repointedDocs })
+      if (done.freedBytes > 0) text += ' ' + t('dashboard.music.dedupe.doneFreed', { size: (done.freedBytes / (1024 * 1024)).toFixed(1) })
+      toast.success(text)
+    } catch (error) {
+      toast.fail(error)
+    }
+  }
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -50,12 +74,29 @@ export function MusicPage() {
         </p>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(280px,1fr)', alignItems: 'start' }}>
+      <div className="grid split-layout">
         <div>
-          <h2 style={{ fontSize: 18 }}>{t('dashboard.music.listTitle', { n: tracks.length })}</h2>
+          <div className="list-head">
+            <h2 style={{ fontSize: 18, margin: 0 }}>{t('dashboard.music.listTitle', { n: tracks.length })}</h2>
+            {duplicateExtra > 0 && (
+              <button
+                className="btn btn--ghost btn--sm"
+                type="button"
+                onClick={() => void onDedupe()}
+                disabled={dedupe.isPending}
+                title={t('dashboard.music.dedupe.hint')}
+              >
+                {dedupe.isPending
+                  ? t('dashboard.music.dedupe.checking')
+                  : t('dashboard.music.dedupe.button', { n: duplicateExtra })}
+              </button>
+            )}
+          </div>
           <QueryState loading={list.isPending} error={list.isError} />
           {list.data && (
             <Table
+              cards="lg"
+              className="rows-table"
               head={[
                 t('dashboard.music.cols.name'),
                 t('dashboard.music.cols.listen'),
@@ -68,33 +109,26 @@ export function MusicPage() {
             >
               {tracks.map((track) => (
                 <tr key={track.id}>
-                  <td>
-                    {track.name}
-                    {track.note && (
-                      <>
-                        <br />
-                        <span className="muted" style={{ fontSize: 12.5 }}>
-                          {track.note}
-                        </span>
-                      </>
-                    )}
+                  <td className="cell--title">
+                    <strong>{track.name}</strong>
+                    {track.note && <span className="muted cell-desc">{track.note}</span>}
                   </td>
-                  <td>
+                  <td data-label={t('dashboard.music.cols.listen')}>
                     {track.url ? (
-                      <audio controls preload="none" src={track.url} style={{ maxWidth: 220, height: 34 }} />
+                      <audio className="music-audio" controls preload="none" src={track.url} />
                     ) : (
                       <span className="muted">—</span>
                     )}
                   </td>
-                  <td>{track.order}</td>
-                  <td>
+                  <td data-label={t('dashboard.music.cols.order')}>{track.order}</td>
+                  <td data-label={t('dashboard.music.cols.status')}>
                     {track.isActive ? (
                       <Pill kind="published">{t('dashboard.music.available')}</Pill>
                     ) : (
                       <Pill kind="archived">{t('dashboard.music.hidden')}</Pill>
                     )}
                   </td>
-                  <td>
+                  <td className="cell--actions">
                     <LibraryActions kind="music" row={track} toggle={toggle} remove={remove} />
                   </td>
                 </tr>

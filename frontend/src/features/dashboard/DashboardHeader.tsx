@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
@@ -14,16 +14,30 @@ interface NavItem {
   active: (path: string) => boolean
 }
 
+/** مجموعة بتتفتح بزرار: الروابط جواها بتظهر في قايمة منسدلة بدل ما تزحم الشريط. */
+interface NavGroupDef {
+  group: string
+  items: NavItem[]
+}
+
 const under = (prefix: string) => (path: string) => path === prefix || path.startsWith(`${prefix}/`)
 
-/** روابط اللوحة — نفس ترتيب ‎partials/nav.html‎ القديم (الباقات مفعّلة مع الإعدادات كمان). */
-const NAV: NavItem[] = [
+/** مكتبة الوسائط: الخطوط والموسيقى والافتتاحيات — بتتجمّع تحت زرار «المكتبة». */
+const LIBRARY: NavGroupDef = {
+  group: 'library',
+  items: [
+    { to: '/dashboard/fonts', label: 'fonts', active: under('/dashboard/fonts') },
+    { to: '/dashboard/music', label: 'music', active: under('/dashboard/music') },
+    { to: '/dashboard/intros', label: 'intros', active: under('/dashboard/intros') },
+  ],
+}
+
+/** روابط اللوحة بالترتيب (الباقات مفعّلة مع الإعدادات كمان). */
+const NAV: (NavItem | NavGroupDef)[] = [
   { to: '/dashboard', label: 'home', active: (path) => path === '/dashboard' },
   { to: '/dashboard/invitations', label: 'invitations', active: under('/dashboard/invitations') },
   { to: '/dashboard/templates', label: 'templates', active: under('/dashboard/templates') },
-  { to: '/dashboard/fonts', label: 'fonts', active: under('/dashboard/fonts') },
-  { to: '/dashboard/music', label: 'music', active: under('/dashboard/music') },
-  { to: '/dashboard/intros', label: 'intros', active: under('/dashboard/intros') },
+  LIBRARY,
   { to: '/dashboard/orders', label: 'orders', active: under('/dashboard/orders') },
   {
     to: '/dashboard/plans',
@@ -32,6 +46,68 @@ const NAV: NavItem[] = [
   },
   { to: '/dashboard/analytics', label: 'analytics', active: under('/dashboard/analytics') },
 ]
+
+/**
+ * زرار بيفتح قايمة منسدلة بروابط المجموعة. بيتقفل بالضغط برّه أو Escape (والتركيز
+ * بيرجع للزرار) أو باختيار رابط أو أي تغيير في الصفحة. «الصفحة اللي اتفتحت عليها»
+ * هي اللي بتحدد الفتح، فالتنقل (حتى بزرار الرجوع) بيقفلها من غير effect.
+ */
+function NavGroup({ def, pathname }: { def: NavGroupDef; pathname: string }) {
+  const { t } = useTranslation()
+  const [openAt, setOpenAt] = useState<string | null>(null)
+  const open = openAt === pathname
+  const containerRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const menuId = useId()
+  const active = def.items.some((item) => item.active(pathname))
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpenAt(null)
+    }
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpenAt(null)
+      buttonRef.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+
+  return (
+    <div ref={containerRef} className={open ? 'nav-group is-open' : 'nav-group'}>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={active ? 'nav-group-btn is-active' : 'nav-group-btn'}
+        aria-expanded={open}
+        aria-controls={menuId}
+        onClick={() => setOpenAt(open ? null : pathname)}
+      >
+        {t(`dashboard.nav.${def.group}`)}
+        <svg className="nav-group-caret" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M2.5 4.5 6 8l3.5-3.5" />
+        </svg>
+      </button>
+      <div className="nav-sub" id={menuId}>
+        {def.items.map((item) => (
+          <Link key={item.to} to={item.to} className={item.active(pathname) ? 'is-active' : undefined}>
+            {t(`dashboard.nav.${item.label}`)}
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** النزول (بالبكسل) اللي بعده الترويسة بتتقلّص، والرجوع اللي تحته بتكبر تاني. */
+const STUCK_ON = 24
+const STUCK_OFF = 4
 
 /** ‎window.innerWidth‎ اللي فوقه القائمة بتتقفل لوحدها (زي site.js القديم). */
 const DESKTOP_AT = 900
@@ -61,7 +137,8 @@ export function DashboardHeader() {
       if (ticking) return
       ticking = true
       window.requestAnimationFrame(() => {
-        setStuck(window.scrollY > 12)
+        // عتبتين مختلفتين (تشغيل ≠ إيقاف): من غير كده التذبذب حوالين نقطة واحدة بيرعّش الترويسة
+        setStuck((was) => (was ? window.scrollY > STUCK_OFF : window.scrollY > STUCK_ON))
         ticking = false
       })
     }
@@ -120,11 +197,15 @@ export function DashboardHeader() {
               if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
             }}
           >
-            {NAV.map((item) => (
-              <Link key={item.to} to={item.to} className={item.active(pathname) ? 'is-active' : undefined}>
-                {t(`dashboard.nav.${item.label}`)}
-              </Link>
-            ))}
+            {NAV.map((item) =>
+              'group' in item ? (
+                <NavGroup key={item.group} def={item} pathname={pathname} />
+              ) : (
+                <Link key={item.to} to={item.to} className={item.active(pathname) ? 'is-active' : undefined}>
+                  {t(`dashboard.nav.${item.label}`)}
+                </Link>
+              ),
+            )}
             <a href="/admin/">{t('dashboard.nav.admin')}</a>
             <Link className="nav-only-mobile" to="/">
               {t('dashboard.nav.publicSite')}

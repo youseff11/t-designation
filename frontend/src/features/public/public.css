@@ -36,10 +36,13 @@
 }
 .skip-link:focus { inset-inline-start: 24px; }
 
+/* ارتفاع الترويسة ثابت (16 + 62 + 16): التقلّص عند النزول شكلي بس، من غير ما يتغيّر
+   مكان باقي الصفحة — وإلا الصفحة القصيرة بتقصر وترجع لفوق والترويسة تهتز. */
 .nav {
   position: sticky; top: 0; z-index: 60;
-  padding: 16px 0;
-  transition: padding .28s ease;
+  box-sizing: border-box;
+  height: 94px;
+  padding: 16px 0 0;                /* padding مش margin: الهامش كان بيتدمج مع الأب */
   pointer-events: none;            /* الفراغ حوالين الجزيرة ما يحجبش الضغط على الصفحة */
 }
 .nav > * { pointer-events: auto; }
@@ -56,11 +59,11 @@
   box-shadow: 0 2px 10px -7px rgba(0, 0, 0, .3);
   backdrop-filter: blur(18px) saturate(1.4);
   -webkit-backdrop-filter: blur(18px) saturate(1.4);
-  transition: height .28s ease, background .28s ease, box-shadow .28s ease;
+  transition: height .28s ease, transform .28s ease, background .28s ease, box-shadow .28s ease;
 }
-.nav.is-stuck { padding: 8px 0; }
 .nav.is-stuck .nav-shell {
   height: 54px;
+  transform: translateY(-8px);
   background: color-mix(in srgb, var(--surface) 93%, transparent);
   box-shadow: var(--shadow-nav);
 }
@@ -378,9 +381,9 @@ html[lang="en"] .plan-badge { letter-spacing: .1em; }
   :root { --nav-space: 78px; }
 
   /* الترويسة */
-  .nav { padding: 12px 0; }
+  .nav { height: 82px; padding-top: 12px; }   /* 12 + 58 + 12 */
   .nav-shell { height: 58px; gap: 8px; }
-  .nav.is-stuck .nav-shell { height: 54px; }
+  .nav.is-stuck .nav-shell { height: 54px; transform: translateY(-4px); }
   .nav-burger { display: flex; }
   .nav-cta { display: none; }
   .nav-cta-inline { display: inline-flex; margin-top: 6px; }

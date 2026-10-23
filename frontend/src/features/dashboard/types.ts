@@ -155,6 +155,16 @@ export interface FontRow {
   isActive: boolean
 }
 
+/** خطة/نتيجة مسح المقطوعات المكررة (‎POST /dashboard/music/dedupe/‎). */
+export interface DedupeResult {
+  dryRun: boolean
+  removeCount: number
+  keepCount: number
+  repointedDocs: number
+  freedBytes: number
+  groups: { name: string; keepId: number; removeCount: number }[]
+}
+
 export interface TrackRow {
   id: number
   name: string

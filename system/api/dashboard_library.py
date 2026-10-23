@@ -25,6 +25,7 @@ from .dashboard_common import (
     staff_api,
     to_snake,
 )
+from .dashboard_music_dedupe import duplicate_extra
 from .http import ApiError
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".mp4", ".aac", ".ogg", ".oga", ".opus", ".wav", ".webm", ".flac"}
@@ -126,7 +127,11 @@ def music(request):
         if not form.is_valid():
             raise_invalid(form)
         return _track_row(form.save())
-    return {"results": [_track_row(track) for track in MusicTrack.objects.all()]}
+    return {
+        "results": [_track_row(track) for track in MusicTrack.objects.all()],
+        # تلميح رخيص (بالاسم بس) لإظهار زرار «مسح المكرر»؛ الخطة الدقيقة من ‎music/dedupe/‎
+        "duplicateExtra": duplicate_extra(),
+    }
 
 
 @staff_api("DELETE")

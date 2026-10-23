@@ -21,6 +21,7 @@ import type {
   TemplateImportResult,
   TemplatesResponse,
   TrackRow,
+  DedupeResult,
 } from './types'
 
 /** كل استعلامات اللوحة تحت ‎['dashboard']‎ — أي تعديل بيبطّلها كلها (البيانات صغيرة وشغّالة على نفس القاعدة). */
@@ -178,7 +179,8 @@ export function useLibrary<K extends LibraryKind>(kind: K) {
   type Row = LibraryRows[K]
   const list = useQuery({
     queryKey: dashKeys.library(kind),
-    queryFn: () => api<{ results: Row[] }>(path),
+    // ‎duplicateExtra‎: تلميح بعدد النسخ الزيادة بالاسم (مكتبة الموسيقى بس)
+    queryFn: () => api<{ results: Row[]; duplicateExtra?: number }>(path),
   })
   const create = useInvalidatingMutation((body: FormData) => api<Row>(path, { method: 'POST', body }))
   const toggle = useInvalidatingMutation((id: number) =>
@@ -188,6 +190,13 @@ export function useLibrary<K extends LibraryKind>(kind: K) {
     api<{ deleted: boolean; name: string }>(`${path}${id}/`, { method: 'DELETE' }),
   )
   return { list, create, toggle, remove }
+}
+
+/** مسح المقطوعات المكررة: ‎dryRun=true‎ بيرجّع الخطة من غير تغيير، وبعده التنفيذ الفعلي. */
+export function useDedupeMusic() {
+  return useInvalidatingMutation((dryRun: boolean) =>
+    api<DedupeResult>('/dashboard/music/dedupe/', { method: 'POST', body: { dryRun } }),
+  )
 }
 
 // ---------------------------------------------------------------- الباقات والإضافات
