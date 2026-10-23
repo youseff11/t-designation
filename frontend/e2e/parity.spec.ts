@@ -1,6 +1,11 @@
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
+
 import { test, expect, type Page } from '@playwright/test'
 
 import { STATE, TARGET, buildPages, urlFor, type PageDef, type Variant } from './pages'
+
+const BASELINE_DIR = process.env.BASELINE_DIR ?? 'e2e/baseline'
 
 /** تاريخ ثابت عشان العدّادات التنازلية والتواريخ النسبية تطلع نفس اللقطة كل مرة. */
 const FROZEN_NOW = new Date('2026-10-23T12:00:00+03:00')
@@ -53,11 +58,22 @@ for (const def of pages) {
       if (pageDef.staff) test.use({ storageState: STATE })
 
       test(variant.name, async ({ page }) => {
+        const snapshot = `${pageDef.id}.${variant.name}.png`
+        // لقطة مفقودة = Playwright كان هيكتب لقطة جديدة من React ويعتبرها مرجعاً.
+        // نوقف ده: المرجع لازم يتولّد من الموقع القديم بس.
+        // Playwright بيحفظ اللقطة باسم منظَّف (النقطة بتتحوّل لشرطة: a.b.png → a-b.png)
+        const onDisk = snapshot.replace(/\.png$/, '').replace(/[^\w-]+/g, '-') + '.png'
+        if (TARGET === 'react' && !existsSync(join(BASELINE_DIR, onDisk))) {
+          throw new Error(
+            `اللقطة المرجعية ${snapshot} مش موجودة في ${BASELINE_DIR}. ` +
+              'ولّدها من الموقع القديم: TARGET=legacy npx playwright test --project=parity --update-snapshots',
+          )
+        }
         await prepare(page, variant)
         const response = await page.goto(urlFor(pageDef))
         expect(response?.status(), `${urlFor(pageDef)} status`).toBeLessThan(400)
         await settle(page)
-        await expect(page).toHaveScreenshot(`${pageDef.id}.${variant.name}.png`, { fullPage: true })
+        await expect(page).toHaveScreenshot(snapshot, { fullPage: true })
       })
     })
   }

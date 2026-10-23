@@ -17,8 +17,11 @@ import { defineConfig } from '@playwright/test'
 export default defineConfig({
   testDir: './e2e',
   outputDir: './test-results',
-  // اللقطة المرجعية لها نفس الاسم للهدفين — الفرق الوحيد هو المسار اللي بنفتحه
-  snapshotPathTemplate: 'e2e/baseline/{arg}{ext}',
+  // اللقطة المرجعية لها نفس الاسم للهدفين — الفرق الوحيد هو المسار اللي بنفتحه.
+  // اللقطات محلية ومش في Git (متصوّرة من قاعدة بيانات حقيقية والـrepo عام):
+  // BASELINE_DIR بيخلّي جلسة على worktree تقرا لقطات الـcheckout الرئيسي.
+  snapshotDir: process.env.BASELINE_DIR ?? 'e2e/baseline',
+  snapshotPathTemplate: '{snapshotDir}/{arg}{ext}',
   fullyParallel: false,
   workers: 2,
   retries: 0,

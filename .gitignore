@@ -28,3 +28,5 @@ frontend/test-results/
 frontend/playwright-report/
 frontend/e2e/.auth/
 frontend/e2e/routes.local.json
+# لقطات الموقع القديم محلية: متصوّرة من قاعدة بيانات حقيقية والـrepo عام
+frontend/e2e/baseline/

@@ -254,7 +254,7 @@ python e2e/dump_routes.py                                   # معرّفات ح�
 E2E_USER=… E2E_PASSWORD=… TARGET=react npx playwright test # بيقارن الصفحات المنقولة باللقطات
 ```
 
-اللقطات المرجعية للموقع القديم في `frontend/e2e/baseline/`. كل صفحة بتتنقل بتقلب
+اللقطات المرجعية للموقع القديم محلية في `frontend/e2e/baseline/` (مش في Git: بتتصوّر من قاعدة بيانات حقيقية والـrepo عام). جلسة على worktree تقدر تقراها من الـcheckout الرئيسي بـ `BASELINE_DIR=<المسار>`. كل صفحة بتتنقل بتقلب
 `ported` لـ `true` في `frontend/e2e/pages.ts`. لإعادة توليدها من الموقع القديم:
 `TARGET=legacy npx playwright test --project=parity --update-snapshots`.
 استخدم **قاعدة بيانات تجريبية** مش الحقيقية.
