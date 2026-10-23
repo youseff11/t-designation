@@ -456,8 +456,8 @@ def build_payload(
         "stage": {
             "runtime": stage_runtime,
             "rootAttrs": ({
-                k: v for k, v in (runtime_root_attrs or {}).items()
-                if k not in ("id", "class")
+                str(k): str(v)[:300] for k, v in (runtime_root_attrs or {}).items()
+                if _DATA_ATTR.fullmatch(str(k))
             } if stage_runtime else {}),
             "full": float(theme.get("max_width") or 0) >= 1100,
             "pattern": (theme.get("pattern")
