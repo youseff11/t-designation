@@ -195,6 +195,15 @@ STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
+# ---------------------------------------------------------------- واجهة React (Vite)
+# أثناء الترحيل التطبيق بيتقدّم على ‎/app/‎ جنب الموقع القديم. عند التحويل
+# النهائي بنفضّي القيمة (SPA_BASENAME=) فياخد المسارات الحقيقية.
+SPA_BASENAME = env("SPA_BASENAME", "/app").rstrip("/")
+# مجلد ناتج ‎npm run build‎ (بيقرا منه وسم vite_assets).
+VITE_BUILD_DIR = BASE_DIR / "static" / "app"
+# سيرفر Vite وقت التطوير فقط (مثلاً http://localhost:5173) — فاضي = استخدم الـbuild.
+VITE_DEV_SERVER = env("VITE_DEV_SERVER", "").rstrip("/") if DEBUG else ""
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(env("DJANGO_MEDIA_ROOT", str(BASE_DIR / "media")))
 

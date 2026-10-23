@@ -213,3 +213,48 @@ Core/
     └── js/   invite.js  · editor.js  · site.js
 ```
 python manage.py fix_posters --apply
+
+---
+
+## واجهة React (قيد الترحيل)
+
+الموقع بيتحوّل تدريجياً من قوالب Django + جافاسكريبت يدوي إلى تطبيق React
+(`frontend/` — Vite + TypeScript). Django بيفضل الباك إند: النماذج، الأدمن،
+معالجة الصور والفيديو، التصدير، وواجهة JSON تحت `/api/v1/` (`system/api/`).
+
+أثناء الترحيل التطبيق الجديد بيتقدّم على **`/app/`** جنب الموقع القديم
+(`SPA_BASENAME` في الإعدادات)، وبيتحوّل للمسارات الحقيقية في المرحلة الأخيرة.
+
+### تشغيل التطوير (طرفيتين)
+
+```bash
+# 1) Django مع سيرفر Vite
+VITE_DEV_SERVER=http://localhost:5173 DJANGO_DEBUG=1 python manage.py runserver
+
+# 2) Vite (HMR)
+cd frontend && npm install && npm run dev
+```
+
+افتح `http://localhost:8000/app/`. Django هو اللي بيقدّم الصفحة (الـ`<head>` وOG
+بيتبنوا على السيرفر)، والسكربتات بتتحمّل من Vite.
+
+### البناء والفحص
+
+```bash
+cd frontend
+npm run build       # يطلّع static/app/ (بيقراه Django من manifest.json)
+npm run typecheck && npm run lint && npm test
+```
+
+### اختبارات التطابق مع الموقع القديم (Playwright)
+
+```bash
+cd frontend && npx playwright install chromium
+python e2e/dump_routes.py                                   # معرّفات حقيقية → e2e/routes.local.json
+E2E_USER=… E2E_PASSWORD=… TARGET=react npx playwright test # بيقارن الصفحات المنقولة باللقطات
+```
+
+اللقطات المرجعية للموقع القديم في `frontend/e2e/baseline/`. كل صفحة بتتنقل بتقلب
+`ported` لـ `true` في `frontend/e2e/pages.ts`. لإعادة توليدها من الموقع القديم:
+`TARGET=legacy npx playwright test --project=parity --update-snapshots`.
+استخدم **قاعدة بيانات تجريبية** مش الحقيقية.
