@@ -4,7 +4,9 @@
  */
 export const PORTED: ReadonlySet<string> = new Set([
   // ---- B1: الموقع العام
-  // 'home',
+  'home',
+  'gallery',
+  'login',
 
   // ---- B4: لوحة التحكم
   // 'dashboard-invitations',
