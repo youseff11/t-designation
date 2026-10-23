@@ -1,7 +1,9 @@
 from django.urls import path
 
-from . import views
+from . import dashboard, guests, invite, public, views
 
+# الأساس المشترك (الجلسة، اللغة، الموقع) هنا؛ كل ميزة في ملفها وبتتجمّع تحت.
+# مفيش حد بيعدّل الملف ده غير لما ميزة جديدة بتتضاف — راجع docs/react-migration.md.
 urlpatterns = [
     path("csrf/", views.csrf, name="api_csrf"),
     path("me/", views.me, name="api_me"),
@@ -11,3 +13,7 @@ urlpatterns = [
     path("site/", views.site, name="api_site"),
     path("templates/", views.templates_list, name="api_templates"),
 ]
+urlpatterns += public.urlpatterns
+urlpatterns += dashboard.urlpatterns
+urlpatterns += guests.urlpatterns
+urlpatterns += invite.urlpatterns

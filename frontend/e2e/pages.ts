@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { PORTED } from './ported'
+
 const here = dirname(fileURLToPath(import.meta.url))
 
 /** مكان حفظ جلسة فريق العمل (مسجّلة في .gitignore). */
@@ -37,10 +39,7 @@ export interface PageDef {
   /** لازم تسجيل دخول من فريق العمل */
   staff: boolean
   variants: Variant[]
-  /**
-   * اتنقلت لـReact؟ كل جلسة بتقلبها لـ true لما صفحتها تخلص؛
-   * وقتها TARGET=react بيقارنها باللقطة المرجعية.
-   */
+  /** اتنقلت لـReact؟ بتتحدد من e2e/ported.ts — وقتها TARGET=react بيقارنها باللقطة. */
   ported: boolean
 }
 
@@ -81,7 +80,7 @@ export function buildPages(): PageDef[] {
       path,
       staff: opts.staff ?? false,
       variants: opts.variants ?? (opts.staff ? STAFF_VARIANTS : PUBLIC_VARIANTS),
-      ported: false,
+      ported: PORTED.has(id),
     })
 
   // ---- الموقع العام
