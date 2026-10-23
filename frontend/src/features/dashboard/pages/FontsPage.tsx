@@ -49,7 +49,7 @@ export function FontsPage() {
 
       <div className="grid" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(300px,1fr)', alignItems: 'start' }}>
         <section className="card">
-          <h2 style={{ fontSize: 18, marginTop: 0 }}>{t('dashboard.fonts.added_count', { count: fonts.length })}</h2>
+          <h2 style={{ fontSize: 18, marginTop: 0 }}>{t('dashboard.fonts.listTitle', { n: fonts.length })}</h2>
           <p className="muted" style={{ fontSize: 13 }}>
             {t('dashboard.fonts.activeNote')}
           </p>

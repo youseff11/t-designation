@@ -198,7 +198,7 @@ export function SitePage() {
                   {state.whatsappNumber ? (
                     <strong dir="ltr">{state.whatsappNumber}</strong>
                   ) : (
-                    t('dashboard.site.state.offOrEmpty')
+                    t('dashboard.site.state.offOrNoNumber')
                   )}
                 </li>
                 <li>

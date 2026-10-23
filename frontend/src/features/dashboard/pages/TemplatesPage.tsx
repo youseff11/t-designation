@@ -128,8 +128,8 @@ export function TemplatesPage() {
           blocks: result.blocks,
           chars: result.chars,
         })
-        if (result.tracks) message += ` ${t('dashboard.templates.importedTracks', { count: result.tracks })}`
-        if (result.scripts) message += ` ${t('dashboard.templates.importedScripts', { count: result.scripts })}`
+        if (result.tracks) message += ` ${t('dashboard.templates.importedTracks', { n: result.tracks })}`
+        if (result.scripts) message += ` ${t('dashboard.templates.importedScripts', { n: result.scripts })}`
         toast.success(`${message} ${t('dashboard.templates.importedOpen')}`)
         // ملف صغير بيعدّي، بس ننبّه عشان يراجع المعاينة
         if (result.thinContent) toast.warning(t('dashboard.templates.thinContent', { chars: result.chars }))
