@@ -32,7 +32,6 @@ export function Countdown({ block }: { block: BlockData }) {
 
   useEffect(() => {
     if (!valid) return
-    setNow(Date.now())
     const id = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(id)
   }, [valid])

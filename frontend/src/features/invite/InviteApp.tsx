@@ -1,21 +1,21 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { fetchRender, type Source } from './api'
-import { AutoScroll } from './AutoScroll'
 import { BlockView } from './blocks'
+import { prefetchBlocks } from './blocks/lazy'
 import { LangToggle, PreviewCtaBar } from './Chrome'
 import { InviteContext } from './context'
 import { applyPageMeta, syncHeadStyles } from './head'
 import { Intro } from './Intro'
-import { Locked } from './Locked'
 import { Music } from './Music'
 import { initFarhaState, guardCodeRoots } from './runtime/code-roots'
-import { initImportedCountdowns, installSpaBridge, loadTemplateRuntime } from './runtime/imported'
 import { initImportedMedia } from './runtime/media'
 import { bindScrollLinks } from './runtime/scroll-links'
 import { makeT } from './strings'
 import type { Boot, InviteLang, RenderPayload } from './types'
 
+const AutoScroll = lazy(() => import('./AutoScroll').then((m) => ({ default: m.AutoScroll })))
+const Locked = lazy(() => import('./Locked').then((m) => ({ default: m.Locked })))
 const DATA_ATTR = /^data-[a-zA-Z0-9_-]{1,64}$/
 
 /** حركات الظهور: القسم بيظهر أول ما يقرّب من الشاشة (قبلها بـ٤٥٪ عشان الانتقال يخلص). */
@@ -52,7 +52,7 @@ function Viewer({ initial }: { initial: RenderPayload }) {
   const [payload, setPayload] = useState(initial)
   const [busy, setBusy] = useState(false)
   const cache = useRef(new Map<InviteLang, RenderPayload>([[initial.lang, initial]]))
-  const hasIntro = useRef(Boolean(initial.intro))
+  const [hasIntro] = useState(() => Boolean(initial.intro))
 
   const t = useMemo(() => makeT(payload.lang), [payload.lang])
   const ctx = useMemo(
@@ -61,9 +61,9 @@ function Viewer({ initial }: { initial: RenderPayload }) {
       t,
       maxWidth: payload.maxWidth,
       demo: payload.demo,
-      hasIntro: hasIntro.current,
+      hasIntro,
     }),
-    [payload.lang, payload.maxWidth, payload.demo, t],
+    [payload.lang, payload.maxWidth, payload.demo, hasIntro, t],
   )
 
   // لو الحمولة جت من الـAPI (بعد كلمة السر) الستايل لسه مااتطبعش في الـhead
@@ -82,16 +82,40 @@ function Viewer({ initial }: { initial: RenderPayload }) {
   // قوالب مستوردة (Tilda…): سكربتات الـruntime بتتنفّذ بالترتيب بعد ما الأقسام تتحط
   useEffect(() => {
     if (!initial.stage.runtime || !initial.runtimeScripts.length) return
-    if (initial.runtimeIsSpa) installSpaBridge()
-    void loadTemplateRuntime(initial.runtimeScripts)
+    void import('./runtime/imported').then((m) => {
+      if (initial.runtimeIsSpa) m.installSpaBridge()
+      void m.loadTemplateRuntime(initial.runtimeScripts)
+    })
+  }, [initial])
+
+  // الأجزاء التقيلة (فورم الرد، الفيديو) بتتجاب في الخلفية بعد أول رسمة
+  useEffect(() => {
+    const types = new Set(initial.blocks.map((b) => b.type))
+    const run = () => prefetchBlocks(types)
+    if (window.requestIdleCallback) {
+      const id = window.requestIdleCallback(run, { timeout: 3000 })
+      return () => window.cancelIdleCallback(id)
+    }
+    const id = window.setTimeout(run, 1200)
+    return () => window.clearTimeout(id)
   }, [initial])
 
   // حمايات كود المصمّم وعدّادات/فيديوهات المستورد: بعد كل تغيير في المحتوى
+  const hasImported = payload.blocks.some((b) => b.type === 'custom_html')
   useEffect(() => {
     guardCodeRoots()
     initImportedMedia()
-    return initImportedCountdowns()
-  }, [payload.blocks])
+    if (!hasImported) return
+    let cancelled = false
+    let stop = () => {}
+    void import('./runtime/imported').then((m) => {
+      if (!cancelled) stop = m.initImportedCountdowns()
+    })
+    return () => {
+      cancelled = true
+      stop()
+    }
+  }, [payload.blocks, hasImported])
 
   useReveal(payload.blocks)
 
@@ -180,7 +204,11 @@ function Viewer({ initial }: { initial: RenderPayload }) {
           </footer>
         )}
       </div>
-      <AutoScroll config={payload.scroll} />
+      {payload.scroll.enabled && (
+        <Suspense fallback={null}>
+          <AutoScroll config={payload.scroll} />
+        </Suspense>
+      )}
       {kind === 'template' && payload.cta && <PreviewCtaBar cta={payload.cta} />}
       {payload.music && <Music config={payload.music} />}
     </InviteContext.Provider>
@@ -194,7 +222,9 @@ export function InviteApp({ boot }: { boot: Boot }) {
     return unlocked ? (
       <Viewer initial={unlocked} />
     ) : (
-      <Locked slug={boot.slug} onUnlocked={setUnlocked} />
+      <Suspense fallback={null}>
+        <Locked slug={boot.slug} onUnlocked={setUnlocked} />
+      </Suspense>
     )
   }
   return <Viewer initial={boot} />

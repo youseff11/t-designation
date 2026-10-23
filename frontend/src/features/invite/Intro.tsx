@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useInvite } from './context'
 import { Raw } from './Raw'
-import { bindCodeCover } from './runtime/intro-code'
 import { parseStyle } from './style'
 import type { IntroData } from './types'
 
@@ -191,8 +190,19 @@ export function Intro({ data }: { data: IntroData }) {
       cleanup.push(() => btn.removeEventListener('click', onBtn))
     }
 
-    const cover = data.code?.html ? bindCodeCover(intro, { open: doOpen, isOpen: () => isOpen }) : null
-    if (cover) cleanup.push(cover.dispose)
+    // منطق «غطا الكود» نادر ومش بيتحمّل غير لو الافتتاحية فيها كود
+    let cover: { handled: (e: Event) => boolean; dispose: () => void } | null = null
+    let disposed = false
+    if (data.code?.html) {
+      void import('./runtime/intro-code').then((m) => {
+        if (disposed) return
+        cover = m.bindCodeCover(intro, { open: doOpen, isOpen: () => isOpen })
+      })
+    }
+    cleanup.push(() => {
+      disposed = true
+      cover?.dispose()
+    })
 
     /* لمسة في أي مكان = نفس اللي بيعمله الزر: أول لمسة بتشغّل الفيديو
        المستني، واللمسة اللي بعدها بتفتح الدعوة. */
@@ -215,6 +225,7 @@ export function Intro({ data }: { data: IntroData }) {
       delete window.__lbIntro
     }
     // الإعدادات بتتقرا مرة عند التركيب — الافتتاحية بتتشال بعد الفتح
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   if (gone) return null
