@@ -7,7 +7,18 @@ export const PORTED: ReadonlySet<string> = new Set([
   // 'home',
 
   // ---- B4: لوحة التحكم
-  // 'dashboard-invitations',
+  'dashboard',
+  'dashboard-invitations',
+  'dashboard-invitation-new',
+  'dashboard-templates',
+  'dashboard-template-new',
+  'dashboard-fonts',
+  'dashboard-music',
+  'dashboard-intros',
+  'dashboard-plans',
+  'dashboard-site',
+  'dashboard-analytics',
+  'dashboard-orders',
 
   // ---- B2: الضيوف والحضور
   // 'dashboard-guests',

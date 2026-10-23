@@ -1311,6 +1311,10 @@ html[lang='en'] .dash-root .tpl-meta {
 
 /* ---------------------------------------------------------- الحركة المخفّضة */
 @media (prefers-reduced-motion: reduce) {
+  /* زي site.css القديم: من غير ده ‎scrollTo(0,0)‎ بيعدّي ثواني (تمرير ناعم) والترويسة بتفضل «is-stuck» */
+  html:root {
+    scroll-behavior: auto;
+  }
   .dash-root *,
   .dash-toast,
   .dash-dialog {
