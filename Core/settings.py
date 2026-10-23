@@ -66,11 +66,11 @@ if not SECRET_KEY:
 
 ALLOWED_HOSTS = env_list(
     "DJANGO_ALLOWED_HOSTS",
-    "localhost,127.0.0.1,www.farha-invitations.com",
+    "localhost,127.0.0.1,www.tdesignation.com,tdesignation.com",
 )
 CSRF_TRUSTED_ORIGINS = env_list(
     "DJANGO_CSRF_TRUSTED_ORIGINS",
-    "http://localhost,http://127.0.0.1,https://www.farha-invitations.com",
+    "http://localhost,http://127.0.0.1,https://www.tdesignation.com,https://tdesignation.com",
 )
 
 INSTALLED_APPS = [
@@ -256,7 +256,7 @@ SITE_CURRENCY = env("SITE_CURRENCY", "ج.م")
 
 # ---------------------------------------------------------------- SEO
 # الدومين الأساسي — بيتبني منه canonical وsitemap وصور المشاركة.
-SITE_URL = env("SITE_URL", "https://www.farha-invitations.com").rstrip("/")
+SITE_URL = env("SITE_URL", "https://www.tdesignation.com").rstrip("/")
 # كود تحقق ملكية Google Search Console (علامة meta في الصفحات العامة).
 GOOGLE_SITE_VERIFICATION = env("GOOGLE_SITE_VERIFICATION", "NF9zjwiDtdsp61UptngXOyJI6DHzO39TREPq9hGWdio")
 SEO_DESCRIPTION_AR = env(
