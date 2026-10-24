@@ -194,13 +194,34 @@ export function swapImages(a: Element, b: Element) {
   write(b, first)
 }
 
-/** يشيل الإزاحة المؤقتة اللي السحب كتبها على العقدة — الإزاحة الدايمة جاية من ستايل ‎layout‎ في الرأس. */
-export function clearDragVars(root: ParentNode = document) {
+/** أسلاك السحب اللي اتسابت لسه بتستنى رد السيرفر: العقدة ← وقت الإفلات. */
+const dropped = new WeakMap<HTMLElement, number>()
+/** أقصى مدة نسيب فيها الإزاحة المؤقتة لحد ما الرسمة الجاية تحمل الإزاحة الجديدة (لو السيرفر اتأخر نشيلها برضه). */
+export const DROP_HOLD_MS = 2500
+
+const dropVars = (node: HTMLElement) => {
+  node.style.removeProperty('--dx')
+  node.style.removeProperty('--dy')
+  dropped.delete(node)
+}
+
+/**
+ * يشيل الإزاحة المؤقتة اللي السحب كتبها على العقدة — الإزاحة الدايمة جاية من ستايل ‎layout‎ في الرأس.
+ * ‎blocks‎ (من الرسمة): عنصر لسه مستني إزاحته الجديدة (اتسحب من أقل من ثانيتين ونص والرسمة دي لسه قديمة)
+ * بنسيب إزاحته المؤقتة عشان ما يرجعش لمكانه القديم ثم يقفز تاني لما الرد يوصل. من غيرها: بيشيل كله.
+ */
+export function clearDragVars(root: ParentNode = document, blocks?: BlockData[]) {
   root.querySelectorAll<HTMLElement>('[data-move]').forEach((node) => {
-    if (node.style.getPropertyValue('--dx') || node.style.getPropertyValue('--dy')) {
-      node.style.removeProperty('--dx')
-      node.style.removeProperty('--dy')
+    const dx = node.style.getPropertyValue('--dx')
+    const dy = node.style.getPropertyValue('--dy')
+    if (!dx && !dy) return
+    const at = dropped.get(node)
+    if (blocks && at && Date.now() - at < DROP_HOLD_MS) {
+      const id = node.closest('[data-block]')?.getAttribute('data-block')
+      const pos = blocks.find((b) => b.id === id)?.layout?.[node.getAttribute('data-move') ?? '']
+      if ((parseFloat(dx) || 0) !== (pos?.dx ?? 0) || (parseFloat(dy) || 0) !== (pos?.dy ?? 0)) return
     }
+    dropVars(node)
   })
 }
 
@@ -284,7 +305,9 @@ export function installInteractions({ payload, send }: Options): () => void {
       unit_: slotUnit(slot),
       swap: null,
       moved: false, pointerId: e.pointerId,
-      wasEditable: node.hasAttribute('data-lb-text'),
+      // الأقسام العادية نصوصها قابلة للكتابة دايماً (contenteditable)، لكن وحدات نص القسم المستورد بتتفتح للكتابة بضغطتين بس —
+      // لو رجّعناها قابلة للكتابة بعد السحب: ‎plaintext-only‎ بيفرض ‎white-space: pre-wrap‎ فمسافات الـHTML الأصلية بتبان أسطر فاضية والعنوان يطول ويقفز
+      wasEditable: node.getAttribute('contenteditable') === 'plaintext-only',
       dx: pos?.dx ?? 0, dy: pos?.dy ?? 0,
     }
   }
@@ -358,7 +381,13 @@ export function installInteractions({ payload, send }: Options): () => void {
       d.node.style.removeProperty('--dy')
       return
     }
+    // آخر إزاحة تتكتب تاني: رد تحديد القسم ممكن يوصل للإطار وقت الإفلات ويمسح الإزاحة المؤقتة (فالعنصر كان بيرجع لمكانه القديم)
+    d.node.style.setProperty('--dx', `${d.dx}${d.unit_}`)
+    d.node.style.setProperty('--dy', `${d.dy}${d.unit_}`)
     send({ type: 'lb-editor:layout', id: d.id, slot: d.slot, dx: d.dx, dy: d.dy })
+    // الإزاحة الجديدة تفضل على العقدة لحد ما الرسمة الجاية تحملها (clearDragVars) — أو لحد ما المهلة تخلص
+    dropped.set(d.node, Date.now())
+    setTimeout(() => dropped.has(d.node) && dropVars(d.node), DROP_HOLD_MS)
   }
 
   const onPointerUp = () => finish(false)

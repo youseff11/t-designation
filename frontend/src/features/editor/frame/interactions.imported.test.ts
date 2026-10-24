@@ -4,7 +4,7 @@ import { block } from '@/features/invite/fixtures'
 import type { BlockData } from '@/features/invite/types'
 
 import type { FromFrame, PreviewPayload } from '../types'
-import { dragOffset, installInteractions, slotUnit, swapCandidate, swapImages } from './interactions'
+import { clearDragVars, dragOffset, installInteractions, slotUnit, swapCandidate, swapImages } from './interactions'
 
 describe('px slots', () => {
   it('uses pixels for imported elements and cqw for everything else', () => {
@@ -67,6 +67,28 @@ describe('dragging inside an imported section', () => {
     expect(document.querySelector('.lb-drag-badge')!.textContent).toBe('50.0px , 25.0px')
     h1().dispatchEvent(mouse('pointerup'))
     expect(sent).toContainEqual({ type: 'lb-editor:layout', id: 'imp', slot: 'el-1', dx: 50, dy: 25 })
+  })
+
+  it('does not turn a text unit into an editable one after dragging it (plaintext-only forces pre-wrap and blows up the layout)', () => {
+    expect(h1().hasAttribute('contenteditable')).toBe(false)
+    h1().dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
+    h1().dispatchEvent(mouse('pointermove', { clientX: 40, clientY: 25 }))
+    h1().dispatchEvent(mouse('pointerup'))
+    expect(h1().hasAttribute('contenteditable')).toBe(false)
+    expect(h1().classList.contains('lb-dragging')).toBe(false)
+  })
+
+  it('keeps the dropped offset on the element until a render carries it (no jump back to the old place)', () => {
+    h1().dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
+    h1().dispatchEvent(mouse('pointermove', { clientX: 40, clientY: 25 }))
+    h1().dispatchEvent(mouse('pointerup'))
+    // رسمة قديمة (لسه فيها الإزاحة القديمة ١٠): الإزاحة المؤقتة تفضل
+    clearDragVars(document, payload.blocks)
+    expect(h1().style.getPropertyValue('--dx')).toBe('50px')
+    // الرسمة اللي فيها الإزاحة الجديدة: تتشال
+    clearDragVars(document, [imp({ layout: { 'el-1': { dx: 50, dy: 25 } } })])
+    expect(h1().style.getPropertyValue('--dx')).toBe('')
+    expect(h1().style.getPropertyValue('--dy')).toBe('')
   })
 
   it('does not start a drag from a numbered text that is open for typing', () => {

@@ -56,6 +56,8 @@ export function FrameApp() {
   const pending = useRef<Extract<ToFrame, { type: 'lb-editor:render' }> | null>(null)
   // العنصر المحدَّد جوّه قسم مستورد (علامته بتتعاد بعد كل رسمة)
   const picked = useRef<{ id: string; slot: string } | null>(null)
+  // آخر حمولة اترسمت (عشان تغيّر التحديد لوحده مايمسحش إزاحة سحب مستنية رد السيرفر)
+  const drawn = useRef<PreviewPayload | null>(null)
 
   function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
     const next = message.payload as PreviewPayload
@@ -194,7 +196,9 @@ export function FrameApp() {
     markEditable(payload.blocks)
     prepareImported(payload, sendToParent)
     markPicked(picked.current)
-    clearDragVars() // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق)
+    // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق) — بنمسح المؤقتة مع رسمة جديدة بس، مش مع تغيّر التحديد
+    if (drawn.current !== payload) clearDragVars(document, payload.blocks)
+    drawn.current = payload
     markSelected(state.selected)
   }, [payload, state?.selected])
 
