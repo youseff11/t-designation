@@ -9,7 +9,7 @@ import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
-import { installImported, markPicked, prepareImported, revealPicked } from '../imported/frame'
+import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 import { installNoHover, stripHover } from './noHover'
 
@@ -83,6 +83,8 @@ export function FrameApp() {
         picked.current = message.id && message.slot ? { id: message.id, slot: message.slot } : null
         markPicked(picked.current)
         revealPicked() // اتحدّد من الطبقات وهو برّه الشاشة؟ ننزل له
+      } else if (message.type === 'lb-editor:node') {
+        patchNode(message.id, message.slot, message.edit)
       } else if (message.type === 'lb-editor:patch') {
         patchText(message.id, message.key, message.value)
       } else if (message.type === 'lb-editor:intro') {

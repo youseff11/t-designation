@@ -5,6 +5,7 @@ import { ApiError } from '@/api/client'
 import { postSave } from './api'
 import * as ops from './doc'
 import { findBlock } from './doc'
+import type { NodeEdit } from './imported/nodeEdit'
 import * as element from './imported/ops'
 import type {
   AssetRow,
@@ -64,6 +65,8 @@ interface Data {
   selEl: { blockId: string; slot: string } | null
   /** حافظة العناصر (نسخة نضيفة ‎outerHTML‎) — جوّه المحرر بس، مش حافظة النظام */
   clip: string | null
+  /** آخر تعديل من لوحة العنصر: المعاينة بتطبّقه على DOM الحي لحظياً قبل رد السيرفر */
+  lastEdit: { seq: number; id: string; slot: string; edit: NodeEdit } | null
   tab: Tab
   device: Device
   /** لغة المعاينة المطلوبة؛ فاضي = لغة الدعوة الأساسية */
@@ -104,6 +107,8 @@ interface Actions {
   duplicateElement: () => ElementOutcome
   deleteElement: (slot?: string) => ElementOutcome
   addElement: (kind: element.AddKind, value: string) => ElementOutcome
+  /** تعديل نص/تنسيق/صورة العنصر المحدَّد من اللوحة. ‎coalesce‎: الشريط والكتابة المتتالية = خطوة تراجع واحدة */
+  editElement: (edit: NodeEdit, coalesce?: string) => ElementOutcome
   selectParentElement: () => ElementOutcome
   setTab: (tab: Tab) => void
   setDevice: (device: Device) => void
@@ -165,6 +170,7 @@ const initial = (): Data => ({
   selectSource: null,
   selEl: null,
   clip: null,
+  lastEdit: null,
   tab: 'blocks',
   device: 'mobile',
   previewLang: '',
@@ -217,7 +223,11 @@ function elementTarget(state: Data, slot?: string): ElementTarget | null {
 }
 
 /** عملية هيكل واحدة = ‎commit‎ واحد (خطوة تراجع واحدة). بترفض في القسم المقفول وفي المعاينة المترجَمة. */
-function runEdit(build: (target: ElementTarget) => element.Edit | null, slot?: string): ElementOutcome {
+function runEdit(
+  build: (target: ElementTarget) => element.Edit | null,
+  slot?: string,
+  coalesce?: string,
+): ElementOutcome {
   const state = useEditor.getState()
   const target = elementTarget(state, slot)
   if (!target) return 'missing'
@@ -225,7 +235,9 @@ function runEdit(build: (target: ElementTarget) => element.Edit | null, slot?: s
   if (translatedPreview(state)) return 'translated'
   const edit = build(target)
   if (!edit) return 'missing'
-  state.commit((d) => ops.setBlockHtml(d, target.block.id, edit.html, edit.dropped))
+  // تعديل ماغيّرش حاجة (نفس القيمة): مفيش خطوة تراجع ولا «غير محفوظ»
+  if (edit.html === target.html && !edit.dropped.length) return 'ok'
+  state.commit((d) => ops.setBlockHtml(d, target.block.id, edit.html, edit.dropped), coalesce ? { coalesce } : undefined)
   useEditor.setState({
     selected: target.block.id,
     selEl: edit.select ? { blockId: target.block.id, slot: edit.select } : null,
@@ -307,6 +319,12 @@ export const useEditor = create<EditorState>()((set, get) => ({
   duplicateElement: () => runEdit((t) => element.duplicateOf(t.html, t.slot)),
   deleteElement: (slot) => runEdit((t) => element.deleteOf(t.html, t.slot), slot),
   addElement: (kind, value) => runEdit((t) => element.addOf(t.html, t.slot, kind, value)),
+  editElement: (edit, coalesce) => {
+    const outcome = runEdit((t) => element.editOf(t.html, t.slot, edit), undefined, coalesce)
+    const el = get().selEl
+    if (outcome === 'ok' && el) set((state) => ({ lastEdit: { seq: (state.lastEdit?.seq ?? 0) + 1, id: el.blockId, slot: el.slot, edit } }))
+    return outcome
+  },
   selectParentElement: () => {
     const target = elementTarget(get())
     if (!target) return 'missing'

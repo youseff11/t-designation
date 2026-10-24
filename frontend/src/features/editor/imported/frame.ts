@@ -1,4 +1,5 @@
 import type { FromFrame, PreviewPayload } from '../types'
+import { applyNodeEdit, type NodeEdit } from './nodeEdit'
 import { numberElements } from './numbering'
 import { serializeCustom } from './serialize'
 
@@ -64,6 +65,13 @@ export function markPicked(picked: { id: string; slot: string } | null, root: Pa
     (n) => n.getAttribute('data-move') === picked.slot,
   )
   node?.classList.add('lb-el-picked')
+}
+
+/** تعديل من لوحة العنصر على العقدة الحية (المصدر اتحدّث في الأم بالفعل — ده بس عشان يبان قبل رد السيرفر). */
+export function patchNode(id: string, slot: string, edit: NodeEdit, root: ParentNode = document) {
+  const section = Array.from(root.querySelectorAll('[data-block]')).find((n) => n.getAttribute('data-block') === id)
+  const custom = section?.querySelector(ROOT)
+  if (custom) applyNodeEdit(custom, slot, edit)
 }
 
 /** العنصر المحدَّد برّه الشاشة بالكامل (اتحدّد من الطبقات مثلاً)؟ نمرّر له. اللي ظاهر مابنحرّكوش. */

@@ -1,3 +1,5 @@
+import { findSlot, out, parse } from './dom'
+import { applyNodeEdit, readNode, type NodeEdit, type NodeInfo } from './nodeEdit'
 import { cleanCopy } from './serialize'
 import { isTextual } from './units'
 
@@ -47,23 +49,13 @@ const NAMES: Record<string, string> = {
   TABLE: 'table', TD: 'cell', BUTTON: 'button',
 }
 
+/** مفتاح اسم الوسم (‎heading‎، ‎group‎…) للعرض — ‎element‎ لو مش معروف. */
+export const nameOf = (tag: string) => NAMES[tag.toUpperCase()] ?? 'element'
+
 const MAP_URL = /google\.com\/maps|maps\.googleapis\.com/i
 const LABEL_MAX = 42
 
-/** مستند خامل بيتحط فيه النص كجذر ‎.lb-custom‎ (عشان ‎closest('.lb-custom')‎ في محدّدات العدّاد تشتغل). */
-function parse(html: string): HTMLElement {
-  const doc = new DOMParser().parseFromString('<!doctype html><body></body>', 'text/html')
-  const root = doc.createElement('div')
-  root.className = 'lb-custom'
-  root.innerHTML = html
-  return root
-}
-
 const tagOf = (n: Element) => n.tagName.toUpperCase()
-
-function findSlot(root: Element, slot: string): HTMLElement | null {
-  return Array.from(root.querySelectorAll<HTMLElement>('[data-move]')).find((n) => n.getAttribute('data-move') === slot) ?? null
-}
 
 /** أول ‎el-N‎ حر (نفس منطق ‎numberElements‎ عشان الأرقام ماتتضاربش). */
 function freeSlot(root: Element, prefix = 'el-'): string {
@@ -100,8 +92,6 @@ function place(node: Element, fresh: Element, inside: boolean, units: Set<Elemen
   if (inside && canHold(node, units)) node.appendChild(fresh)
   else node.insertAdjacentElement('afterend', fresh)
 }
-
-const out = (root: Element) => root.innerHTML
 
 /** العنصر موجود في النص؟ (بعد تراجع/إعادة ممكن يكون رقمه راح). */
 export function hasSlot(html: string, slot: string): boolean {
@@ -178,6 +168,18 @@ export function addOf(html: string, slot: string, kind: AddKind, value: string):
   return { html: out(root), select: added, dropped: [] }
 }
 
+/** حالة العنصر للوحة (نص، تنسيق مضمّن، مصدر الصورة…) من ‎props.html‎. */
+export function nodeInfo(html: string, slot: string): NodeInfo | null {
+  return readNode(parse(html), slot)
+}
+
+/** تعديل خاصية/نص/صورة عنصر (لوحة العنصر): نفس ‎applyNodeEdit‎ اللي بتتطبّق بيه على المعاينة الحية. العنصر يفضل محدَّد. */
+export function editOf(html: string, slot: string, edit: NodeEdit): Edit | null {
+  const root = parse(html)
+  if (!applyNodeEdit(root, slot, edit)) return null
+  return { html: out(root), select: slot, dropped: [] }
+}
+
 /** رقم أقرب أب مرقّم، أو ‎null‎ لو ده أعلى عنصر في القسم. */
 export function parentOf(html: string, slot: string): string | null {
   const root = parse(html)
@@ -214,7 +216,7 @@ export function layersOf(html: string): Layer[] {
 
     let text = (node.textContent ?? '').replace(/\s+/g, ' ').trim()
     if (text.length > LABEL_MAX) text = `${text.slice(0, LABEL_MAX)}…`
-    layers.push({ slot, kind, name: NAMES[tag] ?? 'element', text })
+    layers.push({ slot, kind, name: nameOf(tag), text })
   }
   return layers
 }

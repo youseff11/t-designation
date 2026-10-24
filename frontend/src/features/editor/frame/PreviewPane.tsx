@@ -107,6 +107,12 @@ export function PreviewPane({ onKey }: Props) {
     sendToFrame(frame.current, { type: 'lb-editor:patch', id: lastText.id, key: lastText.key, value: lastText.value })
   }, [lastText, ready])
 
+  // تعديل من لوحة العنصر → يتطبّق على العقدة الحية لحظياً (الرسمة الجاية من السيرفر بتأكّده)
+  const lastEdit = useEditor((s) => s.lastEdit)
+  useEffect(() => {
+    if (lastEdit && ready) sendToFrame(frame.current, { type: 'lb-editor:node', id: lastEdit.id, slot: lastEdit.slot, edit: lastEdit.edit })
+  }, [lastEdit, ready])
+
   // زرار «الافتتاحية»: نبعت بس لما العدّاد يتغيّر بعد فتح المحرر (مش قيمته القديمة من فتحة سابقة)
   const introCount = useIntroBus((s) => s.count)
   const seenIntro = useRef(introCount)

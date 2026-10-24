@@ -101,7 +101,7 @@ export function ColorBody({ spec, value, onChange, id }: FieldProps) {
         placeholder={t('editor.fields.theme')}
         onChange={(e) => onChange(e.target.value)}
       />
-      {spec.key === 'bg_color' && (
+      {(spec.key === 'bg_color' || spec.clearable) && (
         <button type="button" className="ed-btn ed-btn--sm ed-color-clear" onClick={() => onChange('')}>
           {t('editor.fields.clear')}
         </button>

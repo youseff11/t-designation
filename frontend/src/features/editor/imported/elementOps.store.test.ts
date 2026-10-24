@@ -210,3 +210,70 @@ describe('guards', () => {
     expect(s().deleteElement()).toBe('missing')
   })
 })
+
+describe('edit element (panel)', () => {
+  it('writes a style into props.html, keeps the element selected and publishes the live edit', () => {
+    s().selectElement('a', 'el-2')
+    expect(s().editElement({ kind: 'style', prop: 'font-size', value: '30px' })).toBe('ok')
+    expect(html()).toContain('font-size: 30px')
+    expect(s().selEl).toEqual({ blockId: 'a', slot: 'el-2' })
+    expect(s().lastEdit).toMatchObject({ seq: 1, id: 'a', slot: 'el-2', edit: { kind: 'style', prop: 'font-size', value: '30px' } })
+    expect(s().saveStatus).toBe('dirty')
+  })
+
+  it('a slider drag or a burst of typing is one undo step (same coalesce key)', () => {
+    s().selectElement('a', 'el-2')
+    for (const size of ['20px', '22px', '24px', '26px']) s().editElement({ kind: 'style', prop: 'font-size', value: size }, 'el-style:el-2:font-size')
+    expect(s().history).toHaveLength(1)
+    expect(s().lastEdit?.seq).toBe(4)
+    s().editElement({ kind: 'text', value: 'جديد' }, 'el-text:el-2') // مفتاح تاني = خطوة تانية
+    expect(s().history).toHaveLength(2)
+    s().undo()
+    expect(html()).toContain('font-size: 26px')
+    s().undo()
+    expect(html()).toBe(HTML)
+  })
+
+  it('an edit that changes nothing is not an undo step and does not mark the document dirty', () => {
+    s().selectElement('a', 'el-2')
+    s().editElement({ kind: 'style', prop: 'font-size', value: '30px' })
+    useEditor.setState({ saveStatus: 'saved', history: [] })
+    expect(s().editElement({ kind: 'style', prop: 'font-size', value: '30px' })).toBe('ok')
+    expect(s().history).toHaveLength(0)
+    expect(s().saveStatus).toBe('saved')
+  })
+
+  it('removing a value (empty string) removes the property', () => {
+    s().selectElement('a', 'el-2')
+    s().editElement({ kind: 'style', prop: 'font-size', value: '30px' })
+    s().editElement({ kind: 'style', prop: 'font-size', value: '' })
+    expect(html()).not.toContain('font-size')
+  })
+
+  it('hides and shows the element itself', () => {
+    s().selectElement('a', 'el-4')
+    s().editElement({ kind: 'self', prop: 'display', value: 'none' })
+    expect(html()).toContain('display: none')
+    s().editElement({ kind: 'self', prop: 'display', value: '' })
+    expect(html()).toBe(HTML)
+  })
+
+  it('is refused in the translated preview, in a locked section and with nothing selected', () => {
+    s().selectElement('a', 'el-2')
+    s().setRenderedLang('en')
+    expect(s().editElement({ kind: 'text', value: 'x' })).toBe('translated')
+    expect(s().lastEdit).toBeNull()
+    s().setRenderedLang('ar')
+    s().selectElement('locked', 'el-2')
+    expect(s().editElement({ kind: 'text', value: 'x' })).toBe('locked')
+    s().selectElement('a', null)
+    expect(s().editElement({ kind: 'text', value: 'x' })).toBe('missing')
+    expect(html()).toBe(HTML)
+    expect(s().history).toHaveLength(0)
+  })
+
+  it('an edit that cannot apply (text on a shape) is reported, not silently dropped', () => {
+    s().selectElement('a', 'el-3') // صورة
+    expect(s().editElement({ kind: 'text', value: 'x' })).toBe('missing')
+  })
+})

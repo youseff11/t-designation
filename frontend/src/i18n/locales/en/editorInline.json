@@ -94,7 +94,47 @@
       "empty": "Nothing copied — select an element and press Ctrl+C",
       "top": "This is the top element in the section",
       "locked": "The section is locked"
-    }
+    },
+    "name": "Name",
+    "fields": {
+      "text": "Text content",
+      "textPlaceholder": "Type the text here",
+      "style": "Element style",
+      "styleHint": "Element style: font, colour and size",
+      "font": "Font",
+      "size": "Font size",
+      "weight": "Font weight",
+      "align": "Alignment",
+      "color": "Text colour",
+      "background": "Background colour",
+      "letter": "Letter spacing",
+      "line": "Line height",
+      "image": "Image",
+      "imageWidth": "Image width",
+      "imageRadius": "Corner radius",
+      "imageHint": "This is an image — font and text tools do not affect it, so they are hidden.",
+      "weights": {
+        "inherit": "As is",
+        "300": "Light",
+        "400": "Regular",
+        "500": "Medium",
+        "600": "Semi-bold",
+        "700": "Bold"
+      },
+      "aligns": {
+        "inherit": "As is",
+        "right": "Right",
+        "center": "Center",
+        "left": "Left"
+      }
+    },
+    "hide": "Hide",
+    "show": "Show",
+    "positionPx": "Position ({{dx}}px / {{dy}}px)",
+    "positionPct": "Position ({{dx}}% / {{dy}}%)",
+    "reset": "Reset",
+    "nudgePx": "Move one pixel",
+    "nudgeStep": "Move a quarter step"
   },
   "layers": {
     "title": "Layers",

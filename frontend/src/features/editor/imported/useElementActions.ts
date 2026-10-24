@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import type { NodeEdit } from './nodeEdit'
 import { useEditor, type ElementOutcome } from '../store'
 import { useEditorUi } from '../ui'
+
+/** تنبيه رفض المعاينة المترجَمة مرة كل ٢٫٥ ثانية مهما كتب/حرّك المستخدم (نفس إيقاع الإطار) — لكل نافذة تنبيهات. */
+const lastRefusal = new WeakMap<object, number>()
 
 /**
  * عمليات العنصر المحدَّد (نسخ/لصق/تكرار/حذف/إضافة/الأب) مع تنبيهاتها — واحدة للوحة الأزرار والطبقات
@@ -18,8 +22,13 @@ export function useElementActions() {
         if (okKey) ui.toast(t(okKey), 'ok')
         return true
       }
-      if (outcome === 'translated') ui.toast(t('editorInline.refused'), 'info')
-      else ui.toast(t(`editorInline.element.fail.${outcome}`), outcome === 'empty' || outcome === 'top' ? 'info' : 'error')
+      if (outcome === 'translated') {
+        const now = Date.now()
+        if (now - (lastRefusal.get(ui) ?? 0) > 2500) {
+          lastRefusal.set(ui, now)
+          ui.toast(t('editorInline.refused'), 'info')
+        }
+      } else ui.toast(t(`editorInline.element.fail.${outcome}`), outcome === 'empty' || outcome === 'top' ? 'info' : 'error')
       return false
     }
     const state = () => useEditor.getState()
@@ -32,6 +41,8 @@ export function useElementActions() {
       addText: () => report(state().addElement('text', t('editorInline.element.newText')), 'editorInline.element.added'),
       addImage: (url: string) => report(state().addElement('image', url), 'editorInline.element.added'),
       selectParent: () => report(state().selectParentElement()),
+      /** تعديل من اللوحة (نص/تنسيق/صورة): من غير تنبيه نجاح — الشريط بيبعت عشرات في الثانية */
+      edit: (edit: NodeEdit, coalesce?: string) => report(state().editElement(edit, coalesce)),
     }
   }, [t, ui])
 }

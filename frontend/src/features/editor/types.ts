@@ -7,6 +7,8 @@
 
 import type { RenderPayload } from '@/features/invite/types'
 
+import type { NodeEdit } from './imported/nodeEdit'
+
 export type EditorMode = 'invitation' | 'template'
 export type Device = 'mobile' | 'tablet' | 'desktop'
 
@@ -62,6 +64,8 @@ export interface FieldSpec {
   placeholder?: string
   feature?: string
   translate?: boolean
+  /** حقل لون بزرار «مسح» (الافتراضي لـ‎bg_color‎ بس) */
+  clearable?: boolean
   translate_units?: boolean
   editor_hidden?: boolean
   group_open?: boolean
@@ -263,6 +267,8 @@ export type ToFrame =
   | { type: 'lb-editor:patch'; id: string; key: string; value: string }
   /** العنصر المحدَّد جوّه قسم مستورد (للعلامة ‎.lb-el-picked‎) */
   | { type: 'lb-editor:element'; id: string | null; slot: string | null }
+  /** تعديل من لوحة العنصر يتطبّق على العقدة الحية فوراً (ما بيكتبش حاجة راجعة) */
+  | { type: 'lb-editor:node'; id: string; slot: string; edit: NodeEdit }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
   /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
   | { type: 'lb-editor:intro' }

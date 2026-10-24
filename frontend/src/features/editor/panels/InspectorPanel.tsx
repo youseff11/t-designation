@@ -5,7 +5,7 @@ import { findBlock } from '../doc'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
-import { ElementHint } from './ElementHint'
+import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
 import { LayoutGroup } from './LayoutGroup'
 
@@ -78,7 +78,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
         />
       )}
       <LayoutGroup block={block} spec={spec} />
-      {block.type === 'custom_html' && <ElementHint block={block} />}
+      {block.type === 'custom_html' && <ElementPanel block={block} />}
       {block.type === 'custom_html' && <LayersGroup block={block} />}
     </>
   )

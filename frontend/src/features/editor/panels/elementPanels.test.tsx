@@ -6,8 +6,12 @@ import { initI18n } from '@/i18n'
 import { resetEditor, useEditor } from '../store'
 import type { Bootstrap, DocBlock } from '../types'
 import { EditorUiProvider } from '../ui'
-import { ElementHint } from './ElementHint'
+import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
+
+vi.mock('../hooks', () => ({
+  useSchema: () => ({ data: { fonts: [{ value: "'Cairo', sans-serif", label: 'Cairo' }] } }),
+}))
 
 const HTML =
   '<div data-move="el-1"><h1 data-move="el-2">العريس والعروسة</h1><img data-move="el-3" src="/m/a.png">' +
@@ -30,7 +34,7 @@ function Panels() {
   const block = useEditor((st) => st.doc.blocks[0])
   return (
     <>
-      <ElementHint block={block} />
+      <ElementPanel block={block} />
       <LayersGroup block={block} />
     </>
   )
@@ -48,7 +52,7 @@ beforeEach(() => {
 })
 afterEach(() => vi.restoreAllMocks())
 
-describe('ElementHint actions', () => {
+describe('ElementPanel actions', () => {
   it('asks to pick an element first, then shows its number and the actions', () => {
     mount()
     expect(screen.getByText(/اضغط على أي حاجة/)).toBeTruthy()
@@ -104,6 +108,112 @@ describe('ElementHint actions', () => {
     fireEvent.click(button('احذف'))
     expect(String(current().props.html)).toBe(HTML)
     expect(screen.getByText(/النسخة المترجَمة/)).toBeTruthy()
+  })
+})
+
+describe('ElementPanel content and style (S4a)', () => {
+  const html = () => String(current().props.html)
+  const field = (container: HTMLElement, key: string) => container.querySelector(`[data-field-key="${key}"]`) as HTMLElement
+  const gear = () => screen.getByRole('button', { name: 'تنسيق العنصر' })
+
+  it('shows the text of a text unit and writes typing back to props.html as one undo step', () => {
+    mount()
+    act(() => s().selectElement('a', 'el-2'))
+    const box = screen.getByPlaceholderText('اكتب محتوى النص هنا') as HTMLTextAreaElement
+    expect(box.value).toBe('العريس والعروسة')
+    fireEvent.change(box, { target: { value: 'عريس' } })
+    fireEvent.change(box, { target: { value: 'عريس وعروسة' } })
+    expect(html()).toContain('>عريس وعروسة</h1>')
+    expect(s().history).toHaveLength(1)
+    expect((screen.getByPlaceholderText('اكتب محتوى النص هنا') as HTMLTextAreaElement).value).toBe('عريس وعروسة')
+  })
+
+  it('keeps the style tools behind the gear, and sizes, weights and colours land in the inline style', () => {
+    const { container } = mount()
+    act(() => s().selectElement('a', 'el-2'))
+    expect(container.querySelector('[data-field-key="font-size"]')).toBeNull()
+    fireEvent.click(gear())
+
+    const size = field(container, 'font-size').querySelector('input[type="number"]') as HTMLInputElement
+    fireEvent.change(size, { target: { value: '34' } })
+    expect(html()).toContain('font-size: 34px')
+
+    fireEvent.change(field(container, 'font-weight').querySelector('select')!, { target: { value: '700' } })
+    expect(html()).toContain('font-weight: 700')
+
+    fireEvent.change(field(container, 'color').querySelector('input[type="text"]')!, { target: { value: '#112233' } })
+    expect(html()).toMatch(/color: (#112233|rgb\(17, 34, 51\))/)
+    fireEvent.click(within(field(container, 'color')).getByRole('button', { name: 'مسح' }))
+    expect(html()).not.toMatch(/[^-]color:/)
+
+    fireEvent.change(field(container, 'font-family').querySelector('select')!, { target: { value: "'Cairo', sans-serif" } })
+    expect(html()).toMatch(/font-family: (&quot;)?Cairo/)
+    // الأسهم مابتأثرش على ما اتكتب قبل كده
+    expect(html()).toContain('font-size: 34px')
+  })
+
+  it('shows the current inline value when the element is selected again', () => {
+    const { container } = mount()
+    act(() => s().selectElement('a', 'el-2'))
+    fireEvent.click(gear())
+    fireEvent.change(field(container, 'font-size').querySelector('input[type="number"]')!, { target: { value: '40' } })
+    act(() => s().selectElement('a', 'el-5'))
+    act(() => s().selectElement('a', 'el-2'))
+    fireEvent.click(gear())
+    expect((field(container, 'font-size').querySelector('input[type="number"]') as HTMLInputElement).value).toBe('40')
+  })
+
+  it('an image gets its source, width, radius and background — never font tools', () => {
+    const { container } = mount()
+    act(() => s().selectElement('a', 'el-3'))
+    expect(screen.queryByPlaceholderText('اكتب محتوى النص هنا')).toBeNull()
+    fireEvent.click(gear())
+    expect(field(container, 'font-size')).toBeNull()
+    expect(field(container, 'font-family')).toBeNull()
+    expect(field(container, 'width')).not.toBeNull()
+    expect(field(container, 'border-radius')).not.toBeNull()
+    expect(screen.getByText(/دي صورة/)).toBeTruthy()
+
+    fireEvent.change(field(container, 'width').querySelector('input[type="number"]')!, { target: { value: '60' } })
+    expect(html()).toContain('width: 60%')
+
+    const src = field(container, 'src').querySelector('input[type="text"]') as HTMLInputElement
+    expect(src.value).toBe('/m/a.png')
+    fireEvent.change(src, { target: { value: '/m/b.png' } })
+    expect(html()).toContain('src="/m/b.png"')
+  })
+
+  it('hide / show toggles display on the element itself', () => {
+    mount()
+    act(() => s().selectElement('a', 'el-4'))
+    fireEvent.click(button('إخفاء'))
+    expect(html()).toMatch(/data-move="el-4"[^>]*display: none|display: none[^>]*data-move="el-4"/)
+    fireEvent.click(button('إظهار'))
+    expect(html()).toBe(HTML)
+  })
+
+  it('nudge buttons move the element by a pixel (a quarter step for cqw slots) and "reset" puts it back', () => {
+    mount()
+    act(() => s().selectElement('a', 'el-3'))
+    expect(screen.getByText(/الموضع \(0px \/ 0px\)/)).toBeTruthy()
+    fireEvent.click(screen.getAllByTitle('تحريك بكسل واحد')[0]) // →
+    fireEvent.click(screen.getAllByTitle('تحريك بكسل واحد')[3]) // ↓
+    expect(current().layout).toEqual({ 'el-3': { dx: 1, dy: 1 } })
+    expect(screen.getByText(/الموضع \(1px \/ 1px\)/)).toBeTruthy()
+    fireEvent.click(button('للأصل'))
+    expect(current().layout).toBeUndefined()
+  })
+
+  it('tells once when a change is refused in the translated preview', () => {
+    mount()
+    act(() => {
+      s().setRenderedLang('en')
+      s().selectElement('a', 'el-2')
+    })
+    fireEvent.change(screen.getByPlaceholderText('اكتب محتوى النص هنا'), { target: { value: 'x' } })
+    fireEvent.change(screen.getByPlaceholderText('اكتب محتوى النص هنا'), { target: { value: 'xy' } })
+    expect(html()).toBe(HTML)
+    expect(screen.getAllByText(/النسخة المترجَمة/)).toHaveLength(1)
   })
 })
 
