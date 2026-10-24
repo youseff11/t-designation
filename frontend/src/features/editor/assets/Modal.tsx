@@ -26,7 +26,8 @@ export function Modal({ label, onClose, wide, library, children }: ModalProps) {
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
-    card.current?.focus()
+    // autoFocus جوّه النافذة (حقل الاسم) أسبق من التركيز على الكارت نفسه
+    if (!card.current?.contains(document.activeElement)) card.current?.focus()
     const onKey = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return
       event.stopPropagation()
