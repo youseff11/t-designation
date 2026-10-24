@@ -1842,9 +1842,12 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
   outline: none !important;
   outline-offset: 0 !important;
 }
+/* ‎animation: none‎ اتشالت من هنا عن قصد: ‎:hover‎ بتتطبّق على **الآباء** كمان، فالقسم كله (‎section.hero‎
+   بأنيميشن ‎pop-in‎ مثلاً) كان بيفقد أنيميشن الدخول بمجرد ما الماوس يقف على أي حاجة جواه، ولما الماوس
+   يسيب الأنيميشن بيرجع يشتغل **من الأول** — فالنص يختفي ويظهر تاني مع كل لمسة (شاهدها المستخدم في فيديو).
+   تثبيت الإزاحة تحت (‎transform !important‎) كفاية عشان أنيميشن الـhover ما يحرّكش العنصر. */
 .lb-doc--editing .lb-custom :where(*):hover {
   transition: none !important;
-  animation: none !important;
   filter: none !important;
 }
 .lb-doc--editing .lb-custom [data-move]:hover {
