@@ -177,6 +177,28 @@ class PreviewTests(EditorApiCase):
         self.assertIs(data["editable"], True)
         self.assertEqual(data["kind"], "invitation")
 
+    def test_editor_payload_carries_dragged_offsets_and_lock_state(self):
+        moved = B.make_block("hero")
+        moved["layout"] = {"kicker": {"dx": 4.5, "dy": -2}}
+        locked = B.make_block("text")
+        locked["locked"] = True
+        data = self.preview(self.doc(moved, locked)).json()
+        by_id = {b["id"]: b for b in data["blocks"]}
+        self.assertEqual(by_id[moved["id"]]["layout"], {"kicker": {"dx": 4.5, "dy": -2}})
+        self.assertIs(by_id[moved["id"]]["locked"], False)
+        self.assertIs(by_id[locked["id"]]["locked"], True)
+        self.assertEqual(by_id[locked["id"]]["layout"], {})
+        # الستايل الدايم للإزاحة بيطلع في css.layout زي ما بيشوفه الضيف
+        self.assertIn('data-move="kicker"', data["css"]["layout"])
+
+    def test_guest_render_never_exposes_editor_only_fields(self):
+        from system.api import invite_render
+        moved = B.make_block("hero")
+        moved["layout"] = {"kicker": {"dx": 4.5, "dy": 0}}
+        payload, _ = invite_render.build_payload(self.doc(moved))
+        self.assertNotIn("layout", payload["blocks"][0])
+        self.assertNotIn("locked", payload["blocks"][0])
+
     def test_guest_render_still_skips_hidden_blocks(self):
         from system.api import invite_render
         hidden = B.make_block("quote", visible=False)
