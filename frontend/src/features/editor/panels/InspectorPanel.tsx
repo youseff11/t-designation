@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { SaveFavoriteButton } from '../assets/FavoritesDialog'
 import { findBlock } from '../doc'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
@@ -29,9 +30,12 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
           <p className="ed-kicker">{t('editor.inspector.selected')}</p>
           <strong>{block.label || spec.label}</strong>
         </div>
-        <button type="button" className="ed-btn ed-btn--sm" onClick={() => setTab('blocks')}>
-          {t('editor.inspector.back')}
-        </button>
+        <div className="ed-section-actions">
+          <SaveFavoriteButton block={block} spec={spec} />
+          <button type="button" className="ed-btn ed-btn--sm" onClick={() => setTab('blocks')}>
+            {t('editor.inspector.back')}
+          </button>
+        </div>
       </div>
 
       <div className="ed-field">

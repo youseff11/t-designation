@@ -88,6 +88,12 @@ interface Actions {
   setSetting: (key: string, value: unknown) => void
   setEventField: (key: keyof EventFields, value: string) => void
 
+  /** المكتبات (C3): بتتحدّث بعد الرفع/القص/الحذف من غير ما تحسب تعديل في المستند */
+  setAssets: (assets: AssetRow[]) => void
+  addAsset: (asset: AssetRow) => void
+  removeAssets: (ids: number[]) => void
+  addFont: (font: FontRow) => void
+
   undo: () => void
   redo: () => void
   save: () => Promise<boolean>
@@ -217,6 +223,14 @@ export const useEditor = create<EditorState>()((set, get) => ({
         rev: state.rev + 1,
       }
     }),
+
+  setAssets: (assets) => set((state) => ({ lib: { ...state.lib, assets } })),
+  addAsset: (asset) =>
+    set((state) => ({ lib: { ...state.lib, assets: [asset, ...state.lib.assets.filter((a) => a.id !== asset.id)] } })),
+  removeAssets: (ids) =>
+    set((state) => ({ lib: { ...state.lib, assets: state.lib.assets.filter((a) => !ids.includes(a.id)) } })),
+  addFont: (font) =>
+    set((state) => ({ lib: { ...state.lib, fonts: [...state.lib.fonts.filter((f) => f.id !== font.id), font] } })),
 
   undo: () =>
     set((state) => {

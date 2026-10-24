@@ -3,7 +3,6 @@ import {
   ColorBody,
   FontBody,
   IconBody,
-  MediaBody,
   NumberBody,
   RangeBody,
   SelectBody,
@@ -12,6 +11,7 @@ import {
   ToggleBody,
 } from './basic'
 import { ListBody } from './ListField'
+import { MediaField } from './media'
 import { registerField } from './registry'
 
 // تسجيل أنواع السكيما. أي نوع مش هنا بيرجع لحقل نص (زي ‎gradient‎).
@@ -30,8 +30,8 @@ registerField('font', FontBody)
 registerField('icon', IconBody)
 registerField('align', AlignBody)
 registerField('toggle', ToggleBody)
-registerField('image', MediaBody)
-registerField('media', MediaBody)
+registerField('image', MediaField)
+registerField('media', MediaField)
 registerField('list', ListBody)
 
 export { FieldRenderer, registerField } from './registry'
