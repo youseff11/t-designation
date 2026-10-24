@@ -5,6 +5,7 @@ import { findBlock } from '../doc'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
+import { ColorGroup } from './ColorGroup'
 import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
 import { LayoutGroup } from './LayoutGroup'
@@ -78,7 +79,10 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
         />
       )}
       <LayoutGroup block={block} spec={spec} />
-      {block.type === 'custom_html' && <ElementPanel block={block} />}
+      {block.type === 'custom_html' && <ColorGroup block={block} />}
+      {block.type === 'custom_html' && (
+        <ElementPanel block={block} countdown={spec.props.filter((f) => f.key === 'countdown_date' || f.key === 'countdown_dir')} />
+      )}
       {block.type === 'custom_html' && <LayersGroup block={block} />}
     </>
   )

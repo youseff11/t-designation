@@ -116,6 +116,10 @@ export function setBlockHtml(doc: EditorDocument, id: string, html: string, drop
   })
 }
 
+/** عدّة ‎props‎ دفعة واحدة في لقطة واحدة (استبدال لون بيمس ‎css‎ و‎html‎ مع بعض). */
+export const setBlockProps = (doc: EditorDocument, id: string, patch: Props) =>
+  mapBlock(doc, id, (block) => ({ ...block, props: { ...block.props, ...patch } }))
+
 export const setBlockStyle = (doc: EditorDocument, id: string, key: string, value: unknown) =>
   mapBlock(doc, id, (block) => ({ ...block, style: { ...block.style, [key]: value } }))
 

@@ -6,7 +6,8 @@ import { isPxSlot } from '../frame/interactions'
 import { inspect, nameOf, nodeInfo } from '../imported/ops'
 import { useElementActions } from '../imported/useElementActions'
 import { useEditor } from '../store'
-import type { DocBlock } from '../types'
+import { FieldRenderer } from '../fields'
+import type { DocBlock, FieldSpec } from '../types'
 import { ElementFields } from './ElementFields'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -30,15 +31,16 @@ const NUDGES: [string, number, number][] = [
 
 /**
  * العنصر المحدَّد جوّه قسم مستورد: اسمه، محتواه وتنسيقه (S4a)، موضعه، إضافة نص/صورة، نسخ/لصق/تكرار،
- * الأب، الإخفاء والحذف (S3). الخريطة والعدّاد والفيديو والألوان في S4b.
+ * الأب، الإخفاء والحذف (S3)، والخريطة والفيديو (S4b) وموعد العدّاد واتجاهه لو العنصر جزء من عدّاد القالب.
  */
-export function ElementPanel({ block }: { block: DocBlock }) {
+export function ElementPanel({ block, countdown = [] }: { block: DocBlock; countdown?: FieldSpec[] }) {
   const { t } = useTranslation()
   const selEl = useEditor((s) => (s.selEl?.blockId === block.id ? s.selEl : null))
   const clear = useEditor((s) => s.selectElement)
   const hasClip = useEditor((s) => s.clip !== null)
   const nudge = useEditor((s) => s.nudgeLayout)
   const setLayout = useEditor((s) => s.setLayout)
+  const setProp = useEditor((s) => s.setProp)
   const actions = useElementActions()
   const [picking, setPicking] = useState(false)
 
@@ -51,7 +53,7 @@ export function ElementPanel({ block }: { block: DocBlock }) {
   const px = isPxSlot(slot)
   const step = px ? 1 : 0.25
   const name = info
-    ? info.kind === 'image' || info.kind === 'video'
+    ? info.kind === 'image' || info.kind === 'video' || info.kind === 'map'
       ? t(`editorInline.layers.kind.${info.kind}`)
       : t(`editorInline.layers.name.${nameOf(info.tag)}`)
     : ''
@@ -70,6 +72,15 @@ export function ElementPanel({ block }: { block: DocBlock }) {
             </p>
 
             {info && <ElementFields key={selEl.slot} blockId={block.id} slot={selEl.slot} info={info} />}
+
+            {info?.countdown && countdown.length > 0 && (
+              <>
+                <p className="ed-hint">{t('editorInline.element.countdown.hint')}</p>
+                {countdown.map((spec) => (
+                  <FieldRenderer key={spec.key} spec={spec} value={block.props[spec.key]} onChange={(v) => setProp(block.id, spec.key, v)} />
+                ))}
+              </>
+            )}
 
             <Row label={t(px ? 'editorInline.element.positionPx' : 'editorInline.element.positionPct', { dx: pos.dx, dy: pos.dy })}>
               <div className="ed-nudge">

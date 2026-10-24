@@ -134,7 +134,25 @@
     "positionPct": "Position ({{dx}}% / {{dy}}%)",
     "reset": "Reset",
     "nudgePx": "Move one pixel",
-    "nudgeStep": "Move a quarter step"
+    "nudgeStep": "Move a quarter step",
+    "video": {
+      "hint": "This is a video — pick another one from the library; its place and styling stay as they are.",
+      "swap": "Replace the video"
+    },
+    "map": {
+      "hint": "The map is selected for editing; drag it or change its link and size here. Google zoom is off inside the editor.",
+      "url": "Map link",
+      "placeholder": "Google Maps link, embed code or coordinates",
+      "apply": "Change the map link",
+      "empty": "Enter the map link first.",
+      "help": "That link cannot be shown inside a frame. Open the place in Google Maps → Share → \"Embed a map\" and paste the code, or paste coordinates like: 29.990823, 31.130000",
+      "changed": "Map link changed.",
+      "width": "Map width",
+      "height": "Map height"
+    },
+    "countdown": {
+      "hint": "This is an imported countdown — you can change its date and the order of its boxes, and pick any label from the layers to edit its text or font."
+    }
   },
   "layers": {
     "title": "Layers",
@@ -164,5 +182,10 @@
       "button": "Button",
       "element": "Element"
     }
+  },
+  "colors": {
+    "title": "Section colours",
+    "empty": "No colours are written in this section's styles.",
+    "hint": "Change a colour here and it changes everywhere it is used inside the section."
   }
 }

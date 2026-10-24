@@ -1,5 +1,5 @@
 import type { FromFrame, PreviewPayload } from '../types'
-import { applyNodeEdit, type NodeEdit } from './nodeEdit'
+import { applyNodeEdit, videoIn, type NodeEdit } from './nodeEdit'
 import { numberElements } from './numbering'
 import { serializeCustom } from './serialize'
 
@@ -71,7 +71,13 @@ export function markPicked(picked: { id: string; slot: string } | null, root: Pa
 export function patchNode(id: string, slot: string, edit: NodeEdit, root: ParentNode = document) {
   const section = Array.from(root.querySelectorAll('[data-block]')).find((n) => n.getAttribute('data-block') === id)
   const custom = section?.querySelector(ROOT)
-  if (custom) applyNodeEdit(custom, slot, edit)
+  if (!custom || !applyNodeEdit(custom, slot, edit)) return
+  // فيديو بمصدر جديد: المتصفح مابيعيدش التحميل لوحده من غير ‎load()‎
+  if (edit.kind === 'video-src') {
+    const node = Array.from(custom.querySelectorAll('[data-move]')).find((n) => n.getAttribute('data-move') === slot)
+    const video = node && videoIn(node)
+    if (video instanceof HTMLVideoElement) video.load()
+  }
 }
 
 /** العنصر المحدَّد برّه الشاشة بالكامل (اتحدّد من الطبقات مثلاً)؟ نمرّر له. اللي ظاهر مابنحرّكوش. */

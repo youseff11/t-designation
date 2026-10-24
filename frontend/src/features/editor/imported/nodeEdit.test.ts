@@ -153,3 +153,58 @@ describe('css helpers', () => {
     expect(fontKey(`"Cairo",  'Tajawal', sans-serif`)).toBe('cairo, tajawal, sans-serif')
   })
 })
+
+describe('video, map and countdown (S4b)', () => {
+  const MEDIA =
+    '<div data-move="el-1"><video data-move="el-2" src="/m/old.mp4" data-src="/m/old.mp4"><source src="/m/old.mp4" srcset="/m/old.mp4 1x"></video></div>' +
+    '<div class="tn-elem" data-field-width-value="300" data-field-width-res-320-value="280" data-move="el-3">' +
+    '<iframe src="https://www.google.com/maps?q=1,2&output=embed"></iframe></div>' +
+    '<div id="countdownContainer" data-move="el-4"><span class="cd-days" data-move="el-5">10</span></div>'
+
+  it('swaps a video source everywhere it is written (video, data-src, <source>)', () => {
+    const root = parse(MEDIA)
+    expect(applyNodeEdit(root, 'el-1', { kind: 'video-src', value: '/m/new.mp4' })).toBe(true)
+    const video = root.querySelector('video')!
+    expect(video.getAttribute('src')).toBe('/m/new.mp4')
+    expect(video.getAttribute('preload')).toBe('auto')
+    expect(video.hasAttribute('data-src')).toBe(false)
+    expect(video.querySelector('source')?.getAttribute('src')).toBe('/m/new.mp4')
+    expect(video.querySelector('source')?.hasAttribute('srcset')).toBe(false)
+    expect(applyNodeEdit(root, 'el-1', { kind: 'video-src', value: '' })).toBe(false) // ما بنمسحش الفيديو
+  })
+
+  it('changes the map link, and sizes its Tilda box (data attributes, responsive ones, !important)', () => {
+    const root = parse(MEDIA)
+    expect(applyNodeEdit(root, 'el-3', { kind: 'map-src', value: 'https://www.google.com/maps?q=3,4&output=embed' })).toBe(true)
+    expect(root.querySelector('iframe')?.getAttribute('src')).toContain('q=3,4')
+
+    applyNodeEdit(root, 'el-3', { kind: 'map-size', prop: 'width', value: 420 })
+    const box = root.querySelector('.tn-elem') as HTMLElement
+    expect(box.getAttribute('data-field-width-value')).toBe('420')
+    expect(box.getAttribute('data-lb-map-width')).toBe('420')
+    expect(box.getAttribute('data-field-width-res-320-value')).toBe('420')
+    expect(box.style.getPropertyValue('width')).toBe('420px')
+    expect(box.style.getPropertyPriority('width')).toBe('important')
+    expect((root.querySelector('iframe') as HTMLElement).style.getPropertyValue('width')).toBe('100%')
+    // حد أدنى وأقصى
+    applyNodeEdit(root, 'el-3', { kind: 'map-size', prop: 'height', value: 5000 })
+    expect(box.getAttribute('data-lb-map-height')).toBe('900')
+  })
+
+  it('rejects map edits on something that is not a Google map', () => {
+    const root = parse(MEDIA)
+    expect(applyNodeEdit(root, 'el-4', { kind: 'map-src', value: 'https://www.google.com/maps?q=1,2&output=embed' })).toBe(false)
+    expect(applyNodeEdit(root, 'el-2', { kind: 'map-size', prop: 'width', value: 300 })).toBe(false)
+  })
+
+  it('readNode knows the kinds, the map size (default 335) and countdown parts', () => {
+    const root = parse(MEDIA)
+    expect(readNode(root, 'el-2')).toMatchObject({ kind: 'video', videoSrc: '/m/old.mp4' })
+    const map = readNode(root, 'el-3')!
+    expect(map.kind).toBe('map')
+    expect(map.map).toEqual({ src: 'https://www.google.com/maps?q=1,2&output=embed', width: 300, height: 335 })
+    expect(readNode(root, 'el-5')?.countdown).toBe(true)
+    expect(readNode(root, 'el-4')?.countdown).toBe(true)
+    expect(readNode(root, 'el-1')?.countdown).toBe(false)
+  })
+})

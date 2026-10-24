@@ -122,6 +122,8 @@ interface Actions {
   toggleVisible: (id: string) => void
   rename: (id: string, label: string) => void
   setProp: (id: string, key: string, value: unknown) => void
+  /** عدّة خصائص مع بعض (خطوة تراجع واحدة) — ‎coalesce‎ للتغيير المتتالي (منتقي اللون) */
+  setProps: (id: string, patch: Record<string, unknown>, coalesce?: string) => void
   setStyle: (id: string, key: string, value: unknown) => void
   setTheme: (key: string, value: unknown) => void
   setSetting: (key: string, value: unknown) => void
@@ -375,6 +377,8 @@ export const useEditor = create<EditorState>()((set, get) => ({
     get().commit((d) => ops.setBlockProp(d, id, key, value), { coalesce: `prop:${id}:${key}` })
     if (typeof value === 'string') set((s) => ({ lastText: { seq: (s.lastText?.seq ?? 0) + 1, id, key, value } }))
   },
+  setProps: (id, patch, coalesce) =>
+    get().commit((d) => ops.setBlockProps(d, id, patch), coalesce ? { coalesce } : undefined),
   setStyle: (id, key, value) => get().commit((d) => ops.setBlockStyle(d, id, key, value), { coalesce: `style:${id}:${key}` }),
   setTheme: (key, value) => get().commit((d) => ops.setTheme(d, key, value), { coalesce: `theme:${key}` }),
   setSetting: (key, value) => get().commit((d) => ops.setSetting(d, key, value), { coalesce: `setting:${key}` }),

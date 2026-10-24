@@ -1,14 +1,17 @@
 import { useId, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { AssetLibrary } from '../assets/AssetLibrary'
 import { FieldRenderer } from '../fields'
 import { useSchema } from '../hooks'
 import { cssNumber, fontKey, lineRatio, toHex } from '../imported/css'
 import { computedValue } from '../imported/live'
+import { mapEmbedUrl } from '../imported/map'
 import type { NodeInfo, StyleProp } from '../imported/nodeEdit'
 import { useElementActions } from '../imported/useElementActions'
 import { useEditor } from '../store'
 import type { FieldSpec, FieldType } from '../types'
+import { useEditorUi } from '../ui'
 
 const field = (key: string, type: FieldType, label: string, extra: Partial<FieldSpec> = {}): FieldSpec => ({
   key,
@@ -31,7 +34,7 @@ const ALIGNS = ['', 'right', 'center', 'left']
 
 /**
  * حقول تنسيق العنصر حسب نوعه: النص والأشكال بيقبلوا الخط والألوان والمسافات، والصورة بتاخد مقاسها
- * واستدارتها ولون خلفيتها بس (الخط مالوش تأثير عليها)، والفيديو لون الخلفية.
+ * واستدارتها ولون خلفيتها بس (الخط مالوش تأثير عليها)، والفيديو لون الخلفية، والخريطة مالهاش تنسيق (مقاسها ورابطها بأدواتها).
  */
 function styleFields(t: (key: string) => string, kind: NodeInfo['kind']): StyleField[] {
   const k = (key: string) => t(`editorInline.element.fields.${key}`)
@@ -50,6 +53,7 @@ function styleFields(t: (key: string) => string, kind: NodeInfo['kind']): StyleF
     unit: '',
     spec: field(prop, 'select', label, { options: values.map((v) => ({ value: v, label: k(`${names}.${v || 'inherit'}`) })) }),
   })
+  if (kind === 'map') return []
   if (kind === 'image') {
     return [
       color('background-color', k('background')),
@@ -76,8 +80,81 @@ interface Props {
   info: NodeInfo
 }
 
+/** الفيديو: تبديل المصدر من المكتبة مع الحفاظ على مكانه وتنسيقه. */
+function VideoTools({ slot }: { slot: string }) {
+  const { t } = useTranslation()
+  const actions = useElementActions()
+  const [picking, setPicking] = useState(false)
+  return (
+    <>
+      <p className="ed-hint">{t('editorInline.element.video.hint')}</p>
+      <button type="button" className="ed-btn ed-btn--sm ed-btn--block" onClick={() => setPicking(true)}>
+        {t('editorInline.element.video.swap')}
+      </button>
+      {picking && (
+        <AssetLibrary
+          kind="video"
+          onPick={(url) => url && actions.edit({ kind: 'video-src', value: url }, `el-video:${slot}`)}
+          onClose={() => setPicking(false)}
+        />
+      )}
+    </>
+  )
+}
+
+/** الخريطة: الرابط (أي شكل — بيتحوّل لرابط تضمين) والمقاس بالبكسل. */
+function MapTools({ slot, map }: { slot: string; map: NonNullable<NodeInfo['map']> }) {
+  const { t } = useTranslation()
+  const ui = useEditorUi()
+  const actions = useElementActions()
+  const [url, setUrl] = useState(map.src)
+  const urlId = useId()
+
+  const apply = () => {
+    const value = url.trim()
+    if (!value) return ui.toast(t('editorInline.element.map.empty'), 'error')
+    const embed = mapEmbedUrl(value)
+    if (!embed) return ui.toast(t('editorInline.element.map.help'), 'error')
+    if (actions.edit({ kind: 'map-src', value: embed }, `el-map:${slot}`)) {
+      setUrl(embed)
+      ui.toast(t('editorInline.element.map.changed'), 'ok')
+    }
+  }
+
+  return (
+    <>
+      <p className="ed-hint">{t('editorInline.element.map.hint')}</p>
+      <div className="ed-field">
+        <label htmlFor={urlId}>
+          <span>{t('editorInline.element.map.url')}</span>
+        </label>
+        <input
+          id={urlId}
+          className="ed-input"
+          type="url"
+          dir="ltr"
+          value={url}
+          placeholder={t('editorInline.element.map.placeholder')}
+          onChange={(e) => setUrl(e.target.value)}
+        />
+      </div>
+      <button type="button" className="ed-btn ed-btn--sm ed-btn--block" onClick={apply}>
+        {t('editorInline.element.map.apply')}
+      </button>
+      {(['width', 'height'] as const).map((prop) => (
+        <FieldRenderer
+          key={prop}
+          spec={field(`map-${prop}`, 'range', t(`editorInline.element.map.${prop}`), { min: 120, max: 900, step: 1, unit: 'px' })}
+          value={map[prop]}
+          onChange={(next) => actions.edit({ kind: 'map-size', prop, value: Number(next) || 0 }, `el-map-${prop}:${slot}`)}
+        />
+      ))}
+    </>
+  )
+}
+
 /**
- * محتوى العنصر المحدَّد وتنسيقه (S4a): نص + ترس تنسيق، أو (لصورة) مصدرها بالمُنتقي والقص ومقاسها.
+ * محتوى العنصر المحدَّد وتنسيقه (S4): نص + ترس تنسيق، صورة (مُنتقي وقص ومقاس)، فيديو (تبديل)، خريطة (رابط ومقاس).
  * كل تعديل بيروح للـstore (‎editElement‎) فيتحفظ في ‎props.html‎ وبيتطبّق على المعاينة لحظياً.
  */
 export function ElementFields({ blockId, slot, info }: Props) {
@@ -139,7 +216,7 @@ export function ElementFields({ blockId, slot, info }: Props) {
     </div>
   )
 
-  const gearButton = (
+  const gearButton = fields.length > 0 && (
     <button
       type="button"
       className="ed-font-gear"
@@ -173,13 +250,15 @@ export function ElementFields({ blockId, slot, info }: Props) {
           {panel}
         </div>
       ) : (
-        <div className="ed-field" data-field-key="element-style">
-          <label>
-            <span>{t('editorInline.element.fields.style')}</span>
-          </label>
-          <div className="ed-ctrl-line">{gearButton}</div>
-          {panel}
-        </div>
+        gearButton && (
+          <div className="ed-field" data-field-key="element-style">
+            <label>
+              <span>{t('editorInline.element.fields.style')}</span>
+            </label>
+            <div className="ed-ctrl-line">{gearButton}</div>
+            {panel}
+          </div>
+        )
       )}
 
       {info.kind === 'image' && (
@@ -189,6 +268,8 @@ export function ElementFields({ blockId, slot, info }: Props) {
           onChange={(next) => actions.edit({ kind: 'src', value: String(next ?? '') }, `el-src:${slot}`)}
         />
       )}
+      {info.kind === 'video' && <VideoTools slot={slot} />}
+      {info.map && <MapTools key={info.map.src} slot={slot} map={info.map} />}
     </>
   )
 }

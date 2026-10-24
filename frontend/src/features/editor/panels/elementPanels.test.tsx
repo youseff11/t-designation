@@ -4,10 +4,30 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { initI18n } from '@/i18n'
 
 import { resetEditor, useEditor } from '../store'
-import type { Bootstrap, DocBlock } from '../types'
+import type { Bootstrap, DocBlock, FieldSpec } from '../types'
 import { EditorUiProvider } from '../ui'
+import { ColorGroup } from './ColorGroup'
 import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
+
+vi.mock('../assets/AssetLibrary', async () => {
+  const { createElement } = await import('react')
+  return {
+    AssetLibrary: ({ kind, onPick, onClose }: { kind: string; onPick?: (url: string, meta: unknown) => void; onClose: () => void }) =>
+      createElement(
+        'button',
+        {
+          type: 'button',
+          'data-library': kind,
+          onClick: () => {
+            onPick?.(kind === 'video' ? '/m/new.mp4' : '/m/new.png', {})
+            onClose()
+          },
+        },
+        'اختيار من المكتبة',
+      ),
+  }
+})
 
 vi.mock('../hooks', () => ({
   useSchema: () => ({ data: { fonts: [{ value: "'Cairo', sans-serif", label: 'Cairo' }] } }),
@@ -38,6 +58,11 @@ function Panels() {
       <LayersGroup block={block} />
     </>
   )
+}
+/** ‎ColorGroup‎ مربوط بالستور (بيتحدّث مع الدوكيومنت زي الحقيقي). */
+function ColorProbe() {
+  const block = useEditor((st) => st.doc.blocks[0])
+  return <ColorGroup block={block} />
 }
 const mount = () => render(<Panels />, { wrapper: EditorUiProvider })
 const button = (name: string | RegExp) => screen.getByRole('button', { name })
@@ -214,6 +239,109 @@ describe('ElementPanel content and style (S4a)', () => {
     fireEvent.change(screen.getByPlaceholderText('اكتب محتوى النص هنا'), { target: { value: 'xy' } })
     expect(html()).toBe(HTML)
     expect(screen.getAllByText(/النسخة المترجَمة/)).toHaveLength(1)
+  })
+})
+
+describe('S4b: video, map, countdown and section colours', () => {
+  const MEDIA =
+    '<div data-move="el-1"><video data-move="el-2" src="/m/old.mp4"></video></div>' +
+    '<div class="tn-elem" data-move="el-3"><iframe src="https://www.google.com/maps?q=1,2&output=embed"></iframe></div>' +
+    '<div id="countdownContainer" data-move="el-4"><span class="cd-days" data-move="el-5">10</span></div>'
+  const CSS = '.a{color:#C1272D;background:#ffffff}.b{border-color:#c1272d}'
+  const countdown = [
+    { key: 'countdown_date', label: 'موعد العدّاد', type: 'datetime', default: '', group: '' },
+    { key: 'countdown_dir', label: 'اتجاه الخانات', type: 'select', default: '', group: '', options: [{ value: '', label: 'زي ما هو' }, { value: 'rtl', label: 'يمين لشمال' }] },
+  ] as FieldSpec[]
+  const html = () => String(current().props.html)
+
+  beforeEach(() => {
+    s().load({
+      ...boot(),
+      document: { version: 1, theme: {}, settings: {}, blocks: [{ ...section(), props: { html: MEDIA, css: CSS } }] },
+    })
+    s().select('a', 'preview')
+  })
+
+  it('swaps a video through the library without touching its place', () => {
+    mount()
+    act(() => s().selectElement('a', 'el-2'))
+    fireEvent.click(button('بدّل الفيديو'))
+    expect(document.querySelector('[data-library="video"]')).not.toBeNull()
+    fireEvent.click(screen.getByText('اختيار من المكتبة'))
+    expect(html()).toContain('src="/m/new.mp4"')
+    expect(html()).toContain('preload="auto"')
+    expect(s().history).toHaveLength(1)
+  })
+
+  it('changes a map link from any pasted form and resizes the map; a bad link is explained, not applied', () => {
+    const { container } = mount()
+    act(() => s().selectElement('a', 'el-3'))
+    expect(container.querySelector('[data-field-key="element-text"]')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'تنسيق العنصر' })).toBeNull() // الخريطة مالهاش ترس
+
+    const url = screen.getByPlaceholderText(/Google Maps/) as HTMLInputElement
+    fireEvent.change(url, { target: { value: 'https://maps.app.goo.gl/xyz' } })
+    fireEvent.click(button('تغيير رابط الخريطة'))
+    expect(html()).toContain('q=1,2')
+    expect(screen.getByText(/الرابط ده مايتعرضش/)).toBeTruthy()
+
+    fireEvent.change(url, { target: { value: '29.99, 31.13' } })
+    fireEvent.click(button('تغيير رابط الخريطة'))
+    expect(html()).toContain('q=29.99,31.13')
+    expect(html()).toContain('z=16')
+    expect((screen.getByPlaceholderText(/Google Maps/) as HTMLInputElement).value).toContain('output=embed')
+
+    const width = container.querySelector('[data-field-key="map-width"] input[type="number"]') as HTMLInputElement
+    expect(width.value).toBe('335')
+    fireEvent.change(width, { target: { value: '500' } })
+    expect(html()).toContain('data-lb-map-width="500"')
+  })
+
+  it('shows the countdown date and direction for a countdown part, bound to the section props', () => {
+    function WithCountdown() {
+      const block = useEditor((st) => st.doc.blocks[0])
+      return <ElementPanel block={block} countdown={countdown} />
+    }
+    const { container } = render(<WithCountdown />, { wrapper: EditorUiProvider })
+    act(() => s().selectElement('a', 'el-2')) // فيديو: مفيش عدّاد
+    expect(screen.queryByText(/عدّاد مستورد/)).toBeNull()
+    act(() => s().selectElement('a', 'el-5'))
+    expect(screen.getByText(/عدّاد مستورد/)).toBeTruthy()
+    const date = container.querySelector('[data-field-key="countdown_date"] input') as HTMLInputElement
+    fireEvent.change(date, { target: { value: '2027-03-27T20:00' } })
+    expect(current().props.countdown_date).toBe('2027-03-27T20:00')
+    fireEvent.change(container.querySelector('[data-field-key="countdown_dir"] select')!, { target: { value: 'rtl' } })
+    expect(current().props.countdown_dir).toBe('rtl')
+  })
+
+  it('lists the section colours (merged by value) and swaps one everywhere as a single undo step', () => {
+    const { container } = render(<ColorProbe />, { wrapper: EditorUiProvider })
+    const swatches = () => Array.from(container.querySelectorAll('.ed-swatch-hex')).map((n) => n.textContent)
+    expect(swatches()).toEqual(['#c1272d', '#ffffff'])
+    const first = container.querySelector('.ed-swatch input') as HTMLInputElement
+    fireEvent.change(first, { target: { value: '#112233' } })
+    fireEvent.change(first, { target: { value: '#445566' } })
+    expect(String(current().props.css)).toBe('.a{color:#445566;background:#ffffff}.b{border-color:#445566}')
+    expect(s().history).toHaveLength(1)
+    s().undo()
+    expect(String(current().props.css)).toBe(CSS)
+  })
+
+  it('keeps the swatch row in place while the colour is being dragged, and re-reads after an undo', () => {
+    const { container } = render(<ColorProbe />, { wrapper: EditorUiProvider })
+    const input = () => container.querySelector('.ed-swatch input') as HTMLInputElement
+    const before = input()
+    fireEvent.change(input(), { target: { value: '#112233' } })
+    expect(input()).toBe(before) // نفس العنصر — مش اتبدّل تحت إيد المستخدم
+    expect(container.querySelector('.ed-swatch-hex')?.textContent).toBe('#112233')
+    act(() => s().undo())
+    expect(container.querySelector('.ed-swatch-hex')?.textContent).toBe('#c1272d')
+  })
+
+  it('says so when the section has no colours', () => {
+    s().load({ ...boot(), document: { version: 1, theme: {}, settings: {}, blocks: [{ ...section(), props: { html: '<p>x</p>', css: '' } }] } })
+    render(<ColorProbe />, { wrapper: EditorUiProvider })
+    expect(screen.getByText(/مفيش ألوان مكتوبة/)).toBeTruthy()
   })
 })
 
