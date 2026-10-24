@@ -135,6 +135,13 @@ class BootstrapTests(EditorApiCase):
         value = self.client.get(f"{BASE}/invitations/{self.inv.pk}/").json()["fields"]["eventDate"]
         self.assertRegex(value, r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$")
 
+    def test_invitation_bootstrap_lists_status_choices(self):
+        data = self.client.get(f"{BASE}/invitations/{self.inv.pk}/").json()
+        self.assertEqual(
+            [(c["value"], c["label"]) for c in data["statusChoices"]],
+            [(value, str(label)) for value, label in Invitation.STATUS_CHOICES])
+        self.assertIn(data["fields"]["status"], [c["value"] for c in data["statusChoices"]])
+
     def test_template_bootstrap(self):
         data = self.client.get(f"{BASE}/templates/{self.template.pk}/").json()
         self.assertEqual(data["mode"], "template")
@@ -206,6 +213,47 @@ class PreviewTests(EditorApiCase):
         path = f"{BASE}/invitations/{self.inv.pk}/preview/"
         self.assertError(self.post(path, {}), 400, "invalid_document")
         self.assertError(self.post(path, {"document": [1]}), 400, "invalid_document")
+
+    def hero_names(self, **extra):
+        """اسمَي العروسين اللي المعاينة رسمتهم (الهيرو بيورّثهم من بيانات المناسبة)."""
+        hero = B.make_block("hero", props={"name_one": "", "name_two": ""})
+        props = self.preview(self.doc(hero), **extra).json()["blocks"][0]["props"]
+        return props["name_one"], props["name_two"]
+
+    def test_preview_reflects_unsaved_event_fields_without_saving(self):
+        self.assertEqual(self.hero_names(), ("ليلى", "أحمد"))
+        self.assertEqual(
+            self.hero_names(fields={"nameOne": "سارة", "nameTwo": "خالد"}), ("سارة", "خالد"))
+        self.inv.refresh_from_db()
+        self.assertEqual((self.inv.name_one, self.inv.name_two), ("ليلى", "أحمد"))
+
+    def test_preview_event_date_and_venue_flow_into_the_payload(self):
+        details = B.make_block("location", props={"venue": "", "address": ""})
+        data = self.preview(self.doc(details), fields={
+            "venue": "الفندق الكبير", "address": "الإسكندرية", "eventDate": "2031-02-03T19:30",
+        }).json()
+        self.assertEqual(data["blocks"][0]["props"]["venue"], "الفندق الكبير")
+        self.assertEqual(data["blocks"][0]["props"]["address"], "الإسكندرية")
+        self.inv.refresh_from_db()
+        self.assertEqual(self.inv.venue, "القاعة")
+        self.assertIsNone(self.inv.event_date)
+
+    def test_preview_ignores_invalid_fields_and_keeps_the_saved_value(self):
+        response = self.preview(self.doc(B.make_block("text")), fields={
+            "nameOne": "سارة", "eventDate": "not-a-date", "slug": "ab", "status": "bogus",
+        })
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        names = self.hero_names(fields={"nameOne": "سارة", "eventDate": "not-a-date", "slug": "ab"})
+        self.assertEqual(names[0], "سارة")          # الصالح اتطبّق، الغلط اتجاهل
+        self.inv.refresh_from_db()
+        self.assertEqual(self.inv.status, "published")
+
+    def test_preview_fields_are_optional_and_unknown_keys_are_ignored(self):
+        self.assertEqual(self.hero_names(fields=None), ("ليلى", "أحمد"))
+        self.assertEqual(self.hero_names(fields="oops"), ("ليلى", "أحمد"))
+        self.assertEqual(self.hero_names(fields={"plan": 99, "customer": 5}), ("ليلى", "أحمد"))
+        self.inv.refresh_from_db()
+        self.assertEqual(self.inv.plan_id, self.plan.pk)
 
     def test_template_preview_never_flags_features(self):
         path = f"{BASE}/templates/{self.template.pk}/preview/"

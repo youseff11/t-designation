@@ -8,7 +8,8 @@
 
 * ‎GET  editor/schema/‎                         السكيما (ثابتة لكل نشر، ETag)
 * ‎GET  editor/invitations/<id>/‎               كل اللي المحرر محتاجه ليفتح دعوة
-* ‎POST editor/invitations/<id>/preview/‎       ‎{document, lang}‎ → حمولة العرض (‎editable‎)
+* ‎POST editor/invitations/<id>/preview/‎       ‎{document, lang, fields?}‎ → حمولة العرض (‎editable‎)
+  ‎fields‎ اختيارية: بيانات المناسبة غير المحفوظة بتتطبّق على نسخة ذاكرة بس
 * ‎POST editor/invitations/<id>/save/‎          ‎{document, fields}‎
 * ‎GET/POST editor/templates/<id>/[preview|save]/‎   نفس الشيء لمحرر القالب (‎{document}‎ بس)
 
@@ -108,6 +109,25 @@ def _form_values(invitation: Invitation) -> dict:
     return values
 
 
+def _status_choices() -> list[dict]:
+    return [{"value": value, "label": str(label)}
+            for value, label in Invitation.STATUS_CHOICES]
+
+
+def _overlay_unsaved_fields(invitation: Invitation, sent) -> None:
+    """يطبّق بيانات المناسبة غير المحفوظة على نسخة الذاكرة من الدعوة (من غير حفظ)
+    عشان المعاينة تعكس اللي بيتكتب في تبويب «البيانات» قبل الحفظ.
+
+    التحقق بنفس ‎InvitationSettingsForm‎ بس الأخطاء هنا بتتجاهل: ‎ModelForm‎ بيكتب
+    القيم الصالحة بس على النسخة (‎construct_instance‎)، والحقل الغلط بيفضل بقيمته
+    المحفوظة — المعاينة ماتفضلش فاضية لمجرد إن تاريخ لسه بيتكتب."""
+    if not isinstance(sent, dict):
+        return
+    data = _form_values(invitation)
+    data.update({k: v for k, v in snake_keys(sent).items() if k in FORM_FIELDS})
+    InvitationSettingsForm(data, instance=invitation).is_valid()
+
+
 def _document_in(body: dict) -> dict:
     document = body.get("document")
     if not isinstance(document, dict):
@@ -157,6 +177,7 @@ def invitation_editor(request, pk):
         "title": invitation.title,
         "document": document,
         "fields": {to_camel(k): v for k, v in _form_values(invitation).items()},
+        "statusChoices": _status_choices(),
         "features": sorted(invitation.allowed_features),
         "assets": _assets(invitation),
         **_libraries(),
@@ -175,7 +196,11 @@ def invitation_editor(request, pk):
 
 @staff_api("POST")
 def invitation_preview(request, pk):
-    return _preview(request, json_body(request), invitation=_invitation(pk))
+    body = json_body(request)
+    invitation = _invitation(pk)
+    # نسخة الذاكرة بس — ماحدش بيستدعي ‎save()‎ على الدعوة في المعاينة
+    _overlay_unsaved_fields(invitation, body.get("fields"))
+    return _preview(request, body, invitation=invitation)
 
 
 @staff_api("POST")
