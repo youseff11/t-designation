@@ -5,6 +5,8 @@
  * المحرك نفسه مش واجهة، والمستند بيرجع للسيرفر كما هو. الأغلفة (‎Bootstrap‎ …) camelCase.
  */
 
+import type { RenderPayload } from '@/features/invite/types'
+
 export type EditorMode = 'invitation' | 'template'
 export type Device = 'mobile' | 'tablet' | 'desktop'
 
@@ -205,6 +207,11 @@ export interface SaveResponse {
   clientFollowupUrl: string
 }
 
+/** حمولة المعاينة = حمولة عارض الدعوة من غير الميتا والموسيقى والتمرير (مالهمش لازمة في المحرر). */
+export type PreviewPayload = Omit<RenderPayload, 'head' | 'music' | 'scroll' | 'cta' | 'demo' | 'slug'> & {
+  editable: true
+}
+
 /** رسائل الـiframe ↔ الصفحة الأم (‎postMessage‎، نفس الأصل) */
 export const FRAME_PREFIX = 'lb-editor:'
 export type ToFrame =
@@ -213,3 +220,5 @@ export type ToFrame =
 export type FromFrame =
   | { type: 'lb-editor:ready' }
   | { type: 'lb-editor:select'; id: string }
+  /** اختصارات لوحة المفاتيح اللي ضُغطت جوّه الـiframe (مابتوصلش للصفحة الأم) */
+  | { type: 'lb-editor:key'; key: string; shiftKey: boolean }

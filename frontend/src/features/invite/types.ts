@@ -76,6 +76,9 @@ export interface BlockData {
   /** «كود متقدّم» — HTML متنقّى من السيرفر (ومعاه سكربتات القسم) */
   code: string
   rsvp?: RsvpExtras
+  /** معاينة المحرر بس: القسم مخفي (بيظهر باهت) / خارج باقة العميل (بيتعلّم بتنبيه) */
+  hidden?: boolean
+  gated?: boolean
 }
 
 export interface IntroCode {

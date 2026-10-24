@@ -1,4 +1,7 @@
 {
+  "editor": {
+    "gate": "This section is not included in the client's current plan"
+  },
   "map": {
     "title": "Location map",
     "empty": "Add the map link from the editor"

@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 
+import { useInvite } from '../context'
 import { Raw } from '../Raw'
 import { parseStyle } from '../style'
 import { DividerOrnament } from '../svg'
@@ -20,6 +21,12 @@ export function Tail({ block }: { block: BlockData }) {
   return <Raw html={block.overlays + block.code} />
 }
 
+/** تنبيه المحرر: القسم مفعّل في المستند بس خارج باقة العميل (الحمولة بتبعت ‎gated‎ للمحرر بس). */
+export function Gate({ block }: { block: BlockData }) {
+  const { t } = useInvite()
+  return block.gated ? <div className="lb-gate">{t('editor.gate')}</div> : null
+}
+
 /**
  * هيكل القسم العادي (‎<section>‎ ثم ‎.lb-inner‎) — نفس اللي بتكتبه قوالب
  * ‎templates/blocks/*.html‎. ‎attrs‎ جاهزة من السيرفر (الكلاسات والمتغيّرات).
@@ -37,6 +44,7 @@ export function Frame({ block, children, style, ornaments = true, innerClass = '
       {ornaments && <DividerOrnament variant={block.dividerTop} slot="ornament_top" />}
       <div className={innerClass}>{children}</div>
       {ornaments && <DividerOrnament variant={block.dividerBottom} slot="ornament_bottom" />}
+      <Gate block={block} />
       <Tail block={block} />
     </section>
   )

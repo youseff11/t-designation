@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import logging
 
+from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -132,6 +133,7 @@ def _preview(request, body: dict, *, invitation=None, template=None) -> dict:
     )
     payload["kind"] = "invitation" if invitation is not None else "template"
     payload["editable"] = True
+    payload["siteName"] = settings.SITE_NAME
     return payload
 
 

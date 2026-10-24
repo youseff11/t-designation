@@ -5,7 +5,7 @@ import { ApiError, api } from '@/api/client'
 import { useInvite } from '../context'
 import { Lines } from '../Lines'
 import { DividerOrnament } from '../svg'
-import { Tail } from './Frame'
+import { Gate, Tail } from './Frame'
 import { parseStyle } from '../style'
 import type { BlockData, RsvpExtras } from '../types'
 
@@ -421,6 +421,7 @@ export function Rsvp({ block }: { block: BlockData }) {
         )}
       </div>
       <DividerOrnament variant={block.dividerBottom} slot="ornament_bottom" />
+      <Gate block={block} />
       <Tail block={block} />
     </section>
   )

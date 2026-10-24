@@ -36,7 +36,10 @@ export default defineConfig(({ command }) => ({
     manifest: 'manifest.json',
     // entry منفصل لصفحة الدعوة: الضيف على موبايل ومايحتاجش لوحة التحكم ولا الراوتر
     // ولا react-query/i18next. Django بيختار الـentry بوسم {% vite_assets 'src/…' %}.
-    rollupOptions: { input: { main: 'src/main.tsx', invite: 'src/invite-main.tsx' } },
+    // editorFrame: إطار معاينة المحرر (iframe) — بيستخدم مكوّنات الدعوة من غير حزمة الضيف.
+    rollupOptions: {
+      input: { main: 'src/main.tsx', invite: 'src/invite-main.tsx', editorFrame: 'src/editor-frame-main.tsx' },
+    },
   },
   test: {
     environment: 'jsdom',

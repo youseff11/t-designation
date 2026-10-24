@@ -6,6 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from system.api import invite_page
+from system.api.editor_page import editor_frame
 from system.spa import spa_shell
 
 urlpatterns = [
@@ -14,6 +15,8 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     # واجهة JSON لتطبيق React
     path('api/v1/', include('system.api.urls')),
+    # إطار معاينة محرر React (iframe) — مسار ثابت على الجذر
+    path('editor-frame/', editor_frame, name='editor_frame'),
     path('', include('system.urls')),
 ]
 

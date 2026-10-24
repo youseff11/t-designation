@@ -4,6 +4,7 @@ import { Layout } from '@/components/Layout'
 import { RequireStaff } from '@/components/RequireStaff'
 import { DashboardLayout } from '@/features/dashboard/DashboardLayout'
 import { dashboardRoutes } from '@/features/dashboard/routes'
+import { editorRoutes } from '@/features/editor/routes'
 import { guestDashboardRoutes, guestPublicRoutes } from '@/features/guests/routes'
 import { inviteRoutes } from '@/features/invite/routes'
 import { publicRoutes } from '@/features/public/routes'
@@ -37,6 +38,8 @@ export const routes: RouteObject[] = [
         element: <DashboardLayout />,
         children: [{ index: true, element: <DashboardPage /> }, ...dashboardRoutes, ...guestDashboardRoutes],
       },
+      // المحرر البصري: ملء الشاشة من غير غلاف اللوحة
+      ...editorRoutes,
     ],
   },
   // صفحات مستقلة من غير أي ترويسة: الدعوة، القاعة، متابعة العميل، التصريح
