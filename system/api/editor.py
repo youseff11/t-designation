@@ -11,6 +11,7 @@
 * ‎POST editor/invitations/<id>/preview/‎       ‎{document, lang, fields?}‎ → حمولة العرض (‎editable‎)
   ‎fields‎ اختيارية: بيانات المناسبة غير المحفوظة بتتطبّق على نسخة ذاكرة بس
 * ‎POST editor/invitations/<id>/save/‎          ‎{document, fields}‎
+* ‎POST editor/invitations/<id>/translations/‎  ‎{document, fields?}‎ → صفوف تبويب الترجمة
 * ‎GET/POST editor/templates/<id>/[preview|save]/‎   نفس الشيء لمحرر القالب (‎{document}‎ بس)
 
 الأصول والمفضلة والخطوط (C3) في ‎editor_assets.py‎.
@@ -28,6 +29,7 @@ from django.urls import path, reverse
 from django.utils import timezone
 
 from .. import blocks as blocks_engine
+from .. import renderer as R
 from .. import views as legacy
 from ..forms import InvitationSettingsForm
 from ..models import Asset, IntroVideo, Invitation, MusicTrack, Template
@@ -157,6 +159,22 @@ def _preview(request, body: dict, *, invitation=None, template=None) -> dict:
     return payload
 
 
+def _translations(body: dict, *, invitation=None) -> dict:
+    """صفوف تبويب الترجمة: نفس ‎translatable_entries‎ اللي العارض بيقرا مفاتيحها
+    (فمفيش مفتاح مكتوب ومش ظاهر)، على المستند الحالي وبيانات المناسبة غير المحفوظة.
+    محرر القالب مالوش بيانات مناسبة (القالب بيعرض أسماء تجريبية) فمفيش صفوف ‎data.*‎."""
+    document = blocks_engine.normalize_document(_document_in(body))
+    data: dict = {}
+    if invitation is not None:
+        _overlay_unsaved_fields(invitation, body.get("fields"))
+        data = R.build_data_context(invitation)
+    return {
+        "baseLang": blocks_engine.base_language(document),
+        "altLang": blocks_engine.alt_language(document),
+        "entries": blocks_engine.translatable_entries(document, data),
+    }
+
+
 # ---------------------------------------------------------------- الدعوة
 def _invitation(pk) -> Invitation:
     return get_object_or_404(
@@ -201,6 +219,11 @@ def invitation_preview(request, pk):
     # نسخة الذاكرة بس — ماحدش بيستدعي ‎save()‎ على الدعوة في المعاينة
     _overlay_unsaved_fields(invitation, body.get("fields"))
     return _preview(request, body, invitation=invitation)
+
+
+@staff_api("POST")
+def invitation_translations(request, pk):
+    return _translations(json_body(request), invitation=_invitation(pk))
 
 
 @staff_api("POST")
@@ -272,6 +295,12 @@ def template_preview(request, pk):
 
 
 @staff_api("POST")
+def template_translations(request, pk):
+    _template(pk)
+    return _translations(json_body(request))
+
+
+@staff_api("POST")
 def template_save(request, pk):
     template = _template(pk)
     document = blocks_engine.normalize_document(_document_in(json_body(request)))
@@ -296,9 +325,13 @@ urlpatterns = [
          name="api_editor_invitation_preview"),
     path("editor/invitations/<int:pk>/save/", invitation_save,
          name="api_editor_invitation_save"),
+    path("editor/invitations/<int:pk>/translations/", invitation_translations,
+         name="api_editor_invitation_translations"),
     path("editor/templates/<int:pk>/", template_editor, name="api_editor_template"),
     path("editor/templates/<int:pk>/preview/", template_preview,
          name="api_editor_template_preview"),
     path("editor/templates/<int:pk>/save/", template_save,
          name="api_editor_template_save"),
+    path("editor/templates/<int:pk>/translations/", template_translations,
+         name="api_editor_template_translations"),
 ]

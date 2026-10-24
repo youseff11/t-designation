@@ -25,9 +25,11 @@ def _endpoints(inv, tpl):
         ("GET", f"{BASE}/invitations/{inv}/"),
         ("POST", f"{BASE}/invitations/{inv}/preview/"),
         ("POST", f"{BASE}/invitations/{inv}/save/"),
+        ("POST", f"{BASE}/invitations/{inv}/translations/"),
         ("GET", f"{BASE}/templates/{tpl}/"),
         ("POST", f"{BASE}/templates/{tpl}/preview/"),
         ("POST", f"{BASE}/templates/{tpl}/save/"),
+        ("POST", f"{BASE}/templates/{tpl}/translations/"),
     ]
 
 
@@ -377,3 +379,59 @@ class FramePageTests(TestCase):
         self.assertEqual(self.client.get("/editor-frame/").status_code, 403)
         self.client.force_login(self.plain)
         self.assertEqual(self.client.get("/editor-frame/").status_code, 403)
+
+
+# ---------------------------------------------------------------- تبويب الترجمة
+class TranslationRowsTests(EditorApiCase):
+    def rows(self, document, **extra):
+        response = self.post(f"{BASE}/invitations/{self.inv.pk}/translations/",
+                             {"document": document, **extra})
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        return response.json()
+
+    def doc(self, *blocks, **theme):
+        document = B.empty_document()
+        document["blocks"] = list(blocks)
+        document["theme"].update(theme)
+        return document
+
+    def test_rows_use_the_engine_keys_in_document_order(self):
+        text = B.make_block("text", props={"heading": "أهلاً", "eyebrow": "", "body": ""})
+        data = self.rows(self.doc(text))
+        keys = [r["key"] for r in data["entries"]]
+        self.assertIn(f"{text['id']}.heading", keys)
+        self.assertNotIn(f"{text['id']}.eyebrow", keys)        # الفاضي مايتترجمش
+        row = next(r for r in data["entries"] if r["key"] == f"{text['id']}.heading")
+        self.assertEqual(row["value"], "أهلاً")
+        self.assertEqual(row["group"], "قسم نصي")
+        self.assertEqual((data["baseLang"], data["altLang"]), ("ar", "en"))
+
+    def test_event_data_rows_use_the_unsaved_fields(self):
+        data = self.rows(self.doc(), fields={"nameOne": "سلمى", "venue": "الفندق"})
+        by_key = {r["key"]: r["value"] for r in data["entries"]}
+        self.assertEqual(by_key["data.name_one"], "سلمى")
+        self.assertEqual(by_key["data.venue"], "الفندق")
+        self.assertEqual(by_key["data.name_two"], "أحمد")
+        self.inv.refresh_from_db()
+        self.assertEqual(self.inv.name_one, "ليلى")             # مفيش حفظ
+
+    def test_english_base_flips_the_alt_language(self):
+        data = self.rows(self.doc(base_lang="en"))
+        self.assertEqual((data["baseLang"], data["altLang"]), ("en", "ar"))
+
+    def test_list_items_get_indexed_keys(self):
+        agenda = B.make_block("agenda", props={"items": [{"time": "7", "title": "الزفة", "icon": "music"}]})
+        keys = [r["key"] for r in self.rows(self.doc(agenda))["entries"]]
+        self.assertIn(f"{agenda['id']}.items.0.title", keys)
+
+    def test_template_editor_has_no_event_data_rows(self):
+        path = f"{BASE}/templates/{self.template.pk}/translations/"
+        response = self.post(path, {"document": self.doc(B.make_block("text"))})
+        self.assertEqual(response.status_code, 200)
+        keys = [r["key"] for r in response.json()["entries"]]
+        self.assertTrue(keys)
+        self.assertFalse([k for k in keys if k.startswith("data.")])
+
+    def test_document_is_required(self):
+        path = f"{BASE}/invitations/{self.inv.pk}/translations/"
+        self.assertError(self.post(path, {}), 400, "invalid_document")
