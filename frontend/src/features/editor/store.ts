@@ -56,6 +56,8 @@ interface Data {
 
   selected: string | null
   selectSource: SelectSource
+  /** العنصر المحدَّد جوّه قسم مستورد (‎el-N‎) — بيتصفّر لما القسم يتغيّر */
+  selEl: { blockId: string; slot: string } | null
   tab: Tab
   device: Device
   /** لغة المعاينة المطلوبة؛ فاضي = لغة الدعوة الأساسية */
@@ -83,6 +85,9 @@ interface Actions {
   /** نقطة التعديل الوحيدة للمستند: بتحفظ لقطة للتراجع وتعلّم «غير محفوظ» */
   commit: (change: (doc: EditorDocument) => EditorDocument, opts?: { coalesce?: string }) => void
   select: (id: string | null, source?: SelectSource) => void
+  selectElement: (blockId: string, slot: string | null) => void
+  /** ‎props.html‎ لقسم مستورد من المعاينة: ‎silent‎ للترقيم التلقائي (من غير خطوة تراجع) */
+  setHtml: (id: string, html: string, silent?: boolean) => void
   setTab: (tab: Tab) => void
   setDevice: (device: Device) => void
   setPreviewLang: (lang: string) => void
@@ -141,6 +146,7 @@ const initial = (): Data => ({
   fieldErrors: {},
   selected: null,
   selectSource: null,
+  selEl: null,
   tab: 'blocks',
   device: 'mobile',
   previewLang: '',
@@ -211,10 +217,30 @@ export const useEditor = create<EditorState>()((set, get) => ({
     })
   },
 
+  selectElement: (blockId, slot) =>
+    set({ selected: blockId, selectSource: 'preview', selEl: slot ? { blockId, slot } : null }),
+
+  setHtml: (id, html, silent = false) => {
+    const state = get()
+    const block = findBlock(state.doc, id)
+    // المعاينة المترجَمة نصها مترجَم — مانكتبش منها فوق الأصل
+    const translated = state.renderedLang !== '' && state.renderedLang !== baseLangOf(state.doc)
+    if (!block || block.props.html === html || translated) return
+    if (!silent) return state.commit((d) => ops.setBlockProp(d, id, 'html', html), { coalesce: `html:${id}` })
+    // ترقيم تلقائي: بيترسّب في النص من غير ما يبقى خطوة تراجع (مش تعديل من المستخدم)
+    set({
+      doc: ops.setBlockProp(state.doc, id, 'html', html),
+      saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
+      rev: state.rev + 1,
+      contentRev: state.contentRev + 1,
+    })
+  },
+
   select: (id, source = 'list') =>
     set((state) => ({
       selected: id,
       selectSource: id ? source : null,
+      selEl: state.selEl && state.selEl.blockId === id ? state.selEl : null,
       tab: id && source === 'list' ? 'inspector' : state.tab,
     })),
   setTab: (tab) => set({ tab }),

@@ -126,6 +126,10 @@ describe('FrameApp', () => {
     fireEvent.keyDown(document.body, { key: 's', ctrlKey: true })
     fireEvent.keyDown(document.body, { key: 'Delete' })
     fireEvent.keyDown(document.body, { key: 'a' })
+    // Ctrl+A / Ctrl+C / Ctrl+V جوّه نص بيتكتب لازم تفضل للمتصفح
+    const selectAll = new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true, cancelable: true })
+    document.body.dispatchEvent(selectAll)
+    expect(selectAll.defaultPrevented).toBe(false)
     expect(posted).toEqual([
       { type: 'lb-editor:key', key: 's', shiftKey: false },
       { type: 'lb-editor:key', key: 'Delete', shiftKey: false },

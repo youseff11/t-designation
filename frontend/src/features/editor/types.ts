@@ -261,6 +261,8 @@ export type ToFrame =
   | { type: 'lb-editor:render'; payload: unknown; selected: string | null }
   /** نص اتكتب في خانة باللوحة: يتحط في المعاينة لحظياً قبل ما رد السيرفر يوصل */
   | { type: 'lb-editor:patch'; id: string; key: string; value: string }
+  /** العنصر المحدَّد جوّه قسم مستورد (للعلامة ‎.lb-el-picked‎) */
+  | { type: 'lb-editor:element'; id: string | null; slot: string | null }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
   /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
   | { type: 'lb-editor:intro' }
@@ -273,5 +275,9 @@ export type FromFrame =
   | { type: 'lb-editor:text'; id: string; key: string; value: string }
   /** سحب عنصر بالماوس: الإزاحة النهائية بوحدة cqw */
   | { type: 'lb-editor:layout'; id: string; slot: string; dx: number; dy: number }
+  /** عنصر اتحدّد جوّه قسم مستورد */
+  | { type: 'lb-editor:element'; id: string; slot: string }
+  /** ‎props.html‎ الجديد لقسم مستورد من الـDOM الحي. ‎silent‎ = ترقيم تلقائي (مش خطوة تراجع) */
+  | { type: 'lb-editor:html'; id: string; value: string; silent: boolean }
   /** الكتابة اتمنعت لأن المعاينة معروضة بالنسخة المترجَمة */
   | { type: 'lb-editor:refused' }

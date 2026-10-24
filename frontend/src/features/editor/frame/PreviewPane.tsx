@@ -45,6 +45,8 @@ export function PreviewPane({ onKey }: Props) {
       else if (message.type === 'lb-editor:select') useEditor.getState().select(message.id, 'preview')
       else if (message.type === 'lb-editor:key') onKeyRef.current(message.key, message.shiftKey)
       else if (message.type === 'lb-editor:text') useEditor.getState().setProp(message.id, message.key, message.value)
+      else if (message.type === 'lb-editor:element') useEditor.getState().selectElement(message.id, message.slot)
+      else if (message.type === 'lb-editor:html') useEditor.getState().setHtml(message.id, message.value, message.silent)
       else if (message.type === 'lb-editor:layout')
         useEditor.getState().setLayout(message.id, message.slot, message.dx, message.dy)
       else if (message.type === 'lb-editor:refused') {
@@ -88,6 +90,12 @@ export function PreviewPane({ onKey }: Props) {
       controller.abort()
     }
   }, [rev, ready, t, ui])
+
+  // العنصر المحدَّد جوّه قسم مستورد → علامته في الإطار
+  const selEl = useEditor((s) => s.selEl)
+  useEffect(() => {
+    sendToFrame(frame.current, { type: 'lb-editor:element', id: selEl?.blockId ?? null, slot: selEl?.slot ?? null })
+  }, [selEl, ready])
 
   // نص اتكتب في خانة باللوحة → يظهر في المعاينة في نفس اللحظة (من غير ما نستنى السيرفر).
   // مانبعتش لو المعاينة معروضة بالنسخة المترجَمة: النص اللي هناك مش نص الدعوة.

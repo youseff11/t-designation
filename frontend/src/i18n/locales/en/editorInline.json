@@ -61,5 +61,11 @@
     "styleFontHelp": "Leave empty to use the invitation's font.",
     "styleSize": "Font size",
     "styleSizeHelp": "Zero = same size as the original text."
+  },
+  "element": {
+    "title": "Selected element",
+    "hint": "Click anything inside the imported section — a word, an image, a button — to select it. Double-click text to type.",
+    "slot": "Element id",
+    "clear": "Deselect element"
   }
 }

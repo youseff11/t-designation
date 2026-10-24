@@ -9,7 +9,10 @@ import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
+import { installImported, markPicked, prepareImported } from '../imported/frame'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
+
+const EDITOR_MOD_KEYS = new Set(['s', 'z', 'y'])
 
 /** ‎data-block‎ للقسم اللي اتضغط عليه (أو أقرب أب ليه). */
 export function blockIdAt(target: EventTarget | null): string | null {
@@ -48,6 +51,8 @@ export function FrameApp() {
   // آخر حمولة (لتفاعلات السحب والكتابة) + رد اتأجّل لأن المستخدم بيكتب في نص دلوقتي
   const payloadRef = useRef<PreviewPayload | null>(null)
   const pending = useRef<Extract<ToFrame, { type: 'lb-editor:render' }> | null>(null)
+  // العنصر المحدَّد جوّه قسم مستورد (علامته بتتعاد بعد كل رسمة)
+  const picked = useRef<{ id: string; slot: string } | null>(null)
 
   function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
     const next = message.payload as PreviewPayload
@@ -71,6 +76,9 @@ export function FrameApp() {
         }
         pending.current = null
         applyRender(message)
+      } else if (message.type === 'lb-editor:element') {
+        picked.current = message.id && message.slot ? { id: message.id, slot: message.slot } : null
+        markPicked(picked.current)
       } else if (message.type === 'lb-editor:patch') {
         patchText(message.id, message.key, message.value)
       } else if (message.type === 'lb-editor:intro') {
@@ -102,9 +110,18 @@ export function FrameApp() {
       }, 0)
     document.addEventListener('focusout', flush)
     const stop = installInteractions({ payload: () => payloadRef.current, send: sendToParent })
+    const stopImported = installImported({
+      payload: () => payloadRef.current,
+      send: sendToParent,
+      onPick: (next) => {
+        picked.current = next
+        markPicked(next)
+      },
+    })
     return () => {
       document.removeEventListener('focusout', flush)
       stop()
+      stopImported()
     }
   }, [])
 
@@ -119,6 +136,8 @@ export function FrameApp() {
     const onKey = (event: KeyboardEvent) => {
       const typing = event.target instanceof HTMLElement && event.target.isContentEditable
       const mod = event.ctrlKey || event.metaKey
+      // اختصارات المحرر بس (حفظ/تراجع/إعادة) — باقي Ctrl+حرف (تحديد الكل، نسخ، لصق…) للمتصفح جوّه النص
+      if (mod && !EDITOR_MOD_KEYS.has(event.key.toLowerCase())) return
       if (!mod && (typing || !['Delete', 'Backspace', 'Escape'].includes(event.key))) return
       if (mod) event.preventDefault()
       sendToParent({ type: 'lb-editor:key', key: event.key, shiftKey: event.shiftKey })
@@ -159,6 +178,8 @@ export function FrameApp() {
     document.querySelectorAll('.lb-anim').forEach((node) => node.classList.add('is-in')) // من غير حركة ظهور في المحرر
     payloadRef.current = payload
     markEditable(payload.blocks)
+    prepareImported(payload, sendToParent)
+    markPicked(picked.current)
     clearDragVars() // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق)
     markSelected(state.selected)
   }, [payload, state?.selected])

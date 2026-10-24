@@ -5,6 +5,7 @@ import { findBlock } from '../doc'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
+import { ElementHint } from './ElementHint'
 import { LayoutGroup } from './LayoutGroup'
 
 /** خصائص القسم المحدَّد: الاسم، ثم مجموعات حقول المحتوى ثم التنسيق — كلها مبنية من السكيما. */
@@ -76,6 +77,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
         />
       )}
       <LayoutGroup block={block} spec={spec} />
+      {block.type === 'custom_html' && <ElementHint block={block} />}
     </>
   )
 }
