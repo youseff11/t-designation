@@ -258,6 +258,20 @@ describe('DataPanel', () => {
       // الرابط المرفوض ماينفعش يفضل في الستور وإلا كل حفظة جاية هتفشل بسببه
       expect(s().fields?.slug).toBe('laila-ahmed')
       expect(slugBox().value).toBe('laila-ahmed')
+      // ومفيش تعديلات غير محفوظة: ماينفعش تظهر «غير محفوظ» ولا يطلع تحذير الخروج
+      expect(s().saveStatus).toBe('saved')
+    })
+
+    it('keeps the unsaved marker when other edits were already waiting to be saved', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      save.mockRejectedValue(new ApiError(400, 'validation_error', 'تحقق', { slug: 'محجوز' }))
+      ui(<DataPanel />)
+      fireEvent.change(input('nameOne'), { target: { value: 'سارة' } })
+      fireEvent.change(slugBox(), { target: { value: 'taken' } })
+      apply()
+      await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('محجوز'))
+      expect(s().saveStatus).not.toBe('saved')
+      expect(s().fields?.nameOne).toBe('سارة')
     })
 
     it('waits for a save already in flight instead of dropping the change', async () => {

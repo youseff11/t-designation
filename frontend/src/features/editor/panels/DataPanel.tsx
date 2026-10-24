@@ -131,6 +131,8 @@ function SlugRow() {
     if (!ui.confirm(t('editorSettings.data.slug.confirm', { slug: value }))) return
 
     const previous = slug
+    const before = useEditor.getState()
+    const wasClean = before.saveStatus === 'saved'
     setApplying(true)
     setEventField('slug', value)
     const ok = await saveWhenIdle()
@@ -140,6 +142,8 @@ function SlugRow() {
     setFailure(useEditor.getState().fieldErrors.slug ?? '')
     setEventField('slug', previous)
     setDraft(previous)
+    // كان كل حاجة محفوظة قبل المحاولة ومفيش تعديل تاني دخل (تغيير + رجوع = تعديلين): مفيش حاجة غير محفوظة
+    if (wasClean && useEditor.getState().rev === before.rev + 2) useEditor.setState({ saveStatus: 'saved' })
   }
 
   const error = failure || storeError
