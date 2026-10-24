@@ -106,8 +106,19 @@ export interface DocBlock {
   label?: string
   props: Props
   style: Props
-  /** إزاحات النصوص (C4) — بيتحفظ كما هو */
-  layout?: Props
+  /** إزاحات العناصر (cqw) اللي المستخدم سحبها: ‎{slot: {dx, dy}}‎ */
+  layout?: Record<string, LayoutPos>
+}
+
+export interface LayoutPos {
+  dx: number
+  dy: number
+}
+
+/** تنسيق نص مترجَم لوحده (خط/حجم) — ‎{مفتاح النص: {font?, size?}}‎ */
+export interface TranslationStyle {
+  font?: string
+  size?: number
 }
 
 export interface EditorDocument {
@@ -115,6 +126,9 @@ export interface EditorDocument {
   theme: Props
   settings: Props
   blocks: DocBlock[]
+  /** الترجمة اليدوية: ‎{لغة: {مفتاح: نص}}‎ — شكل المفتاح بيطابق ‎blocks.translatable_entries‎ */
+  i18n?: Record<string, Record<string, string>>
+  i18n_style?: Record<string, Record<string, TranslationStyle>>
   [extra: string]: unknown
 }
 
@@ -188,6 +202,19 @@ export interface FontRow {
   style: string
 }
 
+export interface TranslationRow {
+  key: string
+  label: string
+  value: string
+  group: string
+}
+
+export interface TranslationRows {
+  baseLang: 'ar' | 'en'
+  altLang: 'ar' | 'en'
+  entries: TranslationRow[]
+}
+
 export interface EditorMeta {
   slug: string
   status: string
@@ -232,6 +259,8 @@ export type PreviewPayload = Omit<RenderPayload, 'head' | 'music' | 'scroll' | '
 export const FRAME_PREFIX = 'lb-editor:'
 export type ToFrame =
   | { type: 'lb-editor:render'; payload: unknown; selected: string | null }
+  /** نص اتكتب في خانة باللوحة: يتحط في المعاينة لحظياً قبل ما رد السيرفر يوصل */
+  | { type: 'lb-editor:patch'; id: string; key: string; value: string }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
   /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
   | { type: 'lb-editor:intro' }
@@ -240,3 +269,9 @@ export type FromFrame =
   | { type: 'lb-editor:select'; id: string }
   /** اختصارات لوحة المفاتيح اللي ضُغطت جوّه الـiframe (مابتوصلش للصفحة الأم) */
   | { type: 'lb-editor:key'; key: string; shiftKey: boolean }
+  /** كتابة مباشرة جوّه المعاينة */
+  | { type: 'lb-editor:text'; id: string; key: string; value: string }
+  /** سحب عنصر بالماوس: الإزاحة النهائية بوحدة cqw */
+  | { type: 'lb-editor:layout'; id: string; slot: string; dx: number; dy: number }
+  /** الكتابة اتمنعت لأن المعاينة معروضة بالنسخة المترجَمة */
+  | { type: 'lb-editor:refused' }

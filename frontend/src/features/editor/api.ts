@@ -1,5 +1,5 @@
 import { api } from '@/api/client'
-import type { Bootstrap, EditorDocument, EditorMode, EditorSchema, EventFields, PreviewPayload, SaveResponse } from './types'
+import type { Bootstrap, EditorDocument, EditorMode, EditorSchema, EventFields, PreviewPayload, SaveResponse, TranslationRows } from './types'
 
 const base = (mode: EditorMode, id: number) => `/editor/${mode === 'invitation' ? 'invitations' : 'templates'}/${id}`
 
@@ -26,4 +26,18 @@ export const postSave = (mode: EditorMode, id: number, document: EditorDocument,
   api<SaveResponse>(`${base(mode, id)}/save/`, {
     method: 'POST',
     body: mode === 'invitation' ? { document, fields } : { document },
+  })
+
+/** صفوف تبويب الترجمة للمستند الحالي (وبيانات المناسبة غير المحفوظة لمحرر الدعوة). */
+export const fetchTranslations = (
+  mode: EditorMode,
+  id: number,
+  document: EditorDocument,
+  fields?: EventFields | null,
+  signal?: AbortSignal,
+) =>
+  api<TranslationRows>(`${base(mode, id)}/translations/`, {
+    method: 'POST',
+    body: mode === 'invitation' && fields ? { document, fields } : { document },
+    signal,
   })

@@ -1,4 +1,4 @@
-import type { BlockSpec, DocBlock, EditorDocument, FieldSpec, Props } from './types'
+import type { BlockSpec, DocBlock, EditorDocument, FieldSpec, LayoutPos, Props, TranslationStyle } from './types'
 
 /**
  * عمليات المستند — دوال نقية (من غير تعديل في المكان) عشان التاريخ يبقى لقطات رخيصة.
@@ -42,8 +42,9 @@ function mapBlock(doc: EditorDocument, id: string, change: (block: DocBlock) => 
   let touched = false
   const blocks = doc.blocks.map((block) => {
     if (block.id !== id) return block
-    touched = true
-    return change(block)
+    const next = change(block)
+    if (next !== block) touched = true
+    return next
   })
   return touched ? withBlocks(doc, blocks) : doc
 }
@@ -110,3 +111,83 @@ export const setSetting = (doc: EditorDocument, key: string, value: unknown): Ed
   ...doc,
   settings: { ...doc.settings, [key]: value },
 })
+
+// ---------------------------------------------------------------- مواضع العناصر (layout)
+const round2 = (n: number) => Math.round(n * 100) / 100
+
+/** يكتب إزاحة عنصر (cqw). الصفر في الاتنين = رجوع للأصل فبنشيله، والـlayout الفاضي بيتشال كله. */
+export function setLayout(doc: EditorDocument, id: string, slot: string, dx: number, dy: number): EditorDocument {
+  return mapBlock(doc, id, (block) => {
+    const layout: Record<string, LayoutPos> = { ...block.layout }
+    const pos = { dx: round2(dx), dy: round2(dy) }
+    if (!pos.dx && !pos.dy) delete layout[slot]
+    else layout[slot] = pos
+    const next = { ...block }
+    if (Object.keys(layout).length) next.layout = layout
+    else delete next.layout
+    return next
+  })
+}
+
+export function nudgeLayout(doc: EditorDocument, id: string, slot: string, ddx: number, ddy: number): EditorDocument {
+  const current = findBlock(doc, id)?.layout?.[slot] ?? { dx: 0, dy: 0 }
+  return setLayout(doc, id, slot, current.dx + ddx, current.dy + ddy)
+}
+
+export function resetLayout(doc: EditorDocument, id: string): EditorDocument {
+  return mapBlock(doc, id, (block) => {
+    if (!block.layout) return block
+    const next = { ...block }
+    delete next.layout
+    return next
+  })
+}
+
+// ---------------------------------------------------------------- الترجمة اليدوية
+/** نص مترجَم لمفتاح. الفاضي = «مترجمش» فبنشيل المفتاح (زي ‎_clean_i18n‎ على السيرفر). */
+export function setTranslation(doc: EditorDocument, lang: string, key: string, value: string): EditorDocument {
+  const table = { ...doc.i18n?.[lang] }
+  const text = value.trim()
+  if (text) table[key] = text
+  else delete table[key]
+  return { ...doc, i18n: { ...doc.i18n, [lang]: table } }
+}
+
+/** تنسيق (خط/حجم) نص مترجَم. الفاضي أو صفر = «زي الأصل» فبنشيله، والمفتاح الفاضي بيتشال. */
+export function setTranslationStyle(
+  doc: EditorDocument,
+  lang: string,
+  key: string,
+  field: keyof TranslationStyle,
+  value: string | number,
+): EditorDocument {
+  const table = { ...doc.i18n_style?.[lang] }
+  const row: TranslationStyle = { ...table[key] }
+  if (value === '' || value === null || value === undefined || (field === 'size' && !Number(value))) delete row[field]
+  else if (field === 'size') row.size = Number(value)
+  else row.font = String(value)
+  if (Object.keys(row).length) table[key] = row
+  else delete table[key]
+  return { ...doc, i18n_style: { ...doc.i18n_style, [lang]: table } }
+}
+
+export function clearTranslation(doc: EditorDocument, lang: string): EditorDocument {
+  return { ...doc, i18n: { ...doc.i18n, [lang]: {} }, i18n_style: { ...doc.i18n_style, [lang]: {} } }
+}
+
+/**
+ * يشيل مفاتيح الترجمة والتنسيق اللي نصها اتغيّر أو اتمسح (ميّتة) — من غيره العدّاد بيكدّب وزرار اللغة
+ * بيظهر للضيف بسبب ترجمة لقسم اتحذف. بيرجّع نفس الكائن لو مفيش حاجة تتشال.
+ */
+export function pruneTranslations(doc: EditorDocument, lang: string, live: ReadonlySet<string>): EditorDocument {
+  const text = doc.i18n?.[lang] ?? {}
+  const styles = doc.i18n_style?.[lang] ?? {}
+  const deadText = Object.keys(text).filter((k) => !live.has(k))
+  const deadStyle = Object.keys(styles).filter((k) => !live.has(k))
+  if (!deadText.length && !deadStyle.length) return doc
+  return {
+    ...doc,
+    i18n: { ...doc.i18n, [lang]: Object.fromEntries(Object.entries(text).filter(([k]) => live.has(k))) },
+    i18n_style: { ...doc.i18n_style, [lang]: Object.fromEntries(Object.entries(styles).filter(([k]) => live.has(k))) },
+  }
+}

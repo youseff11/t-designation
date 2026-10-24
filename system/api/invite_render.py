@@ -229,6 +229,9 @@ def _block_payload(block: dict, ctx: dict, extras: dict, *, invitation, guest,
     if editable:
         record["hidden"] = bool(ctx["hidden"])
         record["gated"] = bool(ctx["gated"])
+        # المعاينة بتسحب النصوص: محتاجة الإزاحات الحالية وهل القسم مقفول
+        record["locked"] = bool(block.get("locked"))
+        record["layout"] = block.get("layout") or {}
 
     if btype == "hero":
         out_props["buttons"] = _buttons(props.get("buttons"), data)

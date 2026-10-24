@@ -79,6 +79,9 @@ export interface BlockData {
   /** معاينة المحرر بس: القسم مخفي (بيظهر باهت) / خارج باقة العميل (بيتعلّم بتنبيه) */
   hidden?: boolean
   gated?: boolean
+  locked?: boolean
+  /** إزاحات العناصر اللي اتسحبت (المعاينة بس) */
+  layout?: Record<string, { dx: number; dy: number }>
 }
 
 export interface IntroCode {

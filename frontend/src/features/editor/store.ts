@@ -4,6 +4,7 @@ import { ApiError } from '@/api/client'
 
 import { postSave } from './api'
 import * as ops from './doc'
+import { findBlock } from './doc'
 import type {
   AssetRow,
   BlockSpec,
@@ -17,6 +18,7 @@ import type {
   FontRow,
   IntroRow,
   MusicRow,
+  TranslationStyle,
 } from './types'
 
 export const HISTORY_MAX = 60
@@ -58,6 +60,10 @@ interface Data {
   device: Device
   /** لغة المعاينة المطلوبة؛ فاضي = لغة الدعوة الأساسية */
   previewLang: string
+  /** اللغة اللي المعاينة معروضة بيها فعلاً (من رد السيرفر) — فاضي قبل أول رد */
+  renderedLang: string
+  /** آخر نص اتكتب في خانة باللوحة: المعاينة بتحطه لحظياً قبل رد السيرفر */
+  lastText: { seq: number; id: string; key: string; value: string } | null
 
   history: EditorDocument[]
   future: EditorDocument[]
@@ -78,6 +84,7 @@ interface Actions {
   setTab: (tab: Tab) => void
   setDevice: (device: Device) => void
   setPreviewLang: (lang: string) => void
+  setRenderedLang: (lang: string) => void
 
   addBlock: (spec: BlockSpec) => boolean
   duplicate: (id: string) => boolean
@@ -90,6 +97,18 @@ interface Actions {
   setTheme: (key: string, value: unknown) => void
   setSetting: (key: string, value: unknown) => void
   setEventField: (key: keyof EventFields, value: string) => void
+
+  /** مواضع العناصر (C4a): الإزاحة بوحدة cqw */
+  setLayout: (id: string, slot: string, dx: number, dy: number) => void
+  nudgeLayout: (id: string, slot: string, ddx: number, ddy: number) => void
+  resetLayout: (id: string) => void
+
+  /** الترجمة اليدوية (C4a): النسخة بتتكتب في لغة المستند التانية */
+  setTranslation: (key: string, value: string) => void
+  setTranslationStyle: (key: string, field: keyof TranslationStyle, value: string | number) => void
+  clearTranslation: () => void
+  /** تنضيف مفاتيح ميّتة: من غير خطوة تراجع (مش تعديل من المستخدم) */
+  pruneTranslations: (live: ReadonlySet<string>) => void
 
   /** المكتبات (C3): بتتحدّث بعد الرفع/القص/الحذف من غير ما تحسب تعديل في المستند */
   setAssets: (assets: AssetRow[]) => void
@@ -123,6 +142,8 @@ const initial = (): Data => ({
   tab: 'blocks',
   device: 'mobile',
   previewLang: '',
+  renderedLang: '',
+  lastText: null,
   history: [],
   future: [],
   coalesce: null,
@@ -131,6 +152,11 @@ const initial = (): Data => ({
   savedAt: '',
   saveError: '',
 })
+
+/** لغة الدعوة الأساسية (‎theme.base_lang‎، الافتراضي عربي) واللغة التانية — زي ‎blocks.base_language/alt_language‎. */
+export const baseLangOf = (doc: EditorDocument): 'ar' | 'en' =>
+  String(doc.theme?.base_lang ?? 'ar').toLowerCase() === 'en' ? 'en' : 'ar'
+export const altLangOf = (doc: EditorDocument): 'ar' | 'en' => (baseLangOf(doc) === 'ar' ? 'en' : 'ar')
 
 /** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع). */
 const keepSelection = (doc: EditorDocument, selected: string | null) =>
@@ -186,6 +212,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
   setTab: (tab) => set({ tab }),
   setDevice: (device) => set({ device }),
   setPreviewLang: (previewLang) => set((state) => ({ previewLang, rev: state.rev + 1 })),
+  setRenderedLang: (renderedLang) => set({ renderedLang }),
 
   addBlock: (spec) => {
     const { doc, selected, commit } = get()
@@ -212,10 +239,42 @@ export const useEditor = create<EditorState>()((set, get) => ({
   move: (fromId, toId) => get().commit((d) => ops.moveBlock(d, fromId, toId)),
   toggleVisible: (id) => get().commit((d) => ops.toggleVisible(d, id)),
   rename: (id, label) => get().commit((d) => ops.setBlockLabel(d, id, label), { coalesce: `label:${id}` }),
-  setProp: (id, key, value) => get().commit((d) => ops.setBlockProp(d, id, key, value), { coalesce: `prop:${id}:${key}` }),
+  setProp: (id, key, value) => {
+    get().commit((d) => ops.setBlockProp(d, id, key, value), { coalesce: `prop:${id}:${key}` })
+    if (typeof value === 'string') set((s) => ({ lastText: { seq: (s.lastText?.seq ?? 0) + 1, id, key, value } }))
+  },
   setStyle: (id, key, value) => get().commit((d) => ops.setBlockStyle(d, id, key, value), { coalesce: `style:${id}:${key}` }),
   setTheme: (key, value) => get().commit((d) => ops.setTheme(d, key, value), { coalesce: `theme:${key}` }),
   setSetting: (key, value) => get().commit((d) => ops.setSetting(d, key, value), { coalesce: `setting:${key}` }),
+
+  setLayout: (id, slot, dx, dy) => {
+    if (findBlock(get().doc, id)?.locked) return
+    get().commit((d) => ops.setLayout(d, id, slot, dx, dy))
+  },
+  nudgeLayout: (id, slot, ddx, ddy) => {
+    if (findBlock(get().doc, id)?.locked) return
+    get().commit((d) => ops.nudgeLayout(d, id, slot, ddx, ddy), { coalesce: `layout:${id}:${slot}` })
+  },
+  resetLayout: (id) => get().commit((d) => ops.resetLayout(d, id)),
+
+  setTranslation: (key, value) => {
+    const lang = altLangOf(get().doc)
+    get().commit((d) => ops.setTranslation(d, lang, key, value), { coalesce: `i18n:${lang}:${key}` })
+  },
+  setTranslationStyle: (key, field, value) => {
+    const lang = altLangOf(get().doc)
+    get().commit((d) => ops.setTranslationStyle(d, lang, key, field, value), { coalesce: `i18n-style:${lang}:${key}:${field}` })
+  },
+  clearTranslation: () => {
+    const lang = altLangOf(get().doc)
+    get().commit((d) => ops.clearTranslation(d, lang))
+  },
+  pruneTranslations: (live) =>
+    set((state) => {
+      const next = ops.pruneTranslations(state.doc, altLangOf(state.doc), live)
+      if (next === state.doc) return {}
+      return { doc: next, saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty', rev: state.rev + 1 }
+    }),
 
   setEventField: (key, value) =>
     set((state) => {
