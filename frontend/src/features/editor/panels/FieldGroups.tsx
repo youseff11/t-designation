@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FieldRenderer } from '../fields'
+import { gearFor, useStyleScope } from '../fields/textStyle'
 import type { FieldSpec } from '../types'
 
 export interface Group {
@@ -35,10 +36,14 @@ interface Props {
   openFirst?: boolean
 }
 
-/** مجموعات الحقول القابلة للطي (‎<details>‎) — مشتركة بين خصائص القسم والتصميم والإعدادات. */
+/**
+ * مجموعات الحقول القابلة للطي (‎<details>‎) — مشتركة بين خصائص القسم والتصميم والإعدادات.
+ * حقول التنسيق المخفية (‎style_of‎) بتظهر كترس جنب النص اللي بتنسّقه.
+ */
 export function FieldGroups({ specs, get, set, open, onToggle, openFirst = true }: Props) {
   const { t } = useTranslation()
   const groups = groupFields(specs, t('editor.inspector.defaultGroup'))
+  const scope = useStyleScope(specs, get, set)
   return (
     <>
       {groups.map((group, index) => (
@@ -53,7 +58,7 @@ export function FieldGroups({ specs, get, set, open, onToggle, openFirst = true 
           </summary>
           <div className="ed-group-body">
             {group.specs.map((spec) => (
-              <FieldRenderer key={spec.key} spec={spec} value={get(spec)} onChange={(v) => set(spec, v)} />
+              <FieldRenderer key={spec.key} spec={spec} value={get(spec)} onChange={(v) => set(spec, v)} gear={gearFor(spec, scope)} />
             ))}
           </div>
         </details>

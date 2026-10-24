@@ -5,18 +5,23 @@ import { Link } from 'react-router-dom'
 import { useTheme } from '@/lib/theme'
 
 import { startAutosave } from './autosave'
+import { IntroButton } from './frame/IntroButton'
 import { PreviewPane } from './frame/PreviewPane'
 import { BlocksPanel } from './panels/BlocksPanel'
+import { DataPanel } from './panels/DataPanel'
 import { InspectorPanel } from './panels/InspectorPanel'
+import { SettingsPanel } from './panels/SettingsPanel'
+import { ThemePanel } from './panels/ThemePanel'
 import { useEditorShortcuts, useSaveFeedback, useSaveNow } from './shortcuts'
 import { useEditor, type Tab } from './store'
 import type { Device, EditorSchema } from './types'
 import './fields'
 import './styles/editor.css'
+import './styles/settings.css'
 
 const DEVICES: Device[] = ['mobile', 'tablet', 'desktop']
 
-/** تبويبات لسه ما اتنقلتش (C2…): رابط للمحرر القديم لحد ما تجهز. */
+/** تبويبات لسه ما اتنقلتش (الترجمة…): رابط للمحرر القديم لحد ما تجهز. */
 function LaterNotice() {
   const { t } = useTranslation()
   const mode = useEditor((s) => s.mode)
@@ -161,6 +166,7 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
           <div className="ed-canvas-bar">
             <span>{t('editor.blocks.hint')}</span>
             <span className="ed-canvas-tools">
+              <IntroButton />
               <span>{blockCount}</span>
             </span>
           </div>
@@ -182,7 +188,10 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
             <section className="ed-tabpane is-active" role="tabpanel">
               {tab === 'blocks' && <BlocksPanel schema={schema} />}
               {tab === 'inspector' && <InspectorPanel schema={schema} />}
-              {tab !== 'blocks' && tab !== 'inspector' && <LaterNotice />}
+              {tab === 'theme' && <ThemePanel schema={schema} />}
+              {tab === 'data' && <DataPanel />}
+              {tab === 'settings' && <SettingsPanel schema={schema} />}
+              {tab === 'i18n' && <LaterNotice />}
             </section>
           </div>
         </aside>

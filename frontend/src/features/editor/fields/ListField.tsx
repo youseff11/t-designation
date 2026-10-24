@@ -1,8 +1,11 @@
 import type { TFunction } from 'i18next'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import type { AddVariant, FieldSpec, Props } from '../types'
 import { FieldRenderer, type FieldProps } from './registry'
+import { gearFor } from './textStyle'
+import { buildStyleIndex } from './textStyleIndex'
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T
 const KIND_ICON: Record<string, string> = { text: '¶', image: '▣', button: '⬬' }
@@ -49,6 +52,9 @@ export function ListBody({ spec, value, onChange }: FieldProps) {
   const patch = (index: number, key: string, fieldValue: unknown) =>
     replace(items.map((item, i) => (i === index ? { ...item, [key]: fieldValue } : item)))
   const add = (variant?: AddVariant) => replace([...items, newListItem(spec, variant)])
+
+  // عنصر القايمة بيتخزن لوحده، فترس نصه بيتبني من حقول العنصر نفسه (نص الأوفرلاي مثلاً)
+  const styleIndex = useMemo(() => buildStyleIndex(spec.fields ?? []), [spec.fields])
 
   const variants = spec.add_variants ?? []
   const addBar = variants.length ? (
@@ -103,7 +109,13 @@ export function ListBody({ spec, value, onChange }: FieldProps) {
             {(spec.fields ?? [])
               .filter((sub) => !sub.editor_hidden && fieldFitsItem(sub, item))
               .map((sub) => (
-                <FieldRenderer key={sub.key} spec={sub} value={item[sub.key]} onChange={(v) => patch(index, sub.key, v)} />
+                <FieldRenderer
+                  key={sub.key}
+                  spec={sub}
+                  value={item[sub.key]}
+                  onChange={(v) => patch(index, sub.key, v)}
+                  gear={gearFor(sub, { index: styleIndex, get: (child) => item[child.key], set: (child, v) => patch(index, child.key, v) })}
+                />
               ))}
           </div>
         </div>
