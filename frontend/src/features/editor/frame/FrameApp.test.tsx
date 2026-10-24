@@ -131,8 +131,8 @@ describe('FrameApp', () => {
     document.body.dispatchEvent(selectAll)
     expect(selectAll.defaultPrevented).toBe(false)
     expect(posted).toEqual([
-      { type: 'lb-editor:key', key: 's', shiftKey: false },
-      { type: 'lb-editor:key', key: 'Delete', shiftKey: false },
+      { type: 'lb-editor:key', key: 's', shiftKey: false, mod: true },
+      { type: 'lb-editor:key', key: 'Delete', shiftKey: false, mod: false },
     ])
   })
 

@@ -13,6 +13,7 @@ import { installImported, markPicked, prepareImported } from '../imported/frame'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 
 const EDITOR_MOD_KEYS = new Set(['s', 'z', 'y'])
+const ARROWS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'])
 
 /** ‎data-block‎ للقسم اللي اتضغط عليه (أو أقرب أب ليه). */
 export function blockIdAt(target: EventTarget | null): string | null {
@@ -138,9 +139,11 @@ export function FrameApp() {
       const mod = event.ctrlKey || event.metaKey
       // اختصارات المحرر بس (حفظ/تراجع/إعادة) — باقي Ctrl+حرف (تحديد الكل، نسخ، لصق…) للمتصفح جوّه النص
       if (mod && !EDITOR_MOD_KEYS.has(event.key.toLowerCase())) return
-      if (!mod && (typing || !['Delete', 'Backspace', 'Escape'].includes(event.key))) return
-      if (mod) event.preventDefault()
-      sendToParent({ type: 'lb-editor:key', key: event.key, shiftKey: event.shiftKey })
+      // الأسهم بتحرّك العنصر المحدَّد جوّه القسم المستورد (من غيره بتمرّر الصفحة زي العادي)
+      const arrow = ARROWS.has(event.key) && !!picked.current
+      if (!mod && (typing || !(arrow || ['Delete', 'Backspace', 'Escape'].includes(event.key)))) return
+      if (mod || arrow) event.preventDefault()
+      sendToParent({ type: 'lb-editor:key', key: event.key, shiftKey: event.shiftKey, mod })
     }
     document.addEventListener('click', onClick, true)
     document.addEventListener('submit', onSubmit, true)

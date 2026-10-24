@@ -26,6 +26,11 @@ function writeNow(root: Element, send: Send, silent: boolean) {
   if (id) send({ type: 'lb-editor:html', id, value: serializeCustom(root), silent })
 }
 
+/** يبعت ‎props.html‎ الحالي لجذر فوراً (خطوة تراجع واحدة) — بعد تبديل صورتين مثلاً. */
+export function commitHtml(root: Element, send: Send) {
+  writeNow(root, send, false)
+}
+
 /** يجدول كتابة راجعة لجذر (مرة واحدة لكل جذر، وآخر حالة هي اللي بتتسلسل). */
 export function scheduleWrite(root: Element, send: Send, silent = false) {
   const timer = writes.get(root)

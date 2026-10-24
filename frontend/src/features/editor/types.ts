@@ -270,7 +270,7 @@ export type FromFrame =
   | { type: 'lb-editor:ready' }
   | { type: 'lb-editor:select'; id: string }
   /** اختصارات لوحة المفاتيح اللي ضُغطت جوّه الـiframe (مابتوصلش للصفحة الأم) */
-  | { type: 'lb-editor:key'; key: string; shiftKey: boolean }
+  | { type: 'lb-editor:key'; key: string; shiftKey: boolean; mod: boolean }
   /** كتابة مباشرة جوّه المعاينة */
   | { type: 'lb-editor:text'; id: string; key: string; value: string }
   /** سحب عنصر بالماوس: الإزاحة النهائية بوحدة cqw */

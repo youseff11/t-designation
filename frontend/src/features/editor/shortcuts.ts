@@ -1,8 +1,17 @@
 import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { isPxSlot } from './frame/interactions'
 import { useEditor } from './store'
 import { useEditorUi } from './ui'
+
+/** الأسهم ← اتجاه الإزاحة الفيزيائي (الـtransform فيزيائي حتى في RTL) */
+const ARROW_DIRS: Record<string, [number, number]> = {
+  ArrowRight: [1, 0],
+  ArrowLeft: [-1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+}
 
 /** حقل كتابة؟ الحذف هنا بيمسح حروف مش أقسام. */
 function isTyping(target: EventTarget | null): boolean {
@@ -41,6 +50,21 @@ export function useEditorShortcuts() {
         else return false
         return true
       }
+      // عنصر محدَّد جوّه قسم مستورد؟ الأسهم بتحرّكه، وEsc بيلغي تحديده، والحذف مش للقسم كله (S3: حذف العنصر)
+      if (state.selEl && !isTyping(target)) {
+        const dir = ARROW_DIRS[key]
+        if (dir) {
+          const px = isPxSlot(state.selEl.slot)
+          const step = px ? (shiftKey ? 4 : 1) : shiftKey ? 1 : 0.25
+          state.nudgeLayout(state.selEl.blockId, state.selEl.slot, dir[0] * step, dir[1] * step)
+          return true
+        }
+        if (key === 'Escape') {
+          state.selectElement(state.selEl.blockId, null)
+          return true
+        }
+        if (key === 'Delete' || key === 'Backspace') return false
+      }
       if ((key === 'Delete' || key === 'Backspace') && !isTyping(target)) {
         const block = state.doc.blocks.find((b) => b.id === state.selected)
         if (!block || block.locked) return false
@@ -63,11 +87,8 @@ export function useEditorShortcuts() {
     return () => document.removeEventListener('keydown', onKey)
   }, [handle])
 
-  /** نسخة للرسائل الجاية من الـiframe: الـmod بنستنتجه من نوع المفتاح (بنبعت Ctrl+… وDelete بس). */
-  return useCallback(
-    (key: string, shiftKey: boolean) => handle(key, shiftKey, !['Delete', 'Backspace', 'Escape'].includes(key)),
-    [handle],
-  )
+  /** نسخة للرسائل الجاية من الـiframe (الإطار بيبعت حالة Ctrl مع المفتاح). */
+  return useCallback((key: string, shiftKey: boolean, mod: boolean) => handle(key, shiftKey, mod), [handle])
 }
 
 /** خطأ الحفظ (يدوي أو تلقائي) → تنبيه مرة واحدة؛ ولو حصل مع الرابط نوضّح إنه الرابط. */

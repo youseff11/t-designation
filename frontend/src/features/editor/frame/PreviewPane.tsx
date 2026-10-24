@@ -13,7 +13,7 @@ export const PREVIEW_WAIT = 280
 
 interface Props {
   /** اختصار لوحة مفاتيح اتضغط جوّه الـiframe */
-  onKey: (key: string, shiftKey: boolean) => void
+  onKey: (key: string, shiftKey: boolean, mod: boolean) => void
 }
 
 /**
@@ -43,7 +43,7 @@ export function PreviewPane({ onKey }: Props) {
       if (!message) return
       if (message.type === 'lb-editor:ready') setReady((n) => n + 1)
       else if (message.type === 'lb-editor:select') useEditor.getState().select(message.id, 'preview')
-      else if (message.type === 'lb-editor:key') onKeyRef.current(message.key, message.shiftKey)
+      else if (message.type === 'lb-editor:key') onKeyRef.current(message.key, message.shiftKey, message.mod)
       else if (message.type === 'lb-editor:text') useEditor.getState().setProp(message.id, message.key, message.value)
       else if (message.type === 'lb-editor:element') useEditor.getState().selectElement(message.id, message.slot)
       else if (message.type === 'lb-editor:html') useEditor.getState().setHtml(message.id, message.value, message.silent)
