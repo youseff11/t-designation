@@ -12,6 +12,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { FavoritesButton } from '../assets/FavoritesDialog'
 import { useEditor } from '../store'
 import type { BlockSpec, DocBlock, EditorSchema } from '../types'
 import { useEditorUi } from '../ui'
@@ -135,6 +136,7 @@ export function BlocksPanel({ schema }: { schema: EditorSchema }) {
           <button type="button" className="ed-btn ed-btn--sm" onClick={() => setPicking(true)}>
             {t('editor.blocks.add')}
           </button>
+          <FavoritesButton schema={schema} />
         </div>
       </div>
       <p className="ed-hint">{t('editor.blocks.hint')}</p>

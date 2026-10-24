@@ -136,14 +136,28 @@ export interface EventFields {
   slug: string
 }
 
+export type AssetKind = 'image' | 'audio' | 'video'
+
 export interface AssetRow {
   id: number
   url: string
   thumb: string
   source: string
   name: string
-  kind: 'image' | 'audio' | 'video'
+  kind: AssetKind
   used: boolean
+  /** بيجوا مع رد الرفع/القص بس، مش مع القايمة */
+  width?: number
+  height?: number
+  seconds?: number
+}
+
+/** قسم محفوظ في مكتبة المفضلة (مشتركة بين الدعوات والقوالب). */
+export interface FavoriteRow {
+  id: number
+  name: string
+  blockType: string
+  block: DocBlock
 }
 
 export interface IntroRow {
@@ -170,7 +184,7 @@ export interface FontRow {
   value: string
   family: string
   url: string
-  weight: string
+  weight: string | number
   style: string
 }
 

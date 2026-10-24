@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { FontUpload } from '../assets/FontUpload'
 import { useSchema } from '../hooks'
 import { useEditor } from '../store'
 import type { FieldOption } from '../types'
@@ -134,13 +135,16 @@ export function FontBody({ spec, value, onChange, id }: FieldProps) {
     .map((f) => ({ value: f.value, label: t('editor.fields.fromLibrary', { name: f.label || f.name || f.family }) }))
   const options = [{ value: '', label: `— ${t('editor.fields.theme')} —` }, ...base, ...extra]
   return (
-    <select id={id} value={str(value)} onChange={(e) => onChange(e.target.value)}>
-      {options.map((o) => (
-        <option key={o.value} value={o.value} style={{ fontFamily: o.value || undefined }}>
-          {o.label}
-        </option>
-      ))}
-    </select>
+    <>
+      <select id={id} value={str(value)} onChange={(e) => onChange(e.target.value)}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value} style={{ fontFamily: o.value || undefined }}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <FontUpload onUploaded={(font) => onChange(font.value)} />
+    </>
   )
 }
 
