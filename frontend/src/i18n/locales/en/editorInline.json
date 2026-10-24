@@ -66,6 +66,63 @@
     "title": "Selected element",
     "hint": "Click anything inside the imported section — a word, an image, a button — to select it. Double-click text to type.",
     "slot": "Element id",
-    "clear": "Deselect element"
+    "clear": "Deselect element",
+    "addTitle": "Add text or image",
+    "addImage": "+ Image",
+    "addText": "+ Text",
+    "addInside": "Goes inside the element",
+    "addAfter": "Goes after the element",
+    "clipTitle": "Copy and paste",
+    "copy": "Copy",
+    "duplicate": "Duplicate",
+    "paste": "Paste",
+    "pasteInside": "Paste inside",
+    "pasteHint": "Ctrl+V — pastes after the element",
+    "parent": "↰ Parent",
+    "parentHint": "Select the element that contains this one",
+    "delete": "Delete",
+    "keys": "Click = select · double-click = type · Esc leaves typing · Delete removes · Ctrl+C copy · Ctrl+V paste · Ctrl+D duplicate · arrows nudge (Shift = bigger step) · Shift while dragging = fine move",
+    "newText": "New text — double-click it and type",
+    "copied": "Element copied — Ctrl+V to paste",
+    "pasted": "Copy pasted",
+    "pastedInside": "Pasted inside the element",
+    "duplicated": "Element duplicated",
+    "deleted": "Element deleted — Ctrl+Z to undo",
+    "added": "Element added",
+    "fail": {
+      "missing": "That element is no longer in the section",
+      "empty": "Nothing copied — select an element and press Ctrl+C",
+      "top": "This is the top element in the section",
+      "locked": "The section is locked"
+    }
+  },
+  "layers": {
+    "title": "Layers",
+    "empty": "No selectable elements inside the section.",
+    "remove": "Delete layer",
+    "removeConfirm": "Delete this layer?",
+    "kind": {
+      "text": "Text",
+      "image": "Image",
+      "video": "Video",
+      "map": "Google map"
+    },
+    "name": {
+      "heading": "Heading",
+      "paragraph": "Paragraph",
+      "text": "Text",
+      "link": "Link",
+      "image": "Image",
+      "listItem": "List item",
+      "list": "List",
+      "group": "Group",
+      "header": "Header",
+      "footer": "Footer",
+      "quote": "Quote",
+      "table": "Table",
+      "cell": "Cell",
+      "button": "Button",
+      "element": "Element"
+    }
   }
 }

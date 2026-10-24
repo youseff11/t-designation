@@ -975,7 +975,8 @@
 /* طبقات القسم المستورد — اختيار العناصر بدون لمس المعاينة */
 .ed-layers-btn { border-color: color-mix(in srgb, var(--e-accent) 55%, var(--e-line)); }
 .ed-layers-group > summary { color: var(--e-accent); font-weight: 700; }
-.ed-layers-list { display: grid; gap: 7px; }
+/* العمود minmax(0,1fr): من غيرها نص طويل بيوسّع الصف برّه اللوحة ويخبّي زرار × */
+.ed-layers-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; }
 .ed-layer-item {
   width: 100%; min-height: 38px; padding: 8px 10px;
   display: flex; align-items: center; gap: 9px;

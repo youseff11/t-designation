@@ -34,6 +34,8 @@ const press = (key: string, init: KeyboardEventInit = {}, target: EventTarget = 
   target.dispatchEvent(event)
   return event
 }
+const PAGE = '<div data-move="el-1"><h1 data-move="el-2">عنوان</h1><p data-move="el-3">فقرة</p></div>'
+const htmlOf = (id: string) => String(useEditor.getState().doc.blocks.find((b) => b.id === id)?.props.html)
 const layoutOf = (id: string) => useEditor.getState().doc.blocks.find((b) => b.id === id)?.layout
 
 describe('element keys (imported sections)', () => {
@@ -79,17 +81,74 @@ describe('element keys (imported sections)', () => {
     expect(layoutOf('b')).toBeUndefined()
   })
 
-  it('Delete never removes the whole section while an element is selected', () => {
+  it('Delete removes the selected element — never the whole section', () => {
     renderHook(() => useEditorShortcuts(), { wrapper })
+    useEditor.getState().load(boot([block('a', { props: { html: PAGE } }), block('b', { locked: true })]))
     useEditor.getState().select('a', 'preview')
+    useEditor.getState().selectElement('a', 'el-2')
+    expect(press('Delete').defaultPrevented).toBe(true)
+    expect(htmlOf('a')).not.toContain('data-move="el-2"')
+    expect(useEditor.getState().doc.blocks.map((b) => b.id)).toEqual(['a', 'b'])
+    expect(useEditor.getState().history).toHaveLength(1)
     useEditor.getState().selectElement('a', 'el-3')
-    press('Delete')
     press('Backspace')
+    expect(htmlOf('a')).not.toContain('data-move="el-3"')
     expect(useEditor.getState().doc.blocks.map((b) => b.id)).toEqual(['a', 'b'])
     // من غير عنصر محدَّد، Delete بيحذف القسم زي ما كان
     useEditor.getState().selectElement('a', null)
     press('Delete')
     expect(useEditor.getState().doc.blocks.map((b) => b.id)).toEqual(['b'])
+  })
+
+  it('Delete on a stale element is a no-op that still does not touch the section', () => {
+    renderHook(() => useEditorShortcuts(), { wrapper })
+    useEditor.getState().select('a', 'preview')
+    useEditor.getState().selectElement('a', 'el-99')
+    press('Delete')
+    expect(useEditor.getState().doc.blocks.map((b) => b.id)).toEqual(['a', 'b'])
+  })
+
+  it('Ctrl+C / Ctrl+V / Ctrl+D copy, paste after and duplicate the selected element', () => {
+    renderHook(() => useEditorShortcuts(), { wrapper })
+    useEditor.getState().load(boot([block('a', { props: { html: PAGE } })]))
+    useEditor.getState().select('a', 'preview')
+    useEditor.getState().selectElement('a', 'el-2')
+
+    expect(press('c', { ctrlKey: true }).defaultPrevented).toBe(true)
+    expect(useEditor.getState().clip).toContain('عنوان')
+    expect(useEditor.getState().history).toHaveLength(0)
+
+    press('v', { ctrlKey: true })
+    expect(useEditor.getState().selEl?.slot).toBe('el-4')
+    expect(htmlOf('a').match(/عنوان/g)).toHaveLength(2)
+
+    press('d', { ctrlKey: true })
+    expect(htmlOf('a').match(/عنوان/g)).toHaveLength(3)
+    expect(useEditor.getState().history).toHaveLength(2) // لصق وتكرار = خطوتين، النسخ مش خطوة
+    useEditor.getState().undo()
+    expect(htmlOf('a').match(/عنوان/g)).toHaveLength(2)
+  })
+
+  it('leaves Ctrl+C/V/D to the browser with no selected element, while typing, and with Shift', () => {
+    renderHook(() => useEditorShortcuts(), { wrapper })
+    useEditor.getState().load(boot([block('a', { props: { html: PAGE } })]))
+    useEditor.getState().select('a', 'preview')
+    expect(press('c', { ctrlKey: true }).defaultPrevented).toBe(false)
+    useEditor.getState().selectElement('a', 'el-2')
+    const input = document.body.appendChild(document.createElement('input'))
+    expect(press('c', { ctrlKey: true }, input).defaultPrevented).toBe(false)
+    input.remove()
+    expect(press('d', { ctrlKey: true, shiftKey: true }).defaultPrevented).toBe(false)
+    expect(useEditor.getState().clip).toBeNull()
+    expect(useEditor.getState().history).toHaveLength(0)
+  })
+
+  it('Ctrl+V with nothing copied changes nothing', () => {
+    renderHook(() => useEditorShortcuts(), { wrapper })
+    useEditor.getState().load(boot([block('a', { props: { html: PAGE } })]))
+    useEditor.getState().selectElement('a', 'el-2')
+    press('v', { ctrlKey: true })
+    expect(htmlOf('a')).toBe(PAGE)
   })
 
   it('Escape deselects the element but keeps the section selected', () => {

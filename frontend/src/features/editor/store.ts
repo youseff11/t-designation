@@ -5,10 +5,12 @@ import { ApiError } from '@/api/client'
 import { postSave } from './api'
 import * as ops from './doc'
 import { findBlock } from './doc'
+import * as element from './imported/ops'
 import type {
   AssetRow,
   BlockSpec,
   Bootstrap,
+  DocBlock,
   Device,
   EditorDocument,
   EditorMeta,
@@ -29,6 +31,8 @@ export type Tab = 'blocks' | 'inspector' | 'theme' | 'data' | 'i18n' | 'settings
 export type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error'
 /** مصدر التحديد: ضغطة في قايمة الأقسام بتمرّر المعاينة للقسم، وضغطة في المعاينة لأ. */
 export type SelectSource = 'list' | 'preview' | null
+/** نتيجة عملية على عنصر مستورد: ‎ok‎ اتنفّذت؛ والباقي سبب الرفض (الواجهة بتحوّله لتنبيه) */
+export type ElementOutcome = 'ok' | 'missing' | 'empty' | 'top' | 'locked' | 'translated'
 
 export interface Libraries {
   assets: AssetRow[]
@@ -58,6 +62,8 @@ interface Data {
   selectSource: SelectSource
   /** العنصر المحدَّد جوّه قسم مستورد (‎el-N‎) — بيتصفّر لما القسم يتغيّر */
   selEl: { blockId: string; slot: string } | null
+  /** حافظة العناصر (نسخة نضيفة ‎outerHTML‎) — جوّه المحرر بس، مش حافظة النظام */
+  clip: string | null
   tab: Tab
   device: Device
   /** لغة المعاينة المطلوبة؛ فاضي = لغة الدعوة الأساسية */
@@ -88,6 +94,17 @@ interface Actions {
   selectElement: (blockId: string, slot: string | null) => void
   /** ‎props.html‎ لقسم مستورد من المعاينة: ‎silent‎ للترقيم التلقائي (من غير خطوة تراجع) */
   setHtml: (id: string, html: string, silent?: boolean) => void
+
+  /**
+   * عمليات هيكل العنصر المحدَّد جوّه القسم المستورد (S3) — كلها على ‎props.html‎ المحفوظ، وكل عملية خطوة
+   * تراجع واحدة (النص + مواضع اللي اتشال). ‎slot‎ اختياري: من الطبقات بنشتغل على عنصر مش المحدَّد.
+   */
+  copyElement: () => ElementOutcome
+  pasteElement: (inside?: boolean) => ElementOutcome
+  duplicateElement: () => ElementOutcome
+  deleteElement: (slot?: string) => ElementOutcome
+  addElement: (kind: element.AddKind, value: string) => ElementOutcome
+  selectParentElement: () => ElementOutcome
   setTab: (tab: Tab) => void
   setDevice: (device: Device) => void
   setPreviewLang: (lang: string) => void
@@ -147,6 +164,7 @@ const initial = (): Data => ({
   selected: null,
   selectSource: null,
   selEl: null,
+  clip: null,
   tab: 'blocks',
   device: 'mobile',
   previewLang: '',
@@ -171,9 +189,49 @@ export const altLangOf = (doc: EditorDocument): 'ar' | 'en' => (baseLangOf(doc) 
 const contentChanged = (a: EditorDocument, b: EditorDocument) =>
   a.blocks !== b.blocks || a.settings !== b.settings || a.theme !== b.theme ? 1 : 0
 
+/** المعاينة معروضة بنسخة مترجَمة؟ (نصها مش نص الدعوة — مانكتبش منها ولا نعدّل الهيكل) */
+const translatedPreview = (state: Data) => state.renderedLang !== '' && state.renderedLang !== baseLangOf(state.doc)
+
+/** العنصر المحدَّد لازم يفضل موجود في النص بعد تراجع/إعادة (عنصر اتلصق ثم اتراجع عنه مثلاً). */
+const keepElement = (doc: EditorDocument, el: Data['selEl']): Data['selEl'] => {
+  if (!el) return null
+  const html = findBlock(doc, el.blockId)?.props.html
+  return typeof html !== 'string' || element.hasSlot(html, el.slot) ? el : null
+}
+
 /** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع). */
 const keepSelection = (doc: EditorDocument, selected: string | null) =>
   selected && doc.blocks.some((b) => b.id === selected) ? selected : null
+
+interface ElementTarget {
+  block: DocBlock
+  slot: string
+  html: string
+}
+
+/** القسم والعنصر والنص اللي العملية هتشتغل عليهم: المحدَّد، أو ‎slot‎ من الطبقات جوّه القسم المحدَّد. */
+function elementTarget(state: Data, slot?: string): ElementTarget | null {
+  const block = findBlock(state.doc, state.selEl?.blockId ?? state.selected)
+  const at = slot ?? state.selEl?.slot
+  return block && at && typeof block.props.html === 'string' ? { block, slot: at, html: block.props.html } : null
+}
+
+/** عملية هيكل واحدة = ‎commit‎ واحد (خطوة تراجع واحدة). بترفض في القسم المقفول وفي المعاينة المترجَمة. */
+function runEdit(build: (target: ElementTarget) => element.Edit | null, slot?: string): ElementOutcome {
+  const state = useEditor.getState()
+  const target = elementTarget(state, slot)
+  if (!target) return 'missing'
+  if (target.block.locked) return 'locked'
+  if (translatedPreview(state)) return 'translated'
+  const edit = build(target)
+  if (!edit) return 'missing'
+  state.commit((d) => ops.setBlockHtml(d, target.block.id, edit.html, edit.dropped))
+  useEditor.setState({
+    selected: target.block.id,
+    selEl: edit.select ? { blockId: target.block.id, slot: edit.select } : null,
+  })
+  return 'ok'
+}
 
 export const useEditor = create<EditorState>()((set, get) => ({
   ...initial(),
@@ -224,8 +282,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
     const state = get()
     const block = findBlock(state.doc, id)
     // المعاينة المترجَمة نصها مترجَم — مانكتبش منها فوق الأصل
-    const translated = state.renderedLang !== '' && state.renderedLang !== baseLangOf(state.doc)
-    if (!block || block.props.html === html || translated) return
+    if (!block || block.props.html === html || translatedPreview(state)) return
     if (!silent) return state.commit((d) => ops.setBlockProp(d, id, 'html', html), { coalesce: `html:${id}` })
     // ترقيم تلقائي: بيترسّب في النص من غير ما يبقى خطوة تراجع (مش تعديل من المستخدم)
     set({
@@ -234,6 +291,29 @@ export const useEditor = create<EditorState>()((set, get) => ({
       rev: state.rev + 1,
       contentRev: state.contentRev + 1,
     })
+  },
+
+  copyElement: () => {
+    const target = elementTarget(get())
+    const clip = target && element.copyOf(target.html, target.slot)
+    if (!clip) return 'missing'
+    set({ clip })
+    return 'ok'
+  },
+  pasteElement: (inside = false) => {
+    const clip = get().clip
+    return clip ? runEdit((t) => element.pasteOf(t.html, t.slot, clip, inside)) : 'empty'
+  },
+  duplicateElement: () => runEdit((t) => element.duplicateOf(t.html, t.slot)),
+  deleteElement: (slot) => runEdit((t) => element.deleteOf(t.html, t.slot), slot),
+  addElement: (kind, value) => runEdit((t) => element.addOf(t.html, t.slot, kind, value)),
+  selectParentElement: () => {
+    const target = elementTarget(get())
+    if (!target) return 'missing'
+    const up = element.parentOf(target.html, target.slot)
+    if (!up) return 'top'
+    get().selectElement(target.block.id, up)
+    return 'ok'
   },
 
   select: (id, source = 'list') =>
@@ -341,6 +421,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         future: [...state.future, state.doc],
         coalesce: null,
         selected: keepSelection(previous, state.selected),
+        selEl: keepElement(previous, state.selEl),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, previous),
@@ -357,6 +438,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         future: state.future.slice(0, -1),
         coalesce: null,
         selected: keepSelection(next, state.selected),
+        selEl: keepElement(next, state.selEl),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, next),

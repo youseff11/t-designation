@@ -136,6 +136,39 @@ describe('FrameApp', () => {
     ])
   })
 
+  it('forwards Ctrl+C / Ctrl+V / Ctrl+D only while an element is picked and nothing is being typed', () => {
+    render(<FrameApp />)
+    const press = (key: string, target: Element = document.body, init: KeyboardEventInit = {}) => {
+      const event = new KeyboardEvent('keydown', { key, ctrlKey: true, bubbles: true, cancelable: true, ...init })
+      target.dispatchEvent(event)
+      return event
+    }
+    posted.length = 0
+    // مفيش عنصر محدَّد: النسخ واللصق للمتصفح
+    expect(press('c').defaultPrevented).toBe(false)
+    expect(posted).toEqual([])
+
+    fromParent({ type: 'lb-editor:element', id: 'q1', slot: 'el-1' })
+    for (const key of ['c', 'v', 'd']) expect(press(key).defaultPrevented).toBe(true)
+    expect(posted).toEqual([
+      { type: 'lb-editor:key', key: 'c', shiftKey: false, mod: true },
+      { type: 'lb-editor:key', key: 'v', shiftKey: false, mod: true },
+      { type: 'lb-editor:key', key: 'd', shiftKey: false, mod: true },
+    ])
+
+    // بيكتب جوّه نص أو بـShift: للمتصفح برضه
+    posted.length = 0
+    const typing = document.body.appendChild(document.createElement('div'))
+    Object.defineProperty(typing, 'isContentEditable', { value: true })
+    expect(press('c', typing).defaultPrevented).toBe(false)
+    expect(press('d', document.body, { shiftKey: true }).defaultPrevented).toBe(false)
+    expect(posted).toEqual([])
+    typing.remove()
+
+    fromParent({ type: 'lb-editor:element', id: null, slot: null })
+    expect(press('c').defaultPrevented).toBe(false)
+  })
+
   it('ignores messages from other windows or origins', () => {
     const { container } = render(<FrameApp />)
     const payload = preview([quote()])

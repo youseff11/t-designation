@@ -66,6 +66,14 @@ export function markPicked(picked: { id: string; slot: string } | null, root: Pa
   node?.classList.add('lb-el-picked')
 }
 
+/** العنصر المحدَّد برّه الشاشة بالكامل (اتحدّد من الطبقات مثلاً)؟ نمرّر له. اللي ظاهر مابنحرّكوش. */
+export function revealPicked(root: ParentNode = document) {
+  const node = root.querySelector<HTMLElement>('.lb-el-picked')
+  if (!node) return
+  const rect = node.getBoundingClientRect()
+  if (rect.height > 0 && (rect.bottom < 0 || rect.top > window.innerHeight)) node.scrollIntoView({ block: 'center' })
+}
+
 /** يفتح وحدة نص للكتابة (ضغطتين). المعاينة المترجَمة بترفض. */
 export function beginTextEdit(node: HTMLElement, send: Send, translated: boolean) {
   if (translated) {

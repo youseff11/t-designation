@@ -99,6 +99,23 @@ export const setBlockLabel = (doc: EditorDocument, id: string, label: string) =>
 export const setBlockProp = (doc: EditorDocument, id: string, key: string, value: unknown) =>
   mapBlock(doc, id, (block) => ({ ...block, props: { ...block.props, [key]: value } }))
 
+/**
+ * ‎props.html‎ جديد لقسم مستورد مع مسح مواضع عناصر اتشالت (‎dropped‎) — في نفس اللقطة، فخطوة تراجع واحدة
+ * بترجّع النص والمواضع مع بعض.
+ */
+export function setBlockHtml(doc: EditorDocument, id: string, html: string, dropped: readonly string[] = []): EditorDocument {
+  return mapBlock(doc, id, (block) => {
+    const next: DocBlock = { ...block, props: { ...block.props, html } }
+    if (block.layout && dropped.some((slot) => slot in block.layout!)) {
+      const layout = { ...block.layout }
+      for (const slot of dropped) delete layout[slot]
+      if (Object.keys(layout).length) next.layout = layout
+      else delete next.layout
+    }
+    return next
+  })
+}
+
 export const setBlockStyle = (doc: EditorDocument, id: string, key: string, value: unknown) =>
   mapBlock(doc, id, (block) => ({ ...block, style: { ...block.style, [key]: value } }))
 

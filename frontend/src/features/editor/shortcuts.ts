@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { isPxSlot } from './frame/interactions'
+import { useElementActions } from './imported/useElementActions'
 import { useEditor } from './store'
 import { useEditorUi } from './ui'
 
@@ -38,6 +39,7 @@ export function useEditorShortcuts() {
   const { t } = useTranslation()
   const ui = useEditorUi()
   const saveNow = useSaveNow()
+  const element = useElementActions()
 
   const handle = useCallback(
     (key: string, shiftKey: boolean, mod: boolean, target: EventTarget | null = null): boolean => {
@@ -47,10 +49,14 @@ export function useEditorShortcuts() {
         if (lower === 's') void saveNow()
         else if (lower === 'z' && !shiftKey) state.undo()
         else if (lower === 'y' || (lower === 'z' && shiftKey)) state.redo()
+        // عنصر محدَّد جوّه قسم مستورد؟ Ctrl+C نسخ، Ctrl+V لصق بعده، Ctrl+D تكرار (وهو بيكتب: للمتصفح)
+        else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'c') element.copy()
+        else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'v') element.paste(false)
+        else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'd') element.duplicate()
         else return false
         return true
       }
-      // عنصر محدَّد جوّه قسم مستورد؟ الأسهم بتحرّكه، وEsc بيلغي تحديده، والحذف مش للقسم كله (S3: حذف العنصر)
+      // عنصر محدَّد جوّه قسم مستورد؟ الأسهم بتحرّكه، وEsc بيلغي تحديده، والحذف بيحذف العنصر مش القسم كله
       if (state.selEl && !isTyping(target)) {
         const dir = ARROW_DIRS[key]
         if (dir) {
@@ -63,7 +69,10 @@ export function useEditorShortcuts() {
           state.selectElement(state.selEl.blockId, null)
           return true
         }
-        if (key === 'Delete' || key === 'Backspace') return false
+        if (key === 'Delete' || key === 'Backspace') {
+          element.remove()
+          return true
+        }
       }
       if ((key === 'Delete' || key === 'Backspace') && !isTyping(target)) {
         const block = state.doc.blocks.find((b) => b.id === state.selected)
@@ -74,7 +83,7 @@ export function useEditorShortcuts() {
       }
       return false
     },
-    [saveNow, t, ui],
+    [saveNow, element, t, ui],
   )
 
   useEffect(() => {

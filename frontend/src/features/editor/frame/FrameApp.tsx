@@ -9,11 +9,12 @@ import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
-import { installImported, markPicked, prepareImported } from '../imported/frame'
+import { installImported, markPicked, prepareImported, revealPicked } from '../imported/frame'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 import { installNoHover, stripHover } from './noHover'
 
 const EDITOR_MOD_KEYS = new Set(['s', 'z', 'y'])
+const ELEMENT_MOD_KEYS = new Set(['c', 'v', 'd'])
 const ARROWS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'])
 
 /** ‎data-block‎ للقسم اللي اتضغط عليه (أو أقرب أب ليه). */
@@ -81,6 +82,7 @@ export function FrameApp() {
       } else if (message.type === 'lb-editor:element') {
         picked.current = message.id && message.slot ? { id: message.id, slot: message.slot } : null
         markPicked(picked.current)
+        revealPicked() // اتحدّد من الطبقات وهو برّه الشاشة؟ ننزل له
       } else if (message.type === 'lb-editor:patch') {
         patchText(message.id, message.key, message.value)
       } else if (message.type === 'lb-editor:intro') {
@@ -140,8 +142,11 @@ export function FrameApp() {
     const onKey = (event: KeyboardEvent) => {
       const typing = event.target instanceof HTMLElement && event.target.isContentEditable
       const mod = event.ctrlKey || event.metaKey
-      // اختصارات المحرر بس (حفظ/تراجع/إعادة) — باقي Ctrl+حرف (تحديد الكل، نسخ، لصق…) للمتصفح جوّه النص
-      if (mod && !EDITOR_MOD_KEYS.has(event.key.toLowerCase())) return
+      // اختصارات المحرر بس (حفظ/تراجع/إعادة) — باقي Ctrl+حرف (تحديد الكل، نسخ، لصق…) للمتصفح جوّه النص.
+      // استثناء: عنصر محدَّد مش بنكتب فيه — Ctrl+C/V/D بتنسخ/تلصق/تكرّر العنصر نفسه
+      const lower = event.key.toLowerCase()
+      const forElement = !typing && !!picked.current && !event.shiftKey && ELEMENT_MOD_KEYS.has(lower)
+      if (mod && !EDITOR_MOD_KEYS.has(lower) && !forElement) return
       // الأسهم بتحرّك العنصر المحدَّد جوّه القسم المستورد (من غيره بتمرّر الصفحة زي العادي)
       const arrow = ARROWS.has(event.key) && !!picked.current
       if (!mod && (typing || !(arrow || ['Delete', 'Backspace', 'Escape'].includes(event.key)))) return
