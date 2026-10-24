@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { fetchTranslations } from '../api'
@@ -23,45 +23,47 @@ function useDraft(stored: string) {
 const FONT_SPEC: FieldSpec = { key: 'font', label: '', type: 'font', default: '', group: '' }
 const SIZE_SPEC: FieldSpec = { key: 'size', label: '', type: 'range', default: 0, group: '', min: 0, max: 160, step: 1, unit: 'px' }
 
-/** ترس خط وحجم النص المترجَم — اللوحة بتتبني عند أول فتح بس (قايمة الخطوط تقيلة). */
-function StyleGear({ rowKey }: { rowKey: string }) {
+/**
+ * ترس خط وحجم النص المترجَم — الزرار بيقعد جنب الخانة واللوحة تحتها، فبنرجّعهم منفصلين.
+ * اللوحة بتتبني عند أول فتح بس (قايمة الخطوط تقيلة).
+ */
+function useStyleGear(rowKey: string): { gear: ReactNode; panel: ReactNode } {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [built, setBuilt] = useState(false)
   const alt = useEditor((s) => altLangOf(s.doc))
   const style = useEditor((s) => s.doc.i18n_style?.[alt]?.[rowKey])
   const setStyle = useEditor((s) => s.setTranslationStyle)
-  return (
-    <>
-      <button
-        type="button"
-        className={`ed-font-gear${style ? ' is-set' : ''}`}
+  const gear = (
+    <button
+      type="button"
+      className={`ed-font-gear${style ? ' is-set' : ''}`}
         title={t('editorInline.i18n.gear')}
-        aria-label={t('editorInline.i18n.gearAria')}
-        aria-expanded={open}
-        onClick={() => {
-          setBuilt(true)
-          setOpen((v) => !v)
-        }}
-      >
-        ⚙
-      </button>
-      {built && (
-        <div className="ed-inline-font-panel" hidden={!open}>
-          <FieldRenderer
-            spec={{ ...FONT_SPEC, label: t('editorInline.i18n.styleFont'), help: t('editorInline.i18n.styleFontHelp') }}
-            value={style?.font ?? ''}
-            onChange={(v) => setStyle(rowKey, 'font', String(v ?? ''))}
-          />
-          <FieldRenderer
-            spec={{ ...SIZE_SPEC, label: t('editorInline.i18n.styleSize'), help: t('editorInline.i18n.styleSizeHelp') }}
-            value={style?.size ?? 0}
-            onChange={(v) => setStyle(rowKey, 'size', Number(v) || 0)}
-          />
-        </div>
-      )}
-    </>
+      aria-label={t('editorInline.i18n.gearAria')}
+      aria-expanded={open}
+      onClick={() => {
+        setBuilt(true)
+        setOpen((v) => !v)
+      }}
+    >
+      ⚙
+    </button>
   )
+  const panel = built ? (
+    <div className="ed-inline-font-panel" hidden={!open}>
+      <FieldRenderer
+        spec={{ ...FONT_SPEC, label: t('editorInline.i18n.styleFont'), help: t('editorInline.i18n.styleFontHelp') }}
+        value={style?.font ?? ''}
+        onChange={(v) => setStyle(rowKey, 'font', String(v ?? ''))}
+      />
+      <FieldRenderer
+        spec={{ ...SIZE_SPEC, label: t('editorInline.i18n.styleSize'), help: t('editorInline.i18n.styleSizeHelp') }}
+        value={style?.size ?? 0}
+        onChange={(v) => setStyle(rowKey, 'size', Number(v) || 0)}
+      />
+    </div>
+  ) : null
+  return { gear, panel }
 }
 
 function Row({ row, alt, base }: { row: TranslationRow; alt: 'ar' | 'en'; base: 'ar' | 'en' }) {
@@ -69,6 +71,7 @@ function Row({ row, alt, base }: { row: TranslationRow; alt: 'ar' | 'en'; base: 
   const stored = useEditor((s) => s.doc.i18n?.[alt]?.[row.key] ?? '')
   const setTranslation = useEditor((s) => s.setTranslation)
   const [draft, setDraft] = useDraft(stored)
+  const { gear, panel } = useStyleGear(row.key)
   const multiline = row.value.length > 60 || row.value.includes('\n')
   const props = {
     className: 'ed-input',
@@ -89,8 +92,11 @@ function Row({ row, alt, base }: { row: TranslationRow; alt: 'ar' | 'en'; base: 
       <p className="ed-i18n-src" dir={DIR[base]}>
         {row.value}
       </p>
-      <div className="ed-i18n-row">{multiline ? <textarea rows={3} {...props} /> : <input type="text" {...props} />}</div>
-      <StyleGear rowKey={row.key} />
+      <div className="ed-i18n-row">
+        {multiline ? <textarea rows={3} {...props} /> : <input type="text" {...props} />}
+        {gear}
+      </div>
+      {panel}
     </div>
   )
 }
