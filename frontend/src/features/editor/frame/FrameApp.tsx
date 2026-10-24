@@ -9,6 +9,7 @@ import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
+import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 
 /** ‎data-block‎ للقسم اللي اتضغط عليه (أو أقرب أب ليه). */
 export function blockIdAt(target: EventTarget | null): string | null {
@@ -44,17 +45,34 @@ export function FrameApp() {
   const [introRun, setIntroRun] = useState(0)
   const [introClosedAt, setIntroClosedAt] = useState<string | null>(null)
   const introSignature = useRef('')
+  // آخر حمولة (لتفاعلات السحب والكتابة) + رد اتأجّل لأن المستخدم بيكتب في نص دلوقتي
+  const payloadRef = useRef<PreviewPayload | null>(null)
+  const pending = useRef<Extract<ToFrame, { type: 'lb-editor:render' }> | null>(null)
+
+  function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
+    const next = message.payload as PreviewPayload
+    introSignature.current = next.intro ? JSON.stringify(next.intro) : ''
+    // اتقفلت من الإعدادات: المرة الجاية اللي تتفعّل فيها لازم تظهر من جديد
+    if (!next.intro) setIntroClosedAt(null)
+    setState({ payload: next, selected: message.selected })
+  }
+  const applyRenderRef = useRef(applyRender)
+  applyRenderRef.current = applyRender
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const message = parseMessage<ToFrame>(event, window.parent)
       if (!message) return
       if (message.type === 'lb-editor:render') {
-        const next = message.payload as PreviewPayload
-        introSignature.current = next.intro ? JSON.stringify(next.intro) : ''
-        // اتقفلت من الإعدادات: المرة الجاية اللي تتفعّل فيها لازم تظهر من جديد
-        if (!next.intro) setIntroClosedAt(null)
-        setState({ payload: next, selected: message.selected })
+        // بيكتب في نص؟ الرد فيه النص القديم وتطبيقه كان هيمسح اللي اتكتب — نأجّله لحد ما يسيب النص
+        if (editingNode()) {
+          pending.current = message
+          return
+        }
+        pending.current = null
+        applyRender(message)
+      } else if (message.type === 'lb-editor:patch') {
+        patchText(message.id, message.key, message.value)
       } else if (message.type === 'lb-editor:intro') {
         setIntroClosedAt(null)
         setIntroRun((n) => n + 1)
@@ -71,6 +89,23 @@ export function FrameApp() {
     window.addEventListener('message', onMessage)
     sendToParent({ type: 'lb-editor:ready' })
     return () => window.removeEventListener('message', onMessage)
+  }, [])
+
+  // الكتابة المباشرة وسحب العناصر (تفويض أحداث على الصفحة) + تطبيق الرد المتأجّل لما المؤشر يسيب النص
+  useEffect(() => {
+    const flush = () =>
+      setTimeout(() => {
+        if (editingNode() || !pending.current) return
+        const message = pending.current
+        pending.current = null
+        applyRenderRef.current(message)
+      }, 0)
+    document.addEventListener('focusout', flush)
+    const stop = installInteractions({ payload: () => payloadRef.current, send: sendToParent })
+    return () => {
+      document.removeEventListener('focusout', flush)
+      stop()
+    }
   }, [])
 
   // ضغطة على قسم = تحديده، ومفيش تنقّل ولا إرسال فورم جوّه المحرر
@@ -122,6 +157,9 @@ export function FrameApp() {
     if (payload.css) syncHeadStyles(payload.css)
     applyBody(payload)
     document.querySelectorAll('.lb-anim').forEach((node) => node.classList.add('is-in')) // من غير حركة ظهور في المحرر
+    payloadRef.current = payload
+    markEditable(payload.blocks)
+    clearDragVars() // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق)
     markSelected(state.selected)
   }, [payload, state?.selected])
 

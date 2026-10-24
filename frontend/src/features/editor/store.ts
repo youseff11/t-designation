@@ -70,6 +70,8 @@ interface Data {
   coalesce: { key: string; at: number } | null
   /** بيزيد مع أي تعديل في المستند أو بيانات المناسبة — المعاينة والحفظ بيراقبوه */
   rev: number
+  /** بيزيد لما محتوى الدعوة نفسه يتغيّر (أقسام/إعدادات/بيانات) — مش لما الترجمة بس تتغيّر */
+  contentRev: number
 
   saveStatus: SaveStatus
   savedAt: string
@@ -148,6 +150,7 @@ const initial = (): Data => ({
   future: [],
   coalesce: null,
   rev: 0,
+  contentRev: 0,
   saveStatus: 'saved',
   savedAt: '',
   saveError: '',
@@ -157,6 +160,10 @@ const initial = (): Data => ({
 export const baseLangOf = (doc: EditorDocument): 'ar' | 'en' =>
   String(doc.theme?.base_lang ?? 'ar').toLowerCase() === 'en' ? 'en' : 'ar'
 export const altLangOf = (doc: EditorDocument): 'ar' | 'en' => (baseLangOf(doc) === 'ar' ? 'en' : 'ar')
+
+/** ‎1‎ لو أقسام/إعدادات/ثيم المستند اتبدّلت (مراجع مختلفة) — تعديل الترجمة لوحده بيسيبهم زي ما هم. */
+const contentChanged = (a: EditorDocument, b: EditorDocument) =>
+  a.blocks !== b.blocks || a.settings !== b.settings || a.theme !== b.theme ? 1 : 0
 
 /** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع). */
 const keepSelection = (doc: EditorDocument, selected: string | null) =>
@@ -200,6 +207,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
       selected: keepSelection(next, state.selected),
       saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
       rev: state.rev + 1,
+      contentRev: state.contentRev + contentChanged(state.doc, next),
     })
   },
 
@@ -285,6 +293,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         fieldErrors: errors,
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
+        contentRev: state.contentRev + 1,
       }
     }),
 
@@ -308,6 +317,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         selected: keepSelection(previous, state.selected),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
+        contentRev: state.contentRev + contentChanged(state.doc, previous),
       }
     }),
 
@@ -323,6 +333,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         selected: keepSelection(next, state.selected),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
+        contentRev: state.contentRev + contentChanged(state.doc, next),
       }
     }),
 

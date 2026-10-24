@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { fetchPreview } from '../api'
-import { useEditor } from '../store'
+import { baseLangOf, useEditor } from '../store'
 import type { FromFrame } from '../types'
 import { useEditorUi } from '../ui'
 import { parseMessage, sendToFrame } from './bridge'
@@ -32,6 +32,9 @@ export function PreviewPane({ onKey }: Props) {
   const selectSource = useEditor((s) => s.selectSource)
   const onKeyRef = useRef(onKey)
   onKeyRef.current = onKey
+  const uiRef = useRef(ui)
+  uiRef.current = ui
+  const lastRefused = useRef(0)
 
   // رسائل الإطار
   useEffect(() => {
@@ -41,10 +44,21 @@ export function PreviewPane({ onKey }: Props) {
       if (message.type === 'lb-editor:ready') setReady((n) => n + 1)
       else if (message.type === 'lb-editor:select') useEditor.getState().select(message.id, 'preview')
       else if (message.type === 'lb-editor:key') onKeyRef.current(message.key, message.shiftKey)
+      else if (message.type === 'lb-editor:text') useEditor.getState().setProp(message.id, message.key, message.value)
+      else if (message.type === 'lb-editor:layout')
+        useEditor.getState().setLayout(message.id, message.slot, message.dx, message.dy)
+      else if (message.type === 'lb-editor:refused') {
+        // تنبيه واحد كل ٢٫٥ ثانية مهما كتب
+        const now = Date.now()
+        if (now - lastRefused.current > 2500) {
+          lastRefused.current = now
+          uiRef.current.toast(t('editorInline.refused'), 'info')
+        }
+      }
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
-  }, [])
+  }, [t])
 
   // طلب المعاينة بعد كل تعديل
   useEffect(() => {
@@ -57,6 +71,7 @@ export function PreviewPane({ onKey }: Props) {
           // بيانات المناسبة غير المحفوظة بتتبعت مع المستند: المعاينة تعكس تبويب «البيانات» قبل الحفظ
           const { mode, id, doc, fields, previewLang, selected: current } = useEditor.getState()
           const payload = await fetchPreview(mode, id, doc, previewLang, controller.signal, fields)
+          useEditor.getState().setRenderedLang(payload.lang)
           sendToFrame(frame.current, { type: 'lb-editor:render', payload, selected: current })
           setBusy(false)
         } catch (error) {
@@ -73,6 +88,16 @@ export function PreviewPane({ onKey }: Props) {
       controller.abort()
     }
   }, [rev, ready, t, ui])
+
+  // نص اتكتب في خانة باللوحة → يظهر في المعاينة في نفس اللحظة (من غير ما نستنى السيرفر).
+  // مانبعتش لو المعاينة معروضة بالنسخة المترجَمة: النص اللي هناك مش نص الدعوة.
+  const lastText = useEditor((s) => s.lastText)
+  useEffect(() => {
+    if (!lastText || !ready) return
+    const { doc, renderedLang } = useEditor.getState()
+    if (renderedLang && renderedLang !== baseLangOf(doc)) return
+    sendToFrame(frame.current, { type: 'lb-editor:patch', id: lastText.id, key: lastText.key, value: lastText.value })
+  }, [lastText, ready])
 
   // زرار «الافتتاحية»: نبعت بس لما العدّاد يتغيّر بعد فتح المحرر (مش قيمته القديمة من فتحة سابقة)
   const introCount = useIntroBus((s) => s.count)

@@ -12,6 +12,7 @@ import { DataPanel } from './panels/DataPanel'
 import { InspectorPanel } from './panels/InspectorPanel'
 import { SettingsPanel } from './panels/SettingsPanel'
 import { ThemePanel } from './panels/ThemePanel'
+import { TranslationPanel } from './panels/TranslationPanel'
 import { useEditorShortcuts, useSaveFeedback, useSaveNow } from './shortcuts'
 import { useEditor, type Tab } from './store'
 import type { Device, EditorSchema } from './types'
@@ -20,24 +21,6 @@ import './styles/editor.css'
 import './styles/settings.css'
 
 const DEVICES: Device[] = ['mobile', 'tablet', 'desktop']
-
-/** تبويبات لسه ما اتنقلتش (الترجمة…): رابط للمحرر القديم لحد ما تجهز. */
-function LaterNotice() {
-  const { t } = useTranslation()
-  const mode = useEditor((s) => s.mode)
-  const id = useEditor((s) => s.id)
-  return (
-    <div className="ed-empty">
-      <p>
-        <strong>{t('editor.later.title')}</strong>
-      </p>
-      <p>{t('editor.later.body')}</p>
-      <a className="ed-btn ed-btn--sm" href={`/dashboard/${mode === 'invitation' ? 'invitations' : 'templates'}/${id}/editor/`}>
-        {t('editor.later.open')}
-      </a>
-    </div>
-  )
-}
 
 function SaveState() {
   const { t } = useTranslation()
@@ -191,7 +174,7 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
               {tab === 'theme' && <ThemePanel schema={schema} />}
               {tab === 'data' && <DataPanel />}
               {tab === 'settings' && <SettingsPanel schema={schema} />}
-              {tab === 'i18n' && <LaterNotice />}
+              {tab === 'i18n' && <TranslationPanel />}
             </section>
           </div>
         </aside>

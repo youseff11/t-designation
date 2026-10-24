@@ -5,6 +5,7 @@ import { findBlock } from '../doc'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
+import { LayoutGroup } from './LayoutGroup'
 
 /** خصائص القسم المحدَّد: الاسم، ثم مجموعات حقول المحتوى ثم التنسيق — كلها مبنية من السكيما. */
 export function InspectorPanel({ schema }: { schema: EditorSchema }) {
@@ -74,6 +75,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
           openFirst={false}
         />
       )}
+      <LayoutGroup block={block} spec={spec} />
     </>
   )
 }
