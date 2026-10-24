@@ -6,6 +6,7 @@ import { initI18n } from '@/i18n'
 import { FieldGroups } from '../panels/FieldGroups'
 import { resetEditor } from '../store'
 import type { FieldSpec } from '../types'
+import { EditorUiProvider } from '../ui'
 import './index'
 import { gearFor } from './textStyle'
 import { buildStyleIndex, textStyleChildren } from './textStyleIndex'
@@ -34,7 +35,12 @@ const specs: FieldSpec[] = [
 ]
 
 function mount(values: Record<string, unknown>, set: (spec: FieldSpec, value: unknown) => void) {
-  return render(<FieldGroups specs={specs} get={(spec) => values[spec.key]} set={set} open={{}} onToggle={() => {}} />)
+  // حقل الخط بقى فيه «رفع خط جديد» (C3) وده محتاج مزوّد تنبيهات المحرر
+  return render(
+    <EditorUiProvider>
+      <FieldGroups specs={specs} get={(spec) => values[spec.key]} set={set} open={{}} onToggle={() => {}} />
+    </EditorUiProvider>,
+  )
 }
 
 beforeAll(() => {
