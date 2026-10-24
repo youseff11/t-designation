@@ -154,7 +154,8 @@ describe('InspectorPanel', () => {
   it('builds groups from the schema and skips editor-hidden fields', () => {
     useEditor.getState().select('a')
     mount(<InspectorPanel schema={schema} />)
-    expect(document.querySelectorAll('details.ed-group > summary')).toHaveLength(2)
+    // مجموعة المحتوى + التنسيق + «مواضع النصوص» (دايماً موجودة وفيها التلميح)
+    expect(document.querySelectorAll('details.ed-group > summary')).toHaveLength(3)
     expect(document.querySelector('[data-field-key="heading"]')).not.toBeNull()
     expect(document.querySelector('[data-field-key="hidden_field"]')).toBeNull()
   })
