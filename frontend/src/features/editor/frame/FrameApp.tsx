@@ -11,6 +11,7 @@ import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
 import { installImported, markPicked, prepareImported } from '../imported/frame'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
+import { installNoHover, stripHover } from './noHover'
 
 const EDITOR_MOD_KEYS = new Set(['s', 'z', 'y'])
 const ARROWS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'])
@@ -111,6 +112,7 @@ export function FrameApp() {
       }, 0)
     document.addEventListener('focusout', flush)
     const stop = installInteractions({ payload: () => payloadRef.current, send: sendToParent })
+    const stopNoHover = installNoHover() // مفيش hover في المحرر — لا تأثيرات القالب ولا إطارات المحرر
     const stopImported = installImported({
       payload: () => payloadRef.current,
       send: sendToParent,
@@ -123,6 +125,7 @@ export function FrameApp() {
       document.removeEventListener('focusout', flush)
       stop()
       stopImported()
+      stopNoHover()
     }
   }, [])
 
@@ -177,6 +180,7 @@ export function FrameApp() {
   useLayoutEffect(() => {
     if (!payload) return
     if (payload.css) syncHeadStyles(payload.css)
+    stripHover() // ستايل جديد (قسم اتبدّل / CSS اتحدّث) بيتنضّف من الـhover
     applyBody(payload)
     document.querySelectorAll('.lb-anim').forEach((node) => node.classList.add('is-in')) // من غير حركة ظهور في المحرر
     payloadRef.current = payload
