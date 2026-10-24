@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import dashboard, guests, invite, public, views
+from . import dashboard, editor, guests, invite, public, views
 
 # الأساس المشترك (الجلسة، اللغة، الموقع) هنا؛ كل ميزة في ملفها وبتتجمّع تحت.
 # مفيش حد بيعدّل الملف ده غير لما ميزة جديدة بتتضاف — راجع docs/react-migration.md.
@@ -17,3 +17,4 @@ urlpatterns += public.urlpatterns
 urlpatterns += dashboard.urlpatterns
 urlpatterns += guests.urlpatterns
 urlpatterns += invite.urlpatterns
+urlpatterns += editor.urlpatterns

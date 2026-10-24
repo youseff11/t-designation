@@ -204,12 +204,15 @@ def _block_payload(block: dict, ctx: dict, extras: dict, *, invitation, guest,
     out_props = _pick(props, _PROP_KEYS.get(btype, ()))
 
     attrs = {"id": block["id"], "className": classes, "style": ctx["css"]}
+    if ctx["hidden"]:
+        # القسم المخفي بيوصل بس للمحرر (الضيف بيتخطّاه) — نفس كلاس القالب القديم
+        attrs["className"] = f"{classes} lb--hidden"
     if btype == "rsvp":
         attrs["id"] = "rsvp"           # القالب القديم بيكتب id ثابت للتأكيد
     elif btype == "branding":
-        attrs["className"] = f"{classes} lb--branding"
+        attrs["className"] = f"{attrs['className']} lb--branding"
     elif btype == "hero":
-        attrs["className"] = f"{classes} lb-hero--{props.get('height')}"
+        attrs["className"] = f"{attrs['className']} lb-hero--{props.get('height')}"
     elif btype == "spacer":
         attrs["style"] = ""
 
@@ -223,6 +226,9 @@ def _block_payload(block: dict, ctx: dict, extras: dict, *, invitation, guest,
         "overlays": "",
         "code": "",
     }
+    if editable:
+        record["hidden"] = bool(ctx["hidden"])
+        record["gated"] = bool(ctx["gated"])
 
     if btype == "hero":
         out_props["buttons"] = _buttons(props.get("buttons"), data)
@@ -265,7 +271,7 @@ def _block_payload(block: dict, ctx: dict, extras: dict, *, invitation, guest,
             render_to_string("blocks/_overlay_item.html", {
                 "overlay": overlay, "index": index,
                 "wrap_class": "lb-video-text", "is_video": True,
-                "editable": False,
+                "editable": editable,
             }) for index, overlay in enumerate(props.get("text_overlays") or [])
         ]
 
@@ -291,13 +297,17 @@ def build_payload(
     lang: str = "",
     runtime_scripts: list[dict] | None = None,
     runtime_root_attrs: dict | None = None,
+    editable: bool = False,
 ) -> tuple[dict, dict]:
     """يحوّل المستند لحمولة العرض. بيطابق ‎renderer.render_document‎ خطوة بخطوة.
 
     بيرجّع ‎(payload, private)‎: الأولى JSON عام، والتانية قيم داخلية للسيرفر
     (إعدادات المستند والبيانات) بتتبني منها الميتا ومشغّل الموسيقى.
+
+    ‎editable=True‎ (معاينة المحرر): الأقسام المخفية بتفضل في الحمولة (‎hidden‎)
+    والأقسام خارج الباقة بتتعلّم (‎gated‎)، والـRSVP والعناصر الفاضية بتتعرض
+    كأنها في المحرر. الضيف دايماً ‎editable=False‎.
     """
-    editable = False
     doc = blocks_engine.normalize_document(document)
     runtime_scripts = R._runtime_with_countdown_date(  # noqa: SLF001
         runtime_scripts, R._countdown_date_from_document(doc))
