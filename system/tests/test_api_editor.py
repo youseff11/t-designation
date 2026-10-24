@@ -4,10 +4,12 @@
 """
 
 import json
+import tempfile
+from pathlib import Path
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.utils import timezone
 
 from system import blocks as B
@@ -294,3 +296,36 @@ class SaveTests(EditorApiCase):
         self.template.refresh_from_db()
         self.assertEqual([b["id"] for b in self.template.get_document()["blocks"]], [block["id"]])
         self.assertEqual(self.template.preview_render, {})
+
+
+# ---------------------------------------------------------------- إطار المعاينة (iframe)
+class FramePageTests(TestCase):
+    """‎/editor-frame/‎: shell فاضي لفريق العمل بس، ومتحمّل في نفس الأصل."""
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        manifest = {"src/editor-frame-main.tsx": {"file": "assets/editorFrame-abc.js", "isEntry": True,
+                                                  "css": ["assets/editorFrame-abc.css"]}}
+        (Path(tmp.name) / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        override = override_settings(VITE_BUILD_DIR=Path(tmp.name), VITE_DEV_SERVER="")
+        override.enable()
+        self.addCleanup(override.disable)
+        self.staff = User.objects.create_user("owner", password="x" * 12, is_staff=True)
+        self.plain = User.objects.create_user("visitor", password="x" * 12)
+
+    def test_staff_gets_the_shell(self):
+        self.client.force_login(self.staff)
+        response = self.client.get("/editor-frame/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('id="root"', html)
+        self.assertIn("editorFrame-abc.js", html)
+        self.assertIn("lb-doc--editing", html)
+        self.assertEqual(response["X-Frame-Options"], "SAMEORIGIN")
+        self.assertIn("noindex", response["X-Robots-Tag"])
+
+    def test_anonymous_and_non_staff_are_refused(self):
+        self.assertEqual(self.client.get("/editor-frame/").status_code, 403)
+        self.client.force_login(self.plain)
+        self.assertEqual(self.client.get("/editor-frame/").status_code, 403)

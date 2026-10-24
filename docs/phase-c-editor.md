@@ -76,3 +76,41 @@ C1 بجلسة واحدة (المسار الحرج). بعد ما يندمج: C2 +
   في القديم) ومفيش قالب مستورد في القاعدة التجريبية: نحتاج مستند اختبار صناعي.
 - الترجمة: السيرفر بيرجّع للغة الأساسية لو مفيش ترجمة، والحمولة لازم تقول اللغة اللي اتعرضت **فعلاً** (`lang`).
 - حجم المستند (القوالب المستوردة لحد ٣ ميجا): الحفظ والمعاينة بيبعتوا المستند كله — نحتفظ بنفس السلوك ونقيس.
+
+---
+
+## حالة التنفيذ — C1 (اتنفّذ 2026-10-24)
+
+**اللي اشتغل ومتجرّب في المتصفح** (دعوة وقالب حقيقيين على نسخة قاعدة تجريبية):
+فتح المحرر · قايمة الأقسام بالسحب (dnd-kit) والإخفاء والتكرار والحذف والإضافة · الـinspector من السكيما
+(text/textarea/number/range/color/select/font/icon/align/toggle/image-url/list) · المعاينة الحية (iframe) بالمستند
+غير المحفوظ · التحديد من القايمة ومن المعاينة · الأقسام المخفية باهتة وخارج الباقة بتنبيه · تراجع/إعادة
+(Ctrl+Z/Y) مع دمج الكتابة المتتالية · حفظ يدوي (Ctrl+S) وتلقائي بعد ٢٫٥ ث · إعادة التحميل ترجّع المحفوظ ·
+تبديل الجهاز · درج اللوحة على الموبايل · وضع القالب (من غير تبويب البيانات).
+
+**الروابط:** `/app/dashboard/invitations/<id>/editor` و`/app/dashboard/templates/<id>/editor`.
+روابط اللوحة (`editorPath`، `editorUrl` من الـAPI) لسه بتفتح المحرر القديم — بتتحوّل في C5.
+
+**الملفات:** `features/editor/` (`store.ts` الحالة+التاريخ، `doc.ts` عمليات المستند، `autosave.ts`،
+`fields/` سجل الحقول، `panels/`، `frame/` الإطار والمعاينة، `styles/editor.css` منقول من القديم بنفس أسماء `ed-*`)،
+`system/api/editor.py` + `editor_page.py`، `templates/spa/editor_frame.html`، entry `src/editor-frame-main.tsx`.
+تعديلات على الأساس (بأقل شكل): `system/api/urls.py` و`Core/urls.py` (`/editor-frame/`)،
+`app/routes.tsx` (`editorRoutes`)، `vite.config.ts` (entry تالت)، `invite_render.build_payload(editable=…)`،
+`invite/blocks/Frame.tsx`+`Rsvp.tsx` (`Gate`) و`invite/types.ts` (`hidden`/`gated`).
+
+**الاختبارات:** Django `system.tests.test_api_editor` (28) + `test_api_invite` (65، من غير تراجع)؛ vitest ٥٣ للمحرر
+(المجموع ١٦٩)؛ typecheck/lint/build ✅.
+
+**نقاط التوسعة لـC2–C4:** `registerField(type, Component)` في `fields/` (استبدال حقل صورة/خط/html)،
+`useEditor.commit(change, {coalesce})` لأي تعديل جديد في المستند، رسائل الإطار في `types.ts` (`FromFrame`/`ToFrame`)
+و`frame/FrameApp.tsx` لأي تفاعل داخل المعاينة، تبويبات اللوحة في `EditorShell.tsx` (`LaterNotice` مكان C2/C4a).
+
+**فجوات معروفة (مش عيوب في C1 — مكانها الخطوات الجاية):**
+- الافتتاحية والموسيقى وruntime القوالب المستوردة مش بتتعرض في الـframe (C2/C5).
+- المعاينة بتبقى من قاعدة البيانات لبيانات المناسبة (الأسماء/التاريخ) زي القديم: التعديل بيبان بعد الحفظ التلقائي.
+- الكتابة في حقل نص بتتحدّث بعد ~٠٫٣ ث + رد السيرفر (مفيش `livePatchText` لسه — C4a).
+- `html` حقل textarea عادي، و`image`/`media` رابط بس (الاختيار/الرفع/القص = C3)، وحقول `ts_*` (ترس تنسيق النص) مخفية (C2).
+- تبويبات التصميم/البيانات/الترجمة/إعدادات بتعرض رابط للمحرر القديم (`LaterNotice`).
+- الحذف بـ`window.confirm` زي القديم.
+- مفيش parity e2e للمحرر لسه (`editor-invitation`/`editor-template` في `e2e/pages.ts` جاهزين، ينضافوا في `ported.ts` مع C5).
+- رد المعاينة بيتأخر على المستندات التقيلة (السيرفر بيرندر المستند كله) — لو بقت مشكلة نضيف تخزين مؤقت بالبصمة.

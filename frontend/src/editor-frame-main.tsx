@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client'
 
 import { FrameApp } from '@/features/editor/frame/FrameApp'
 import '@/features/invite/invite.css'
+import '@/features/editor/frame/frame.css'
 
 /**
  * Entry إطار معاينة المحرر (‎/editor-frame/‎): بيعرض حمولة الدعوة اللي الصفحة الأم بتبعتها
