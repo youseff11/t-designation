@@ -1,9 +1,10 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 import { BlockView } from '@/features/invite/blocks'
 import { prefetchBlocks } from '@/features/invite/blocks/lazy'
 import { InviteContext } from '@/features/invite/context'
 import { syncHeadStyles } from '@/features/invite/head'
+import { Intro } from '@/features/invite/Intro'
 import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
@@ -33,17 +34,30 @@ function markSelected(id: string | null) {
 /**
  * المعاينة جوّه المحرر. الصفحة الأم بتبعت الحمولة (‎lb-editor:render‎) والـframe بيرسمها بنفس
  * مكوّنات عارض الدعوة، وبيرجّع الضغطات (تحديد قسم) واختصارات لوحة المفاتيح. مفيش شبكة هنا.
- * C1: من غير الافتتاحية ولا الموسيقى ولا runtime القوالب المستوردة (C2/C4/C5).
+ * الافتتاحية بتتعرض فوق المسرح؛ ولما تتفتح بتفضل مقفولة مهما اتعدّل، وزرار «الافتتاحية» يعيدها.
+ * لسه من غير الموسيقى ولا runtime القوالب المستوردة (C5).
  */
 export function FrameApp() {
   const [state, setState] = useState<{ payload: PreviewPayload; selected: string | null } | null>(null)
+  // الافتتاحية بتقرا إعداداتها مرة عند التركيب، فبنعيد تركيبها (key) مع كل تعديل في محتواها —
+  // إلا بعد ما تتفتح: مفتاحها يتجمّد على آخر محتوى عشان ماترجعش تغطي المعاينة مع كل حرف
+  const [introRun, setIntroRun] = useState(0)
+  const [introClosedAt, setIntroClosedAt] = useState<string | null>(null)
+  const introSignature = useRef('')
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const message = parseMessage<ToFrame>(event, window.parent)
       if (!message) return
       if (message.type === 'lb-editor:render') {
-        setState({ payload: message.payload as PreviewPayload, selected: message.selected })
+        const next = message.payload as PreviewPayload
+        introSignature.current = next.intro ? JSON.stringify(next.intro) : ''
+        // اتقفلت من الإعدادات: المرة الجاية اللي تتفعّل فيها لازم تظهر من جديد
+        if (!next.intro) setIntroClosedAt(null)
+        setState({ payload: next, selected: message.selected })
+      } else if (message.type === 'lb-editor:intro') {
+        setIntroClosedAt(null)
+        setIntroRun((n) => n + 1)
       } else if (message.type === 'lb-editor:select') {
         setState((current) => (current ? { ...current, selected: message.id } : current))
         if (message.scroll && message.id) {
@@ -85,10 +99,19 @@ export function FrameApp() {
   }, [])
 
   const payload = state?.payload
+  const introJson = useMemo(() => (payload?.intro ? JSON.stringify(payload.intro) : ''), [payload])
+
+  // الافتتاحية اتفتحت (لمسة، زرار، عدّاد، نهاية الفيديو): نفتكر محتواها عشان مانركّبهاش تاني
+  useEffect(() => {
+    const onOpen = () => setIntroClosedAt(introSignature.current)
+    document.addEventListener('lb:intro-open', onOpen)
+    return () => document.removeEventListener('lb:intro-open', onOpen)
+  }, [])
+
   const ctx = useMemo(
     () =>
       payload
-        ? { lang: payload.lang, t: makeT(payload.lang), maxWidth: payload.maxWidth, demo: true, hasIntro: false }
+        ? { lang: payload.lang, t: makeT(payload.lang), maxWidth: payload.maxWidth, demo: true, hasIntro: Boolean(payload.intro) }
         : null,
     [payload],
   )
@@ -114,6 +137,7 @@ export function FrameApp() {
 
   return (
     <InviteContext.Provider value={ctx}>
+      {payload.intro && <Intro key={`${introRun}:${introClosedAt ?? introJson}`} data={payload.intro} />}
       <div className={stageClass}>
         {payload.blocks.map((block) => (
           <BlockView key={block.id} block={block} />

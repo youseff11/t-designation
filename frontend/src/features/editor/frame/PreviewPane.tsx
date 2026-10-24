@@ -6,6 +6,7 @@ import { useEditor } from '../store'
 import type { FromFrame } from '../types'
 import { useEditorUi } from '../ui'
 import { parseMessage, sendToFrame } from './bridge'
+import { useIntroBus } from './introBus'
 
 /** وقفة بعد آخر تعديل قبل ما نطلب معاينة جديدة (السيرفر بيرندر المستند كله). */
 export const PREVIEW_WAIT = 280
@@ -53,8 +54,9 @@ export function PreviewPane({ onKey }: Props) {
       async () => {
         setBusy(true)
         try {
-          const { mode, id, doc, previewLang, selected: current } = useEditor.getState()
-          const payload = await fetchPreview(mode, id, doc, previewLang, controller.signal)
+          // بيانات المناسبة غير المحفوظة بتتبعت مع المستند: المعاينة تعكس تبويب «البيانات» قبل الحفظ
+          const { mode, id, doc, fields, previewLang, selected: current } = useEditor.getState()
+          const payload = await fetchPreview(mode, id, doc, previewLang, controller.signal, fields)
           sendToFrame(frame.current, { type: 'lb-editor:render', payload, selected: current })
           setBusy(false)
         } catch (error) {
@@ -71,6 +73,15 @@ export function PreviewPane({ onKey }: Props) {
       controller.abort()
     }
   }, [rev, ready, t, ui])
+
+  // زرار «الافتتاحية»: نبعت بس لما العدّاد يتغيّر بعد فتح المحرر (مش قيمته القديمة من فتحة سابقة)
+  const introCount = useIntroBus((s) => s.count)
+  const seenIntro = useRef(introCount)
+  useEffect(() => {
+    if (introCount === seenIntro.current) return
+    seenIntro.current = introCount
+    sendToFrame(frame.current, { type: 'lb-editor:intro' })
+  }, [introCount])
 
   // التحديد بيتزامن من غير طلب جديد؛ التمرير للقسم بس لو الضغطة من القايمة
   useEffect(() => {

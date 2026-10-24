@@ -1,4 +1,4 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -25,15 +25,26 @@ export function registerField(type: FieldType, component: ComponentType<FieldPro
 
 export const getField = (type: FieldType) => registry.get(type)
 
-/** غلاف الحقل: العنوان، تنبيه «خارج الباقة»، والمساعدة — والجسم من السجل حسب النوع. */
-export function FieldRenderer({ spec, value, onChange }: Omit<FieldProps, 'id'>) {
+/**
+ * غلاف الحقل: العنوان، تنبيه «خارج الباقة»، والمساعدة — والجسم من السجل حسب النوع.
+ * ‎gear‎: ترس تنسيق النص (‎textStyle.tsx‎) — بيتحط جنب الجسم في صف واحد ولوحته تحته.
+ */
+export function FieldRenderer({ spec, value, onChange, gear }: Omit<FieldProps, 'id'> & { gear?: ReactNode }) {
   const { t } = useTranslation()
   const id = useId()
   const gated = useEditor((s) => !!spec.feature && !s.features.includes(spec.feature))
   const Body = registry.get(spec.type) ?? registry.get('text')
   if (!Body) return null
 
-  const body = <Body spec={spec} value={value} onChange={onChange} id={id} />
+  const field = <Body spec={spec} value={value} onChange={onChange} id={id} />
+  const body = gear ? (
+    <div className="ed-text-control-row">
+      {field}
+      {gear}
+    </div>
+  ) : (
+    field
+  )
   return (
     <div className="ed-field" data-field-key={spec.key}>
       {spec.type !== 'toggle' && (

@@ -13,6 +13,7 @@ import type {
   EditorMeta,
   EditorMode,
   EventFields,
+  FieldOption,
   FontRow,
   IntroRow,
   MusicRow,
@@ -43,6 +44,8 @@ interface Data {
   meta: EditorMeta | null
   features: string[]
   lib: Libraries
+  /** خيارات حالة الدعوة لتبويب «البيانات» */
+  statusChoices: FieldOption[]
 
   doc: EditorDocument
   fields: EventFields | null
@@ -105,6 +108,7 @@ const initial = (): Data => ({
   meta: null,
   features: [],
   lib: { assets: [], fonts: [], intros: [], music: [], categories: [] },
+  statusChoices: [],
   doc: emptyDoc(),
   fields: null,
   fieldErrors: {},
@@ -145,6 +149,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         music: boot.music,
         categories: boot.categories,
       },
+      statusChoices: boot.statusChoices ?? [],
       doc: boot.document,
       fields: boot.fields,
     }),
@@ -263,8 +268,8 @@ export const useEditor = create<EditorState>()((set, get) => ({
         meta: now.meta
           ? { ...now.meta, slug: res.slug, status: res.status || now.meta.status, publicUrl: res.publicUrl, clientFollowupUrl: res.clientFollowupUrl }
           : now.meta,
-        // الرابط ممكن يتنضّف على السيرفر (مسافات/حروف كبيرة)
-        fields: now.fields ? { ...now.fields, slug: res.slug } : now.fields,
+        // الرابط ممكن يتنضّف على السيرفر (مسافات/حروف كبيرة) — إلا لو اتغيّر أثناء الحفظ (زرار «تغيير الرابط»)
+        fields: now.fields && now.fields.slug === start.fields?.slug ? { ...now.fields, slug: res.slug } : now.fields,
       })
       return true
     } catch (error) {

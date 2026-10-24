@@ -7,8 +7,20 @@ export const fetchSchema = () => api<EditorSchema>('/editor/schema/')
 
 export const fetchBootstrap = (mode: EditorMode, id: number) => api<Bootstrap>(`${base(mode, id)}/`)
 
-export const fetchPreview = (mode: EditorMode, id: number, document: EditorDocument, lang: string, signal?: AbortSignal) =>
-  api<PreviewPayload>(`${base(mode, id)}/preview/`, { method: 'POST', body: { document, lang }, signal })
+/** ‎fields‎ (بيانات المناسبة غير المحفوظة) بتتبعت لمحرر الدعوة بس عشان المعاينة تعكسها قبل الحفظ. */
+export const fetchPreview = (
+  mode: EditorMode,
+  id: number,
+  document: EditorDocument,
+  lang: string,
+  signal?: AbortSignal,
+  fields?: EventFields | null,
+) =>
+  api<PreviewPayload>(`${base(mode, id)}/preview/`, {
+    method: 'POST',
+    body: mode === 'invitation' && fields ? { document, lang, fields } : { document, lang },
+    signal,
+  })
 
 export const postSave = (mode: EditorMode, id: number, document: EditorDocument, fields: EventFields | null) =>
   api<SaveResponse>(`${base(mode, id)}/save/`, {

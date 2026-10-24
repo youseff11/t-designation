@@ -196,6 +196,8 @@ export interface Bootstrap {
   intros: IntroRow[]
   music: MusicRow[]
   categories: { value: string; label: string }[]
+  /** خيارات حالة الدعوة (من ‎Invitation.STATUS_CHOICES‎) — محرر الدعوة بس */
+  statusChoices?: FieldOption[]
   meta: EditorMeta
 }
 
@@ -217,6 +219,8 @@ export const FRAME_PREFIX = 'lb-editor:'
 export type ToFrame =
   | { type: 'lb-editor:render'; payload: unknown; selected: string | null }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
+  /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
+  | { type: 'lb-editor:intro' }
 export type FromFrame =
   | { type: 'lb-editor:ready' }
   | { type: 'lb-editor:select'; id: string }
