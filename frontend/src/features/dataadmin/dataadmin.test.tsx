@@ -345,20 +345,38 @@ describe('hero live preview', () => {
     expect(within(preview).getByText(/بتعدّل: العنوان الرئيسي — عربي/)).toBeInTheDocument()
   })
 
-  it('flips the preview language and theme when a field of another language or theme gets the focus', async () => {
+  it('shows only the fields of the language and theme picked in the preview', async () => {
     mount('/dashboard/data/system.homehero/1')
     const preview = (await screen.findByTestId('hero-bg')).closest('.hp') as HTMLElement
-    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'rtl')
-    expect(preview.querySelector('.hp-stage')).toHaveAttribute('data-theme', 'light')
+    // عربي/لايت: حقول العربي بس، ومفيش خلفية دارك
+    expect(screen.getByLabelText('العنوان الرئيسي — عربي')).toBeInTheDocument()
+    expect(screen.queryByLabelText('العنوان الرئيسي — إنجليزي')).toBeNull()
+    expect(screen.queryByLabelText('خلفية دارك — عربي')).toBeNull()
 
-    fireEvent.focus(screen.getByLabelText('العنوان الرئيسي — إنجليزي'))
-    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'ltr')
+    fireEvent.click(within(preview).getByRole('button', { name: 'English' }))
+    expect(screen.getByLabelText('العنوان الرئيسي — إنجليزي')).toHaveValue('Your story')
+    expect(screen.queryByLabelText('العنوان الرئيسي — عربي')).toBeNull()
     expect(within(preview).getByText('Your story')).toBeInTheDocument()
 
-    fireEvent.focus(screen.getByLabelText('خلفية دارك — عربي'))
-    expect(preview.querySelector('.hp-stage')).toHaveAttribute('data-theme', 'dark')
-    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'rtl')
+    fireEvent.click(within(preview).getByRole('button', { name: 'عربي' }))
+    fireEvent.click(within(preview).getByRole('button', { name: 'داكن' }))
+    expect(screen.getByLabelText('خلفية دارك — عربي')).toBeInTheDocument()
     expect(screen.getByTestId('hero-bg').style.backgroundImage).toContain('/media/home/x/dark.webp')
+  })
+
+  it('shows the original sentence as a faint placeholder, and keeps edits of hidden fields', async () => {
+    mount('/dashboard/data/system.homehero/1')
+    const preview = (await screen.findByTestId('hero-bg')).closest('.hp') as HTMLElement
+    const title = screen.getByLabelText('العنوان الرئيسي — عربي') as HTMLInputElement
+    expect(title.value).toBe('')
+    expect(title.placeholder).toBe('تعكس قصة حبك')
+    expect((screen.getByLabelText('خانة ١ — القيمة (عربي)') as HTMLInputElement).placeholder).toBe('+٥٠')
+
+    fireEvent.change(title, { target: { value: 'عنواني' } })
+    fireEvent.click(within(preview).getByRole('button', { name: 'English' }))
+    expect((screen.getByLabelText('العنوان الرئيسي — إنجليزي') as HTMLInputElement).value).toBe('Your story')
+    fireEvent.click(within(preview).getByRole('button', { name: 'عربي' }))
+    expect((screen.getByLabelText('العنوان الرئيسي — عربي') as HTMLInputElement).value).toBe('عنواني')
   })
 
   it('lets the viewer switch language and theme by hand, falling back to the default image', async () => {

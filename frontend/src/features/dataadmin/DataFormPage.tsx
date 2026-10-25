@@ -12,7 +12,7 @@ import { errorText, useToast } from '@/features/dashboard/ui/Toast'
 import { dataKeys, saveObject, setUserPassword, useDataObject, useDataSchema } from './api'
 import { DeleteDialog } from './DeleteDialog'
 import { CellView, FieldInput } from './Fields'
-import { HeroPreview, viewForField, type HeroView } from './HeroPreview'
+import { heroDefaultKey, heroFieldVisible, HeroPreview, viewForField, type HeroView } from './HeroPreview'
 import type { FieldInfo, FieldValue, ObjectResponse, SchemaResponse, Values } from './types'
 import './dataadmin.css'
 
@@ -27,6 +27,7 @@ function Row({
   readonly,
   onChange,
   onFile,
+  placeholder,
 }: {
   modelKey: string
   info: FieldInfo
@@ -36,6 +37,7 @@ function Row({
   readonly?: ObjectResponse['readonly'][string]
   onChange: (value: FieldValue) => void
   onFile: (file: File | null) => void
+  placeholder?: string
 }) {
   const id = useId()
   return (
@@ -50,7 +52,7 @@ function Row({
             <CellView cell={readonly} />
           </div>
         ) : (
-          <FieldInput id={id} modelKey={modelKey} info={info} value={value} file={file} onChange={onChange} onFile={onFile} />
+          <FieldInput id={id} modelKey={modelKey} info={info} value={value} file={file} placeholder={placeholder} onChange={onChange} onFile={onFile} />
         )}
         {info.help && <small className="muted">{info.help}</small>}
         {error && (
@@ -136,7 +138,7 @@ export function DataFormPage() {
 }
 
 function FormBody({ model, id, meta }: { model: string; id: string; meta: SchemaResponse | ObjectResponse }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const toast = useToast()
   const client = useQueryClient()
@@ -263,11 +265,15 @@ function FormBody({ model, id, meta }: { model: string; id: string; meta: Schema
           void save('stay')
         }}
       >
-        {sections.map((section, index) => (
+        {sections.map((section, index) => {
+          // هيرو الرئيسية: الحقول اللي ليها علاقة باللغة والمظهر المختارين في المعاينة بس
+          const names = section.fields.filter((name) => !hasPreview || heroFieldVisible(name, heroView))
+          if (names.length === 0) return null
+          return (
           <fieldset key={index} className="da-section card">
             {section.title && <legend>{section.title}</legend>}
             {section.description && <p className="muted">{section.description}</p>}
-            {section.fields.map((name) => {
+            {names.map((name) => {
               const info = byName.get(name)
               if (!info) return null
               return (
@@ -281,11 +287,13 @@ function FormBody({ model, id, meta }: { model: string; id: string; meta: Schema
                   readonly={object?.readonly[name]}
                   onChange={(value) => change(name, value)}
                   onFile={(file) => pickFile(name, file)}
+                  placeholder={hasPreview && !name.startsWith('bg_') ? String(i18n.t(`public.hero.${heroDefaultKey(name)}`, { lng: heroView.lang })) : undefined}
                 />
               )
             })}
           </fieldset>
-        ))}
+          )
+        })}
 
         {object && object.inlines.map((inline) => (
           <section key={inline.title} className="da-section card">

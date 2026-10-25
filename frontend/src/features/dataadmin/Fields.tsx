@@ -8,6 +8,8 @@ import type { Cell, FieldInfo, FieldValue, FileValue, Ref } from './types'
 interface Props {
   /** ‎id‎ الخانة الأساسية (التسمية بتشاور عليه) */
   id: string
+  /** النص الأصلي بيظهر شفاف في الخانة الفاضية */
+  placeholder?: string
   modelKey: string
   info: FieldInfo
   value: FieldValue | undefined
@@ -285,7 +287,7 @@ export function FieldInput(props: Props) {
         </label>
       )
     case 'textarea':
-      return <textarea id={id} rows={5} value={text} onChange={(event) => onChange(event.target.value)} />
+      return <textarea id={id} rows={5} value={text} placeholder={props.placeholder} onChange={(event) => onChange(event.target.value)} />
     case 'int':
       return <input id={id} type="number" step={1} value={text} onChange={(event) => onChange(event.target.value)} />
     case 'decimal':
@@ -347,6 +349,15 @@ export function FieldInput(props: Props) {
     case 'url':
       return <input id={id} type="text" dir="ltr" maxLength={info.maxLength} value={text} onChange={(event) => onChange(event.target.value)} />
     default:
-      return <input id={id} type="text" maxLength={info.maxLength} value={text} onChange={(event) => onChange(event.target.value)} />
+      return (
+        <input
+          id={id}
+          type="text"
+          maxLength={info.maxLength}
+          value={text}
+          placeholder={props.placeholder}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )
   }
 }

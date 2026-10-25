@@ -143,3 +143,6 @@ details > summary { cursor: pointer; padding: 8px 12px; border: 1px dashed var(-
   .da-split { grid-template-columns: 1fr; }
   .da-split .hp { order: 0; position: static; }
 }
+
+/* النص الأصلي شفاف في الخانة الفاضية (فاضي = الأصلي بيتعرض في الموقع) */
+.da-control input::placeholder, .da-control textarea::placeholder { color: var(--muted); opacity: .55; }

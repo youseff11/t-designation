@@ -30,6 +30,22 @@ export function viewForField(field: string, current: HeroView): HeroView {
   return { lang, theme }
 }
 
+/** الحقل ظاهر في النموذج؟ — اللي ليه علاقة بالمظهر/اللغة المختارين في المعاينة بس. */
+export function heroFieldVisible(field: string, view: HeroView): boolean {
+  if (field.startsWith('bg_')) return field === `bg_${view.theme}_${view.lang}`
+  if (field.endsWith('_ar')) return view.lang === 'ar'
+  if (field.endsWith('_en')) return view.lang === 'en'
+  return true
+}
+
+/** مفتاح الترجمة اللي بيدّي النص الأصلي للحقل (اللي بيظهر شفاف في الخانة). */
+export function heroDefaultKey(field: string): string {
+  const trust = /^trust(\d)_(value|label)_/.exec(field)
+  if (trust) return `trust.${['templates', 'delivery', 'editable'][Number(trust[1]) - 1]}${trust[2] === 'value' ? 'Value' : 'Label'}`
+  const name = field.replace(/_(ar|en)$/, '')
+  return name === 'cta' ? 'start' : name
+}
+
 const fileUrl = (value: FieldValue | undefined) =>
   value && typeof value === 'object' && 'url' in value ? (value as FileValue).url : ''
 
