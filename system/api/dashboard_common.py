@@ -12,6 +12,7 @@ from datetime import datetime
 from decimal import ROUND_HALF_UP, Decimal
 from functools import wraps
 
+from django.conf import settings
 from django.template.defaultfilters import floatformat
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import never_cache
@@ -55,7 +56,7 @@ def editor_url(kind: str, pk: int) -> str:
     المحرر القديم (``/dashboard/…/editor/``) لسه موجود على الموقع القديم لحد التحويل النهائي،
     لكن لوحة التحكم الجديدة بتفتح الجديد.
     """
-    return f"/app/dashboard/{kind}/{pk}/editor"
+    return f"{settings.SPA_BASENAME}/dashboard/{kind}/{pk}/editor"
 
 
 def to_snake(name: str) -> str:

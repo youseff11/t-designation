@@ -297,3 +297,23 @@ Ctrl+D على كارت فيه صورة وفقرتين نسخه كله بأرقا
 **اتجرّب:** vitest **٥٤١** (+٤: `SaveTemplateDialog.test.tsx`) وكلهم ناجحين، `tsc` و`vite build` نضاف، Django `test_api_editor` + `test_api_dashboard` **١١١** ناجح (٦ جداد للحفظ كقالب + تعديل ٣ توقعات للروابط). في المتصفح على النسخة التجريبية: فتحت النافذة من الزرار، اتحفظ قالب (106) بتصنيف «زفاف» والميزات المحسوبة واتقفلت النافذة، من غير ما الدعوة تتغيّر.
 **ما اتجرّبش:** رسالة النجاح (toast) بعين المتصفح (اتغطّت بالاختبار بس)، خطأ الاسم من السيرفر في المتصفح (اختبار بس)، السلاج لما الاسم عربي بالكامل (السيرفر بيرجع `template`، نفس القديم)، المقارنة البصرية على الموبايل (النسختين `desktop` بس).
 **اتسابت عن قصد:** (١) الـworktrees القديمة `.claude/worktrees/goofy-gauss-64e26f` و`gracious-bun-3a7ce6` وفروعهم — محتاجة موافقتك قبل الحذف؛ (٢) سكربتات Tilda في إطار المحرر (قرار S6c)؛ (٣) جولة اختبار شاملة للمحرر (رفع/قص الأصول، الترجمة، وضع القالب، الموبايل، كتابة الأسماء المربوطة بالبيانات داخل المعاينة) لسه ناقصة.
+
+---
+
+## Phase D — التحويل النهائي: الخطوة ١ (اتنفّذت 2026-10-25)
+
+**المفتاح:** `SPA_BASENAME=` (فاضي) في `.env`. الافتراضي لسه `/app` (الموقع القديم على الجذر) — القلب عملية تشغيل، مش تعديل كود.
+
+| الحاجة | التنفيذ |
+|---|---|
+| React على الجذر | `Core/urls.py`: لو الـbasename فاضي بيضمّ `system/urls_cutover.py` بدل `system/urls.py` (القديم مش بيتسجّل)، والـcatch-all `^.*$` بعد مسارات الدعوة والـmedia |
+| روابط الدعوات القديمة | نفس المسارات والأسماء بالظبط (`invitation_public/guest/client_followup/venue`, `guest_pass`, `template_demo`, `template_gallery`, `home`, `login`, `dashboard`) فـ`reverse()` والـmodels والـAPI بيرجّعوا نفس الروابط، والصفحة من React |
+| بيفضل Django | `robots.txt`, `sitemap.xml`, `media-video`, `share-image`, `qr.svg/png`, الأدمن, `/api/v1/`, `/editor-frame/`, فورم RSVP القديم (`/i/<slug>/rsvp/`) |
+| `/app/...` | 301 للمسار الجذري بنفس الـquery |
+| `editor_url` / `editorPath` | بقوا بيتبعوا الـbasename (`settings.SPA_BASENAME` / `boot.basename`) بدل `/app` الثابتة |
+| noindex | بيتشال لوحده (`spa_shell` بيعتمد على الـbasename) |
+| الاختبارات | `test_cutover.py` (٨) بتعيد تحميل الـURLconf بباسنيم فاضي وبترجّعه؛ و`manage.py test` بيثبّت `/app` فـ`.env` مش بيأثر |
+
+**اتجرّب:** ٢٠٩ اختبار (cutover + public + invite + guests + api) ناجحين مع بعض (من غير تسريب URLconf)؛ على النسخة التجريبية بباسنيم فاضي: `/` و`/dashboard/` (مسجّل دخول) والمحرر `/dashboard/invitations/23/editor` والرابط الشخصي للضيف (ترحيب باسم الضيف) و`/templates/golden-classic/preview/` وQR png/svg و`robots.txt` و`sitemap.xml` و`/api/v1/` و`/admin/login/` كلها ٢٠٠، و`/app/...` ٣٠١.
+**ما اتجرّبش:** RSVP من الواجهة على الجذر، صفحة القاعة/العميل بالبيانات في المتصفح، واتساب/فيسبوك كزاحف (OG)، النشر الحقيقي (الـnginx/whitenoise وملفات `staticfiles`)، والإنجليزي. الصفحات غير الموجودة بترجع ٢٠٠ (404 من React مش من السيرفر).
+**الخطوة ٢ (لسه):** حذف الموقع القديم (`views.py` وقوالب `templates/` و`static/js|css` القديمة وروابط `system/urls.py` والاختبارات القديمة) — بعد ما تجرّب التحويل بنفسك وتوافق.

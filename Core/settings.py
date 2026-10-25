@@ -5,6 +5,7 @@
 """
 
 import os
+import sys
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -199,6 +200,10 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 # أثناء الترحيل التطبيق بيتقدّم على ‎/app/‎ جنب الموقع القديم. عند التحويل
 # النهائي بنفضّي القيمة (SPA_BASENAME=) فياخد المسارات الحقيقية.
 SPA_BASENAME = env("SPA_BASENAME", "/app").rstrip("/")
+# اختبارات الباك إند مكتوبة على مسارات فترة الترحيل (‎/app‎)، فمابتتأثرش بـ‎SPA_BASENAME=‎ في
+# ‎.env‎؛ واختبارات التحويل (‎system/tests/test_cutover.py‎) بتفضّيه بنفسها وبتعيد تحميل الـURLconf.
+if sys.argv[1:2] == ["test"]:
+    SPA_BASENAME = "/app"
 # مجلد ناتج ‎npm run build‎ (بيقرا منه وسم vite_assets).
 VITE_BUILD_DIR = BASE_DIR / "static" / "app"
 # سيرفر Vite وقت التطوير فقط (مثلاً http://localhost:5173) — فاضي = استخدم الـbuild.

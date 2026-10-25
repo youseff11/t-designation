@@ -17,23 +17,28 @@ urlpatterns = [
     path('api/v1/', include('system.api.urls')),
     # إطار معاينة محرر React (iframe) — مسار ثابت على الجذر
     path('editor-frame/', editor_frame, name='editor_frame'),
-    path('', include('system.urls')),
+    # أثناء الترحيل (SPA_BASENAME=/app) الموقع القديم على الجذر؛ بعد التحويل النهائي
+    # (SPA_BASENAME= فاضي) React هو اللي على الجذر والقديم مش مسجّل.
+    path('', include('system.urls' if settings.SPA_BASENAME else 'system.urls_cutover')),
 ]
 
 # تطبيق React: كل ما تحت SPA_BASENAME بيرجّع الـshell والـrouter بيكمّل.
-if settings.SPA_BASENAME:
-    _prefix = re.escape(settings.SPA_BASENAME.strip("/"))
-    # صفحات الدعوة ليها entry خفيف خاص بيها (من غير لوحة التحكم) و<head> بيتبني
-    # على السيرفر للمعاينة (OG). لازم تتسجّل **قبل** الـcatch-all تحت.
-    urlpatterns += [
-        re_path(rf"^{_prefix}/i/(?P<slug>[-\w]+)/?$",
-                invite_page.invitation_page, name="spa_invite"),
-        re_path(rf"^{_prefix}/i/(?P<slug>[-\w]+)/g/(?P<token>[^/]+)/?$",
-                invite_page.invitation_page, name="spa_invite_guest"),
-        re_path(rf"^{_prefix}/templates/(?P<slug>[-\w]+)/preview/?$",
-                invite_page.template_page, name="spa_template_preview"),
-    ]
-    urlpatterns.append(re_path(rf"^{_prefix}(?:/.*)?$", spa_shell, name="spa"))
+# BASENAME فاضي = الجذر نفسه (‎_prefix‎ فاضي والمسارات من غير ‎app/‎).
+_prefix = re.escape(settings.SPA_BASENAME.strip("/"))
+_root = f"{_prefix}/" if _prefix else ""
+# صفحات الدعوة ليها entry خفيف خاص بيها (من غير لوحة التحكم) و<head> بيتبني
+# على السيرفر للمعاينة (OG). لازم تتسجّل **قبل** الـcatch-all تحت.
+urlpatterns += [
+    re_path(rf"^{_root}i/(?P<slug>[-\w]+)/?$",
+            invite_page.invitation_page, name="spa_invite"),
+    re_path(rf"^{_root}i/(?P<slug>[-\w]+)/g/(?P<token>[^/]+)/?$",
+            invite_page.invitation_page, name="spa_invite_guest"),
+    re_path(rf"^{_root}templates/(?P<slug>[-\w]+)/preview/?$",
+            invite_page.template_page, name="spa_template_preview"),
+]
 
+# ملفات الوسائط وقت التطوير لازم قبل الـcatch-all (وإلا ‎/media/…‎ يرجّع الـshell).
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns.append(re_path(rf"^{_prefix}(?:/.*)?$" if _prefix else r"^.*$", spa_shell, name="spa"))
