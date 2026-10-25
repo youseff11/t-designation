@@ -35,7 +35,7 @@ from django.contrib.admin.utils import (
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.core.exceptions import FieldDoesNotExist, PermissionDenied
 from django.core.paginator import Paginator
-from django.db import models, transaction
+from django.db import DatabaseError, models, transaction
 from django.db.models import ProtectedError, RestrictedError
 from django.http import Http404, QueryDict
 from django.urls import path
@@ -447,7 +447,10 @@ def catalog(request):
             continue
         label = model._meta.app_config.verbose_name
         group = apps.setdefault(model._meta.app_label, {"app": model._meta.app_label, "label": str(label), "models": []})
-        count = model_admin.get_queryset(request).count()
+        try:
+            count = model_admin.get_queryset(request).count()
+        except DatabaseError:
+            continue  # جدول لسه ماتعملوش ‎migrate‎ — مايوقعش الفهرس كله
         group["models"].append({
             "key": _key(model),
             "name": str(capfirst(model._meta.verbose_name_plural)),

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { lookup } from './api'
+import { compressImage } from './imageCompress'
 import type { Cell, FieldInfo, FieldValue, FileValue, Ref } from './types'
 
 interface Props {
@@ -254,8 +255,18 @@ function FileInput({ props, id }: { props: Props; id: string }) {
         id={id}
         type="file"
         accept={info.kind === 'image' ? 'image/*' : undefined}
-        onChange={(event) => onFile(event.target.files?.[0] ?? null)}
+        onChange={(event) => {
+          const picked = event.target.files?.[0] ?? null
+          if (!picked || info.kind !== 'image') return onFile(picked)
+          // الصورة بتتضغط في المتصفح قبل الرفع (الأصل لو الضغط مش مفيد أو فشل)
+          void compressImage(picked).then(onFile)
+        }}
       />
+      {file && (
+        <small className="muted">
+          {file.name} — {(file.size / 1024).toFixed(0)} KB
+        </small>
+      )}
     </div>
   )
 }

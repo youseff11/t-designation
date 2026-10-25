@@ -28,6 +28,22 @@ export interface SiteInfo {
   facebookUrl: string
   instagramUrl: string
   languages: { code: Lang; label: string }[]
+  /** هيرو الرئيسية: خلفيات وكلام قابلين للتعديل (فاضي = الافتراضي المترجم) */
+  hero: HeroInfo
+}
+
+export interface HeroText {
+  top: string
+  main: string
+  sub: string
+  cta: string
+  plans: string
+  trust: { value: string; label: string }[]
+}
+
+export interface HeroInfo {
+  images: { lightAr: string; lightEn: string; darkAr: string; darkEn: string }
+  text: Record<Lang, HeroText>
 }
 
 export interface TemplateCard {
