@@ -222,25 +222,21 @@ python manage.py fix_posters --apply
 (`frontend/` — Vite + TypeScript). Django بيفضل الباك إند: النماذج، الأدمن،
 معالجة الصور والفيديو، التصدير، وواجهة JSON تحت `/api/v1/` (`system/api/`).
 
-أثناء الترحيل التطبيق الجديد بيتقدّم على **`/app/`** جنب الموقع القديم
-(`SPA_BASENAME` في الإعدادات).
-
-### التحويل النهائي (React على الجذر)
-
-لتشغيل React على `/` بدل الموقع القديم حطّ في `.env` السطر ده (فاضي):
+**التحويل النهائي اتعمل (Phase D):** الافتراضي دلوقتي إن React هو اللي على `/`
+(`SPA_BASENAME` فاضي). وللرجوع مؤقتاً للموقع القديم على الجذر (وReact على `/app/`) حطّ في `.env`:
 
 ```
-SPA_BASENAME=
+SPA_BASENAME=/app
 ```
 
-وارجع للوضع القديم بحذف السطر (أو `SPA_BASENAME=/app`). في الوضع الجديد:
+في الوضع الافتراضي:
 
 - نفس روابط الدعوات اللي اتبعتت بتفضل شغّالة: `/i/<slug>/` والرابط الشخصي `/i/<slug>/g/<token>/`
   والتصريح `…/pass/` والعميل `…/client/<token>/` والقاعة `…/venue/<token>/` وصور QR.
 - أي رابط قديم تحت `/app/…` بيتحوّل (301) للمسار الجذري.
 - `robots.txt` و`sitemap.xml` وصور QR وفيديو المشاركة والأدمن و`/api/v1/` بيفضلوا من Django.
 - المسارات في `system/urls_cutover.py`، واختباراتها في `system/tests/test_cutover.py`.
-- أمر `manage.py test` بيثبّت `SPA_BASENAME=/app` بغض النظر عن `.env`.
+- أمر `manage.py test` بيثبّت `SPA_BASENAME=/app` بغض النظر عن `.env` (الاختبارات القديمة محتاجاه).
 
 ### تشغيل التطوير (طرفيتين)
 
@@ -252,7 +248,7 @@ VITE_DEV_SERVER=http://localhost:5173 DJANGO_DEBUG=1 python manage.py runserver
 cd frontend && npm install && npm run dev
 ```
 
-افتح `http://localhost:8000/app/`. Django هو اللي بيقدّم الصفحة (الـ`<head>` وOG
+افتح `http://localhost:8000/`. Django هو اللي بيقدّم الصفحة (الـ`<head>` وOG
 بيتبنوا على السيرفر)، والسكربتات بتتحمّل من Vite.
 
 ### البناء والفحص

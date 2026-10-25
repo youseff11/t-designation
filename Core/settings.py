@@ -197,9 +197,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # ---------------------------------------------------------------- واجهة React (Vite)
-# أثناء الترحيل التطبيق بيتقدّم على ‎/app/‎ جنب الموقع القديم. عند التحويل
-# النهائي بنفضّي القيمة (SPA_BASENAME=) فياخد المسارات الحقيقية.
-SPA_BASENAME = env("SPA_BASENAME", "/app").rstrip("/")
+# التحويل النهائي (Phase D): الافتراضي فاضي = React على الجذر. للرجوع مؤقتاً للموقع
+# القديم على الجذر وReact على ‎/app/‎ حطّ ‎SPA_BASENAME=/app‎ في ‎.env‎.
+SPA_BASENAME = env("SPA_BASENAME", "").rstrip("/")
 # اختبارات الباك إند مكتوبة على مسارات فترة الترحيل (‎/app‎)، فمابتتأثرش بـ‎SPA_BASENAME=‎ في
 # ‎.env‎؛ واختبارات التحويل (‎system/tests/test_cutover.py‎) بتفضّيه بنفسها وبتعيد تحميل الـURLconf.
 if sys.argv[1:2] == ["test"]:
