@@ -12,7 +12,7 @@
 
 from __future__ import annotations
 
-from django.db.models import Count, Sum
+from django.db.models import Sum
 from django.urls import path, reverse
 
 from ..models import Customer, Guest, Invitation, Order, RSVPResponse, Template
@@ -29,6 +29,7 @@ from .dashboard_common import (
     fmt_dt,
     money,
     staff_api,
+    with_guest_rsvp_counts,
 )
 
 
@@ -84,10 +85,7 @@ def overview(request):
 @staff_api("GET")
 def analytics(request):
     top = list(
-        Invitation.objects.annotate(
-            rsvp_total=Count("rsvps", distinct=True),
-            guest_total=Count("guests", distinct=True),
-        ).defer("document").order_by("-public_views")[:12]
+        with_guest_rsvp_counts(Invitation.objects.defer("document")).order_by("-public_views")[:12]
     )
     return {
         "totals": {

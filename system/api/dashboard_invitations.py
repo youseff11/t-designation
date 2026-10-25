@@ -8,7 +8,7 @@
 from __future__ import annotations
 
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import F, Q
 from django.http import Http404
 from django.urls import path
 
@@ -21,6 +21,7 @@ from .dashboard_common import (
     iso,
     money,
     staff_api,
+    with_guest_rsvp_counts,
 )
 from .http import ApiError, json_body
 
@@ -57,12 +58,11 @@ def invitations(request):
     status = request.GET.get("status", "")
     template_id = (request.GET.get("template") or "").strip()
     # الصفحة بتعرض أسماء وأرقام بس — من غير مستند الدعوة ولا مستند قالبها (كان ٢٥ ثانية)
-    qs = Invitation.objects.select_related("customer", "template", "plan").defer(
-        "document",
-        *(f"template__{field}" for field in TEMPLATE_HEAVY_FIELDS),
-    ).annotate(
-        rsvp_total=Count("rsvps", distinct=True),
-        guest_total=Count("guests", distinct=True),
+    qs = with_guest_rsvp_counts(
+        Invitation.objects.select_related("customer", "template", "plan").defer(
+            "document",
+            *(f"template__{field}" for field in TEMPLATE_HEAVY_FIELDS),
+        )
     ).order_by("-created_at", "-id")
     if q:
         qs = qs.filter(

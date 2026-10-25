@@ -13,10 +13,13 @@ from decimal import ROUND_HALF_UP, Decimal
 from functools import wraps
 
 from django.conf import settings
+from django.db.models import Count, IntegerField, OuterRef, Subquery, Value
+from django.db.models.functions import Coalesce
 from django.template.defaultfilters import floatformat
 from django.utils import dateformat, timezone
 from django.views.decorators.cache import never_cache
 
+from ..models import Guest, RSVPResponse
 from .http import ApiError, api_view, require_staff
 
 # نفس الحقول التقيلة اللي الصفحات القديمة بتتفاداها — صفحات اللوحة بتعرض أسماء بس
@@ -48,6 +51,24 @@ def staff_api(*methods: str):
 
 # ---------------------------------------------------------------- الأسماء
 _SNAKE_RE = re.compile(r"(?<!^)(?=[A-Z])")
+
+
+def _count_per_invitation(model):
+    rows = (model.objects.filter(invitation=OuterRef("pk")).order_by()
+            .values("invitation").annotate(n=Count("pk")).values("n")[:1])
+    return Coalesce(Subquery(rows, output_field=IntegerField()), Value(0))
+
+
+def with_guest_rsvp_counts(queryset):
+    """‎guest_total‎ و‎rsvp_total‎ لكل دعوة بعدّ منفصل.
+
+    ‎Count("guests", distinct=True)‎ + ‎Count("rsvps", distinct=True)‎ في استعلام واحد كانت بتعمل
+    join مزدوج (ضيوف × ردود لكل دعوة): ٤٫٦ ثانية على ٢٢٦ دعوة و٥٤٦٨ ضيف، والنتيجة نفسها.
+    """
+    return queryset.annotate(
+        guest_total=_count_per_invitation(Guest),
+        rsvp_total=_count_per_invitation(RSVPResponse),
+    )
 
 
 def editor_url(kind: str, pk: int) -> str:
