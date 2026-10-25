@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { api } from '@/api/client'
 import type {
@@ -56,34 +56,45 @@ function useInvalidatingMutation<TData, TVars>(
 }
 
 // ---------------------------------------------------------------- القراءة
+/** خيارات كل استعلام قراءة — بيستخدمها الـhook والجلب المسبق (‎prefetch.ts‎) بنفس المفتاح بالظبط. */
+export const dashQueries = {
+  overview: () => queryOptions({ queryKey: dashKeys.overview, queryFn: () => api<OverviewResponse>('/dashboard/overview/') }),
+  analytics: () => queryOptions({ queryKey: dashKeys.analytics, queryFn: () => api<AnalyticsResponse>('/dashboard/analytics/') }),
+  orders: (status: string) =>
+    queryOptions({
+      queryKey: dashKeys.orders(status),
+      queryFn: () => api<OrdersResponse>('/dashboard/orders/', { query: { status } }),
+    }),
+  invitations: (filters: InvitationFilters) =>
+    queryOptions({
+      queryKey: dashKeys.invitations(filters),
+      queryFn: () => api<InvitationsResponse>('/dashboard/invitations/', { query: { ...filters } }),
+    }),
+  templates: () => queryOptions({ queryKey: dashKeys.templates, queryFn: () => api<TemplatesResponse>('/dashboard/templates/') }),
+  plans: () => queryOptions({ queryKey: dashKeys.plans, queryFn: () => api<PlansResponse>('/dashboard/plans/') }),
+  site: () => queryOptions({ queryKey: dashKeys.site, queryFn: () => api<SiteResponse>('/dashboard/site/') }),
+  library: <K extends LibraryKind>(kind: K) =>
+    queryOptions({
+      queryKey: dashKeys.library(kind),
+      // ‎duplicateExtra‎: تلميح بعدد النسخ الزيادة بالاسم (مكتبة الموسيقى بس)
+      queryFn: () => api<{ results: LibraryRows[K][]; duplicateExtra?: number }>(`/dashboard/${kind}/`),
+    }),
+}
+
 export function useOverview() {
-  return useQuery({
-    queryKey: dashKeys.overview,
-    queryFn: () => api<OverviewResponse>('/dashboard/overview/'),
-  })
+  return useQuery(dashQueries.overview())
 }
 
 export function useAnalytics() {
-  return useQuery({
-    queryKey: dashKeys.analytics,
-    queryFn: () => api<AnalyticsResponse>('/dashboard/analytics/'),
-  })
+  return useQuery(dashQueries.analytics())
 }
 
 export function useOrders(status: string) {
-  return useQuery({
-    queryKey: dashKeys.orders(status),
-    queryFn: () => api<OrdersResponse>('/dashboard/orders/', { query: { status } }),
-    placeholderData: keepPreviousData,
-  })
+  return useQuery({ ...dashQueries.orders(status), placeholderData: keepPreviousData })
 }
 
 export function useInvitations(filters: InvitationFilters) {
-  return useQuery({
-    queryKey: dashKeys.invitations(filters),
-    queryFn: () => api<InvitationsResponse>('/dashboard/invitations/', { query: { ...filters } }),
-    placeholderData: keepPreviousData,
-  })
+  return useQuery({ ...dashQueries.invitations(filters), placeholderData: keepPreviousData })
 }
 
 export function useInvitationOptions() {
@@ -94,24 +105,15 @@ export function useInvitationOptions() {
 }
 
 export function useTemplatesList() {
-  return useQuery({
-    queryKey: dashKeys.templates,
-    queryFn: () => api<TemplatesResponse>('/dashboard/templates/'),
-  })
+  return useQuery(dashQueries.templates())
 }
 
 export function usePlans() {
-  return useQuery({
-    queryKey: dashKeys.plans,
-    queryFn: () => api<PlansResponse>('/dashboard/plans/'),
-  })
+  return useQuery(dashQueries.plans())
 }
 
 export function useSiteSettings() {
-  return useQuery({
-    queryKey: dashKeys.site,
-    queryFn: () => api<SiteResponse>('/dashboard/site/'),
-  })
+  return useQuery(dashQueries.site())
 }
 
 // ---------------------------------------------------------------- الدعوات
@@ -177,11 +179,7 @@ interface LibraryRows {
 export function useLibrary<K extends LibraryKind>(kind: K) {
   const path = `/dashboard/${kind}/`
   type Row = LibraryRows[K]
-  const list = useQuery({
-    queryKey: dashKeys.library(kind),
-    // ‎duplicateExtra‎: تلميح بعدد النسخ الزيادة بالاسم (مكتبة الموسيقى بس)
-    queryFn: () => api<{ results: Row[]; duplicateExtra?: number }>(path),
-  })
+  const list = useQuery(dashQueries.library(kind))
   const create = useInvalidatingMutation((body: FormData) => api<Row>(path, { method: 'POST', body }))
   const toggle = useInvalidatingMutation((id: number) =>
     api<Row>(`${path}${id}/toggle/`, { method: 'POST' }),

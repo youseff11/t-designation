@@ -1575,3 +1575,15 @@ html[lang='en'] .dash-root .tpl-meta {
     animation: none;
   }
 }
+
+/* «جارٍ التحميل…» ماتظهرش في التحميلات السريعة (أقل من ~٣٥٠ms): بتتأخر شوية بدل ما تومض في كل تنقّل */
+.dash-root .empty[aria-busy="true"] {
+  animation: dash-late-in .2s ease .35s both;
+}
+@keyframes dash-late-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dash-root .empty[aria-busy="true"] { animation-duration: 0s; }
+}

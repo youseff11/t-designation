@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, queryOptions, useQuery } from '@tanstack/react-query'
 
 import { api } from '@/api/client'
 
@@ -12,8 +12,10 @@ export const dataKeys = {
   object: (key: string, id: string) => ['data', key, 'object', id] as const,
 }
 
-export const useCatalog = () =>
-  useQuery({ queryKey: dataKeys.catalog, queryFn: () => api<{ apps: CatalogApp[] }>('/data/'), staleTime: 0 })
+export const catalogQuery = () =>
+  queryOptions({ queryKey: dataKeys.catalog, queryFn: () => api<{ apps: CatalogApp[] }>('/data/') })
+
+export const useCatalog = () => useQuery(catalogQuery())
 
 export const useDataList = (key: string, params: Record<string, string>) =>
   useQuery({

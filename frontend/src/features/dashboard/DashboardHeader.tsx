@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -7,6 +8,8 @@ import { useLogout, useMe, useSetLanguage, useSite } from '@/api/hooks'
 import type { Lang } from '@/api/types'
 import { applyDocumentLanguage } from '@/i18n'
 import { useTheme } from '@/lib/theme'
+
+import { prefetchAllChunks, prefetchDashboard } from './prefetch'
 
 interface NavItem {
   to: string
@@ -120,6 +123,14 @@ export function DashboardHeader() {
   const { data: user } = useMe()
   const { data: site } = useSite()
   const logout = useLogout()
+  const queryClient = useQueryClient()
+  // الصفحة (chunk + بياناتها) بتتسخّن أول ما المؤشر/التركيز/اللمس يوصل لرابطها، فالضغطة تلاقيها جاهزة
+  const warm = (event: { target: EventTarget }) => {
+    const link = (event.target as HTMLElement).closest?.('a')
+    const href = link?.getAttribute('href')
+    if (href?.startsWith('/dashboard')) prefetchDashboard(queryClient, href)
+  }
+  useEffect(() => prefetchAllChunks(queryClient), [queryClient])
   const setLanguage = useSetLanguage()
   const toggleTheme = useTheme((state) => state.toggle)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -196,6 +207,9 @@ export function DashboardHeader() {
             onClick={(event) => {
               if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
             }}
+            onPointerOver={warm}
+            onFocus={warm}
+            onTouchStart={warm}
           >
             {NAV.map((item) =>
               'group' in item ? (
