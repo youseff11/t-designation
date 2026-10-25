@@ -44,7 +44,7 @@ function markSelected(id: string | null) {
  * المعاينة جوّه المحرر. الصفحة الأم بتبعت الحمولة (‎lb-editor:render‎) والـframe بيرسمها بنفس
  * مكوّنات عارض الدعوة، وبيرجّع الضغطات (تحديد قسم) واختصارات لوحة المفاتيح. مفيش شبكة هنا.
  * الافتتاحية بتتعرض فوق المسرح؛ ولما تتفتح بتفضل مقفولة مهما اتعدّل، وزرار «الافتتاحية» يعيدها.
- * لسه من غير الموسيقى ولا runtime القوالب المستوردة (C5).
+ * لسه من غير الموسيقى ولا سكربتات القوالب المستوردة الأصلية (Tilda) — عدّاد القسم المستورد بس بيشتغل.
  */
 export function FrameApp() {
   const [state, setState] = useState<{ payload: PreviewPayload; selected: string | null } | null>(null)
@@ -217,6 +217,22 @@ export function FrameApp() {
   useEffect(() => {
     if (payload) prefetchBlocks(new Set(payload.blocks.map((b) => b.type)))
   }, [payload])
+
+  // عدّاد القسم المستورد (لو ليه موعد من الإعدادات): نفس اللي بيعمله عارض الدعوة، فالمصمّم يشوف الأرقام شغّالة وهو بيغيّر الموعد.
+  // سكربتات القالب الأصلية (Tilda) مش بتتشغّل هنا — مابتتحمّلش بعد كل رسمة من غير ما تخبّط الـDOM اللي بنحفظه.
+  const blocks = payload?.blocks
+  useEffect(() => {
+    if (!blocks?.some((b) => b.type === 'custom_html')) return
+    let cancelled = false
+    let stop = () => {}
+    void import('@/features/invite/runtime/imported').then((m) => {
+      if (!cancelled) stop = m.initImportedCountdowns()
+    })
+    return () => {
+      cancelled = true
+      stop()
+    }
+  }, [blocks])
 
   if (!payload || !ctx) return null
   const { stage } = payload
