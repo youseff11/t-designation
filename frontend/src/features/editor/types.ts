@@ -285,6 +285,10 @@ export type FromFrame =
   | { type: 'lb-editor:element'; id: string; slot: string }
   /** ‎props.html‎ الجديد لقسم مستورد من الـDOM الحي. ‎silent‎ = ترقيم تلقائي (مش خطوة تراجع) */
   | { type: 'lb-editor:html'; id: string; value: string; silent: boolean }
+  /** سحب عنصر فوق القسم (‎x/y‎ نسبة من حاويته) أو مقبض عرضه (‎width‎ نسبة) — بتتكتب في ‎props.text_overlays[index]‎ */
+  | { type: 'lb-editor:overlay'; id: string; index: number; values: { x?: number; y?: number; width?: number } }
+  /** سحب عنصر من الافتتاحية: ‎x/y‎ بوحدة ‎vw/vh‎ في ‎settings.intro_item_positions‎ */
+  | { type: 'lb-editor:intro-item'; key: string; x: number; y: number }
   /** صندوق كود: أرقام ‎ce-N‎ اتحسبت على الـDOM الحي (مسار كل عنصر من الصندوق) — بتتكتب في النص الأصلي */
   | { type: 'lb-editor:code-number'; id: string; items: { path: number[]; slot: string; tag: string }[] }
   /** تعديلات بأرقام العناصر على النص الأصلي (كتابة وحدة نص، تبديل صورتين) — خطوة تراجع واحدة */

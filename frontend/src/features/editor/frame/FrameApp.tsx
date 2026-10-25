@@ -10,6 +10,7 @@ import { makeT } from '@/features/invite/strings'
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
 import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
+import { installExtraDrags, prepareExtras } from './extraDrags'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 import { installNoHover, stripHover } from './noHover'
 
@@ -118,6 +119,7 @@ export function FrameApp() {
       }, 0)
     document.addEventListener('focusout', flush)
     const stop = installInteractions({ payload: () => payloadRef.current, send: sendToParent })
+    const stopExtra = installExtraDrags({ send: sendToParent })
     const stopNoHover = installNoHover() // مفيش hover في المحرر — لا تأثيرات القالب ولا إطارات المحرر
     const stopImported = installImported({
       payload: () => payloadRef.current,
@@ -131,6 +133,7 @@ export function FrameApp() {
       document.removeEventListener('focusout', flush)
       stop()
       stopImported()
+      stopExtra()
       stopNoHover()
     }
   }, [])
@@ -195,6 +198,7 @@ export function FrameApp() {
     payloadRef.current = payload
     markEditable(payload.blocks)
     prepareImported(payload, sendToParent)
+    prepareExtras()
     markPicked(picked.current)
     // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق) — بنمسح المؤقتة مع رسمة جديدة بس، مش مع تغيّر التحديد
     if (drawn.current !== payload) clearDragVars(document, payload.blocks)

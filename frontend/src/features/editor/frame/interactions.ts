@@ -1,5 +1,6 @@
 import type { BlockData } from '@/features/invite/types'
 
+import { INTRO_ID } from '../doc'
 import { commitHtml, commitSwap } from '../imported/frame'
 import type { FromFrame, PreviewPayload } from '../types'
 
@@ -276,27 +277,32 @@ export function installInteractions({ payload, send }: Options): () => void {
   function movableAt(target: EventTarget | null): HTMLElement | null {
     if (!(target instanceof Element)) return null
     // الكانفس سطح رسم لكود المصمّم و‎[data-no-drag]‎ لأي عنصر تفاعلي — الضغطة بتروح له مش للسحب.
-    // الافتتاحية وعناصر فوق القسم لسه برّه (S6)
-    if (target.closest('canvas, [data-no-drag], .lb-intro, [data-section-text]')) return null
+    // عناصر فوق القسم وعناصر الافتتاحية ليها سحبها (extraDrags)؛ الاستثناء: عنصر مرقّم (‎ce-N‎) جوّه كود الافتتاحية بيتسحب هنا بالبكسل
+    if (target.closest('canvas, [data-no-drag], [data-section-text]')) return null
+    if (target.closest('.lb-intro') && !target.closest('.lb-intro-extra [data-move]')) return null
     const node = target.closest<HTMLElement>('[data-move]')
     if (!node) return null
     // خانات البكسل (‎el-N‎ و‎ce-N‎ و‎code‎) مالهاش معنى غير جوّه قسم مستورد أو صندوق كود
-    return isPxSlot(node.getAttribute('data-move')) && !node.closest('.lb-custom, .lb-extra-html') ? null : node
+    return isPxSlot(node.getAttribute('data-move')) && !node.closest('.lb-custom, .lb-extra-html, .lb-intro-extra') ? null : node
   }
 
   const onPointerDown = (e: PointerEvent) => {
     if (e.button !== 0 || drag) return
     const node = movableAt(e.target)
     if (!node) return
-    const section = blockOf(node)
-    const id = section?.getAttribute('data-block')
+    // كود الافتتاحية مش جوّه قسم: بلوكه الوهمي ‎__intro‎ وإزاحاته (بكسل) بتتقرا من الـCSS المحسوب لأنها مش في حمولة الأقسام
+    const intro = !!node.closest('.lb-intro-extra')
+    const id = intro ? INTRO_ID : blockOf(node)?.getAttribute('data-block')
     const slot = node.getAttribute('data-move')
     if (!id || !slot) return
-    const block = payload()?.blocks.find((b) => b.id === id)
-    if (!block || block.locked) return
+    const block = intro ? null : payload()?.blocks.find((b) => b.id === id)
+    if (!intro && (!block || block.locked)) return
     // بيكتب في العنصر ده دلوقتي؟ سيبه (تحريك المؤشر جوّه النص مش سحب)
     if (node === document.activeElement || (node.isContentEditable && node.contains(document.activeElement))) return
-    const pos = block.layout?.[slot]
+    const style = intro ? getComputedStyle(node) : null
+    const pos = block
+      ? block.layout?.[slot]
+      : { dx: parseFloat(style?.getPropertyValue('--dx') ?? '') || 0, dy: parseFloat(style?.getPropertyValue('--dy') ?? '') || 0 }
     drag = {
       node, id, slot,
       x0: e.clientX, y0: e.clientY,

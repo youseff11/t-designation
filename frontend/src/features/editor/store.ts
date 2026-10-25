@@ -114,6 +114,9 @@ interface Actions {
    * من المعاينة (صندوق «كود متقدّم» وكود الافتتاحية): أرقام ‎ce-N‎ اتحسبت على الـDOM الحي ← بتتكتب بالمسار في النص
    * الأصلي من غير خطوة تراجع (مش تعديل من المستخدم)؛ وكتابة/تبديل صورة جوّه الصندوق ← تعديلات بالرقم.
    */
+  /** سحب «عنصر فوق القسم» (x/y/width) وعنصر افتتاحية (x/y) من المعاينة — خطوة تراجع واحدة لكل سحبة */
+  setOverlay: (id: string, index: number, values: { x?: number; y?: number; width?: number }) => void
+  setIntroItem: (key: string, x: number, y: number) => void
   applyCodeNumbers: (id: string, items: PathItem[]) => void
   applyNodeEdits: (id: string, edits: { slot: string; edit: NodeEdit }[]) => void
   setTab: (tab: Tab) => void
@@ -355,6 +358,25 @@ export const useEditor = create<EditorState>()((set, get) => ({
     return 'ok'
   },
 
+  setOverlay: (id, index, values) => {
+    const block = findBlock(get().doc, id)
+    const list = block?.props.text_overlays
+    if (!block || block.locked || !Array.isArray(list) || !list[index] || typeof list[index] !== 'object') return
+    const next = list.map((item, at) => (at === index ? { ...(item as object), ...values } : item))
+    get().commit((d) => ops.setBlockProp(d, id, 'text_overlays', next), { coalesce: `overlay:${id}:${index}` })
+  },
+  setIntroItem: (key, x, y) => {
+    const raw = get().doc.settings.intro_item_positions
+    let table: Record<string, unknown> = {}
+    try {
+      const parsed: unknown = typeof raw === 'string' && raw.trim() ? JSON.parse(raw) : {}
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) table = parsed as Record<string, unknown>
+    } catch {
+      /* جدول بايظ: نبدأ من فاضي */
+    }
+    table[key] = { x, y }
+    get().commit((d) => ops.setSetting(d, 'intro_item_positions', JSON.stringify(table)), { coalesce: `intro-item:${key}` })
+  },
   applyCodeNumbers: (id, items) => {
     const state = get()
     const first = items[0]
