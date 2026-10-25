@@ -101,8 +101,25 @@ describe('dragging inside an imported section', () => {
     expect(sent.some((m) => m.type === 'lb-editor:layout')).toBe(false)
   })
 
-  it('still leaves the code box (ce-N) alone until S5', () => {
+  it('drags an advanced-code element (ce-N) in pixels too, and the box itself ("code")', () => {
     const node = document.querySelector('.lb-extra-html [data-move="ce-1"]')!
+    node.dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
+    node.dispatchEvent(mouse('pointermove', { clientX: 90, clientY: 0 }))
+    node.dispatchEvent(mouse('pointerup'))
+    expect(sent).toContainEqual({ type: 'lb-editor:layout', id: 'imp', slot: 'ce-1', dx: 90, dy: 0 })
+
+    sent.length = 0
+    const box = document.querySelector<HTMLElement>('.lb-extra-html')!
+    box.setAttribute('data-move', 'code')
+    box.dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
+    box.dispatchEvent(mouse('pointermove', { clientX: 20, clientY: 10 }))
+    box.dispatchEvent(mouse('pointerup'))
+    expect(sent).toContainEqual({ type: 'lb-editor:layout', id: 'imp', slot: 'code', dx: 20, dy: 10 })
+  })
+
+  it('still leaves the intro alone (S6)', () => {
+    document.body.insertAdjacentHTML('beforeend', '<div class="lb-intro"><p data-move="ce-9">x</p></div>')
+    const node = document.querySelector('.lb-intro [data-move="ce-9"]')!
     node.dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
     node.dispatchEvent(mouse('pointermove', { clientX: 90, clientY: 0 }))
     node.dispatchEvent(mouse('pointerup'))

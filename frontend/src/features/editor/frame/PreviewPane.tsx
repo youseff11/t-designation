@@ -47,6 +47,8 @@ export function PreviewPane({ onKey }: Props) {
       else if (message.type === 'lb-editor:text') useEditor.getState().setProp(message.id, message.key, message.value)
       else if (message.type === 'lb-editor:element') useEditor.getState().selectElement(message.id, message.slot)
       else if (message.type === 'lb-editor:html') useEditor.getState().setHtml(message.id, message.value, message.silent)
+      else if (message.type === 'lb-editor:code-number') useEditor.getState().applyCodeNumbers(message.id, message.items)
+      else if (message.type === 'lb-editor:node-edits') useEditor.getState().applyNodeEdits(message.id, message.edits)
       else if (message.type === 'lb-editor:layout')
         useEditor.getState().setLayout(message.id, message.slot, message.dx, message.dy)
       else if (message.type === 'lb-editor:refused') {

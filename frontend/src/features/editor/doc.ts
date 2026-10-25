@@ -99,13 +99,22 @@ export const setBlockLabel = (doc: EditorDocument, id: string, label: string) =>
 export const setBlockProp = (doc: EditorDocument, id: string, key: string, value: unknown) =>
   mapBlock(doc, id, (block) => ({ ...block, props: { ...block.props, [key]: value } }))
 
+/** معرّف بلوك الافتتاحية الوهمي: مش في ‎doc.blocks‎ — كودها في ‎settings.intro_code‎ وإزاحاتها في ‎settings.intro_code_layout‎ (JSON). */
+export const INTRO_ID = '__intro'
+
 /**
- * ‎props.html‎ جديد لقسم مستورد مع مسح مواضع عناصر اتشالت (‎dropped‎) — في نفس اللقطة، فخطوة تراجع واحدة
- * بترجّع النص والمواضع مع بعض.
+ * نص خانة جديد (‎html‎ لقسم مستورد أو ‎code‎ لـ«كود متقدّم») مع مسح مواضع عناصر اتشالت (‎dropped‎) — في نفس اللقطة،
+ * فخطوة تراجع واحدة بترجّع النص والمواضع مع بعض.
  */
-export function setBlockHtml(doc: EditorDocument, id: string, html: string, dropped: readonly string[] = []): EditorDocument {
+export function setBlockSource(
+  doc: EditorDocument,
+  id: string,
+  key: 'html' | 'code',
+  value: string,
+  dropped: readonly string[] = [],
+): EditorDocument {
   return mapBlock(doc, id, (block) => {
-    const next: DocBlock = { ...block, props: { ...block.props, html } }
+    const next: DocBlock = { ...block, props: { ...block.props, [key]: value } }
     if (block.layout && dropped.some((slot) => slot in block.layout!)) {
       const layout = { ...block.layout }
       for (const slot of dropped) delete layout[slot]
@@ -115,6 +124,9 @@ export function setBlockHtml(doc: EditorDocument, id: string, html: string, drop
     return next
   })
 }
+
+export const setBlockHtml = (doc: EditorDocument, id: string, html: string, dropped: readonly string[] = []) =>
+  setBlockSource(doc, id, 'html', html, dropped)
 
 /** عدّة ‎props‎ دفعة واحدة في لقطة واحدة (استبدال لون بيمس ‎css‎ و‎html‎ مع بعض). */
 export const setBlockProps = (doc: EditorDocument, id: string, patch: Props) =>
@@ -136,11 +148,44 @@ export const setSetting = (doc: EditorDocument, key: string, value: unknown): Ed
 // ---------------------------------------------------------------- مواضع العناصر (layout)
 const round2 = (n: number) => Math.round(n * 100) / 100
 
-/** يكتب إزاحة عنصر (cqw). الصفر في الاتنين = رجوع للأصل فبنشيله، والـlayout الفاضي بيتشال كله. */
+/** جدول إزاحات عناصر كود الافتتاحية: JSON في ‎settings.intro_code_layout‎ بنفس شكل ‎block.layout‎. */
+export function introLayout(doc: EditorDocument): Record<string, LayoutPos> {
+  const raw = doc.settings.intro_code_layout
+  if (typeof raw !== 'string' || !raw.trim()) return {}
+  try {
+    const table: unknown = JSON.parse(raw)
+    return table && typeof table === 'object' && !Array.isArray(table) ? (table as Record<string, LayoutPos>) : {}
+  } catch {
+    return {}
+  }
+}
+
+const writeIntroLayout = (doc: EditorDocument, table: Record<string, LayoutPos>) =>
+  setSetting(doc, 'intro_code_layout', Object.keys(table).length ? JSON.stringify(table) : '')
+
+/** إزاحات بلوك (أو الافتتاحية) — فاضي لو مفيش. */
+export const layoutOf = (doc: EditorDocument, id: string): Record<string, LayoutPos> =>
+  id === INTRO_ID ? introLayout(doc) : (findBlock(doc, id)?.layout ?? {})
+
+/** يمسح إزاحات عناصر اتشالت من جدول الافتتاحية (لو ماكانش فيها حاجة مايغيّرش المستند). */
+export function dropIntroLayout(doc: EditorDocument, dropped: readonly string[]): EditorDocument {
+  const table = introLayout(doc)
+  if (!dropped.some((slot) => slot in table)) return doc
+  for (const slot of dropped) delete table[slot]
+  return writeIntroLayout(doc, table)
+}
+
+/** يكتب إزاحة عنصر (cqw، أو بكسل لعناصر القالب المستورد والكود). الصفر في الاتنين = رجوع للأصل فبنشيله، والـlayout الفاضي بيتشال كله. */
 export function setLayout(doc: EditorDocument, id: string, slot: string, dx: number, dy: number): EditorDocument {
+  const pos = { dx: round2(dx), dy: round2(dy) }
+  if (id === INTRO_ID) {
+    const table = { ...introLayout(doc) }
+    if (!pos.dx && !pos.dy) delete table[slot]
+    else table[slot] = pos
+    return writeIntroLayout(doc, table)
+  }
   return mapBlock(doc, id, (block) => {
     const layout: Record<string, LayoutPos> = { ...block.layout }
-    const pos = { dx: round2(dx), dy: round2(dy) }
     if (!pos.dx && !pos.dy) delete layout[slot]
     else layout[slot] = pos
     const next = { ...block }
@@ -151,11 +196,12 @@ export function setLayout(doc: EditorDocument, id: string, slot: string, dx: num
 }
 
 export function nudgeLayout(doc: EditorDocument, id: string, slot: string, ddx: number, ddy: number): EditorDocument {
-  const current = findBlock(doc, id)?.layout?.[slot] ?? { dx: 0, dy: 0 }
+  const current = layoutOf(doc, id)[slot] ?? { dx: 0, dy: 0 }
   return setLayout(doc, id, slot, current.dx + ddx, current.dy + ddy)
 }
 
 export function resetLayout(doc: EditorDocument, id: string): EditorDocument {
+  if (id === INTRO_ID) return writeIntroLayout(doc, {})
   return mapBlock(doc, id, (block) => {
     if (!block.layout) return block
     const next = { ...block }

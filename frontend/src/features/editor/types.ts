@@ -285,5 +285,9 @@ export type FromFrame =
   | { type: 'lb-editor:element'; id: string; slot: string }
   /** ‎props.html‎ الجديد لقسم مستورد من الـDOM الحي. ‎silent‎ = ترقيم تلقائي (مش خطوة تراجع) */
   | { type: 'lb-editor:html'; id: string; value: string; silent: boolean }
+  /** صندوق كود: أرقام ‎ce-N‎ اتحسبت على الـDOM الحي (مسار كل عنصر من الصندوق) — بتتكتب في النص الأصلي */
+  | { type: 'lb-editor:code-number'; id: string; items: { path: number[]; slot: string; tag: string }[] }
+  /** تعديلات بأرقام العناصر على النص الأصلي (كتابة وحدة نص، تبديل صورتين) — خطوة تراجع واحدة */
+  | { type: 'lb-editor:node-edits'; id: string; edits: { slot: string; edit: NodeEdit }[] }
   /** الكتابة اتمنعت لأن المعاينة معروضة بالنسخة المترجَمة */
   | { type: 'lb-editor:refused' }

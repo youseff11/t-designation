@@ -6,8 +6,11 @@ import { styleTarget } from './nodeEdit'
  */
 function liveTarget(blockId: string, slot: string): HTMLElement | null {
   const doc = document.querySelector<HTMLIFrameElement>('.ed-device iframe')?.contentDocument
-  const section = Array.from(doc?.querySelectorAll('[data-block]') ?? []).find((n) => n.getAttribute('data-block') === blockId)
-  const node = Array.from(section?.querySelectorAll('.lb-custom [data-move]') ?? []).find((n) => n.getAttribute('data-move') === slot)
+  const scope =
+    blockId === '__intro'
+      ? doc?.querySelector('.lb-intro')
+      : Array.from(doc?.querySelectorAll('[data-block]') ?? []).find((n) => n.getAttribute('data-block') === blockId)
+  const node = Array.from(scope?.querySelectorAll('[data-move]') ?? []).find((n) => n.getAttribute('data-move') === slot)
   return node ? (styleTarget(node) as HTMLElement) : null
 }
 

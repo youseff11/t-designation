@@ -181,11 +181,16 @@
       "cell": "Cell",
       "button": "Button",
       "element": "Element"
-    }
+    },
+    "codeTitle": "Advanced code layers"
   },
   "colors": {
     "title": "Section colours",
     "empty": "No colours are written in this section's styles.",
     "hint": "Change a colour here and it changes everywhere it is used inside the section."
+  },
+  "intro": {
+    "title": "Intro — intro code",
+    "hint": "Elements of the intro-screen code: click them in the preview (the Intro button replays it) or pick them from the layers."
   }
 }

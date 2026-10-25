@@ -54,8 +54,8 @@ function Panels() {
   const block = useEditor((st) => st.doc.blocks[0])
   return (
     <>
-      <ElementPanel block={block} />
-      <LayersGroup block={block} />
+      <ElementPanel blockId={block.id} />
+      <LayersGroup blockId={block.id} />
     </>
   )
 }
@@ -300,7 +300,7 @@ describe('S4b: video, map, countdown and section colours', () => {
   it('shows the countdown date and direction for a countdown part, bound to the section props', () => {
     function WithCountdown() {
       const block = useEditor((st) => st.doc.blocks[0])
-      return <ElementPanel block={block} countdown={countdown} />
+      return <ElementPanel blockId={block.id} countdown={countdown} />
     }
     const { container } = render(<WithCountdown />, { wrapper: EditorUiProvider })
     act(() => s().selectElement('a', 'el-2')) // فيديو: مفيش عدّاد

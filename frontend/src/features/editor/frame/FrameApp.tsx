@@ -200,7 +200,7 @@ export function FrameApp() {
     if (drawn.current !== payload) clearDragVars(document, payload.blocks)
     drawn.current = payload
     markSelected(state.selected)
-  }, [payload, state?.selected])
+  }, [payload, state?.selected, introRun, introClosedAt])
 
   useEffect(() => {
     if (payload) prefetchBlocks(new Set(payload.blocks.map((b) => b.type)))

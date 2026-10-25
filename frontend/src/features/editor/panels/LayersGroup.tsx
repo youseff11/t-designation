@@ -2,30 +2,36 @@ import { useMemo, useState, type KeyboardEvent, type MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { layersOf, type Layer } from '../imported/ops'
+import { splitCode, type SourceKind } from '../imported/source'
 import { useElementActions } from '../imported/useElementActions'
 import { useEditor } from '../store'
-import type { DocBlock } from '../types'
 import { useEditorUi } from '../ui'
 
 /**
  * «الطبقات / Layers» لقسم مستورد: كل عنصر مرئي في القسم (اسم + أول نص)، ضغطة تحدّده، × تحذفه.
  * القايمة بتتبني من ‎props.html‎ المحفوظ (مش من المعاينة) ومابتتحسبش غير والمجموعة مفتوحة.
  */
-export function LayersGroup({ block }: { block: DocBlock }) {
+export function LayersGroup({ blockId, kind = 'html' }: { blockId: string; kind?: SourceKind }) {
   const { t } = useTranslation()
   const ui = useEditorUi()
   const actions = useElementActions()
   const select = useEditor((s) => s.selectElement)
-  const active = useEditor((s) => (s.selEl?.blockId === block.id ? s.selEl.slot : null))
+  const active = useEditor((s) => (s.selEl?.blockId === blockId ? s.selEl.slot : null))
   const [open, setOpen] = useState(false)
 
-  const html = typeof block.props.html === 'string' ? block.props.html : ''
-  const layers = useMemo(() => (open ? layersOf(html) : []), [open, html])
+  // قسم مستورد: ‎props.html‎ (عناصره ‎el-N‎)؛ «كود متقدّم»: جزء الـHTML من الكود (عناصره ‎ce-N‎)؛ الافتتاحية: ‎settings.intro_code‎
+  const source = useEditor((s) => {
+    if (blockId === '__intro') return typeof s.doc.settings.intro_code === 'string' ? s.doc.settings.intro_code : ''
+    const value = s.doc.blocks.find((b) => b.id === blockId)?.props[kind === 'code' ? 'code' : 'html']
+    return typeof value === 'string' ? value : ''
+  })
+  const html = kind === 'code' ? splitCode(source).region : source
+  const layers = useMemo(() => (open ? layersOf(html, kind) : []), [open, html, kind])
 
   const label = (layer: Layer) =>
     layer.kind === 'element' ? t(`editorInline.layers.name.${layer.name}`) : t(`editorInline.layers.kind.${layer.kind}`)
 
-  const pick = (slot: string) => select(block.id, slot)
+  const pick = (slot: string) => select(blockId, slot)
   const onKey = (event: KeyboardEvent, slot: string) => {
     if (event.target !== event.currentTarget || (event.key !== 'Enter' && event.key !== ' ')) return
     event.preventDefault()
@@ -40,7 +46,7 @@ export function LayersGroup({ block }: { block: DocBlock }) {
   return (
     <details className="ed-group ed-layers-group" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary>
-        <span>{t('editorInline.layers.title')}</span>
+        <span>{t(kind === 'code' ? 'editorInline.layers.codeTitle' : 'editorInline.layers.title')}</span>
       </summary>
       <div className="ed-group-body ed-layers-list">
         {open && layers.length === 0 && <p className="ed-hint">{t('editorInline.layers.empty')}</p>}

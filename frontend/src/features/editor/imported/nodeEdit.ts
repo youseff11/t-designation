@@ -13,6 +13,10 @@ export type NodeEdit =
   /** ‎style‎ على العنصر المحدَّد نفسه (الإخفاء ‎display:none‎) */
   | { kind: 'self'; prop: string; value: string }
   | { kind: 'text'; value: string }
+  /** محتوى العنصر نفسه (‎innerHTML‎) — كتابة وحدة نص في صندوق الكود من المعاينة (بتحافظ على الوسوم السطرية اللي فيها) */
+  | { kind: 'inner'; html: string }
+  /** خصائص الصورة (أو العنصر نفسه): قيمة أو ‎null‎ للشيل — تبديل صورتين بالسحب بيبدّل ‎src‎ و‎srcset‎ مع بعض */
+  | { kind: 'attrs'; values: Record<string, string | null> }
   /** مصدر الصورة: ‎src‎ جديد ومعاه شيل ‎srcset‎ (بيكسب على ‎src‎) */
   | { kind: 'src'; value: string }
   /** مصدر الفيديو: ‎src‎ + ‎preload‎، وكل ‎<source>‎ جواه بياخد الرابط الجديد (وإلا بيكسب على ‎src‎) */
@@ -82,6 +86,17 @@ export function applyNodeEdit(root: Element, slot: string, edit: NodeEdit): bool
       const unit = textUnitIn(node)
       if (!unit) return false
       unit.textContent = edit.value
+      return true
+    }
+    case 'inner':
+      node.innerHTML = edit.html
+      return true
+    case 'attrs': {
+      const target = imageIn(node) ?? node
+      for (const [name, value] of Object.entries(edit.values)) {
+        if (value === null) target.removeAttribute(name)
+        else target.setAttribute(name, value)
+      }
       return true
     }
     case 'src': {

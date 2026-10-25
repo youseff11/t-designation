@@ -1,6 +1,7 @@
 import { findSlot, out, parse } from './dom'
 import { applyNodeEdit, readNode, type NodeEdit, type NodeInfo } from './nodeEdit'
 import { cleanCopy } from './serialize'
+import { slotKind, type SourceKind } from './source'
 import { isTextual } from './units'
 
 /**
@@ -57,8 +58,13 @@ const LABEL_MAX = 42
 
 const tagOf = (n: Element) => n.tagName.toUpperCase()
 
+/** المستند الخامل لعنصر: صندوق كود لو رقمه ‎ce-N‎ (أو ‎code‎)، وإلا قسم مستورد. */
+const parseFor = (html: string, slot: string) => parse(html, slotKind(slot))
+
 /** أول ‎el-N‎ حر (نفس منطق ‎numberElements‎ عشان الأرقام ماتتضاربش). */
-function freeSlot(root: Element, prefix = 'el-'): string {
+function freeSlot(root: Element): string {
+  // عناصر صندوق الكود ‎ce-N‎ وعناصر القالب المستورد ‎el-N‎ (جدول إزاحات واحد لكل بلوك فالبادئتين لازم يفرّقوا)
+  const prefix = root.classList.contains('lb-extra-html') ? 'ce-' : 'el-'
   const used = new Set(Array.from(root.querySelectorAll('[data-move]')).map((n) => n.getAttribute('data-move')))
   let next = 1
   while (used.has(`${prefix}${next}`)) next++
@@ -95,11 +101,11 @@ function place(node: Element, fresh: Element, inside: boolean, units: Set<Elemen
 
 /** العنصر موجود في النص؟ (بعد تراجع/إعادة ممكن يكون رقمه راح). */
 export function hasSlot(html: string, slot: string): boolean {
-  return !!findSlot(parse(html), slot)
+  return !!findSlot(parseFor(html, slot), slot)
 }
 
 export function inspect(html: string, slot: string): ElementInfo | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   const node = findSlot(root, slot)
   if (!node) return null
   const units = textUnits(root)
@@ -108,7 +114,7 @@ export function inspect(html: string, slot: string): ElementInfo | null {
 
 /** نسخة نضيفة من العنصر (من غير ترقيم ولا علاماتنا) — بتتخزّن في الحافظة. */
 export function copyOf(html: string, slot: string): string | null {
-  const node = findSlot(parse(html), slot)
+  const node = findSlot(parseFor(html, slot), slot)
   return node ? cleanCopy(node).outerHTML : null
 }
 
@@ -120,7 +126,7 @@ function fromClip(root: Element, clip: string): Element | null {
 
 /** لصق الحافظة بعد العنصر (أو جوّاه لو ينفع). العنصر الملصوق بياخد رقم جديد ويتحدّد. */
 export function pasteOf(html: string, slot: string, clip: string, inside = false): Edit | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   const node = findSlot(root, slot)
   const fresh = node && fromClip(root, clip)
   if (!node || !fresh) return null
@@ -138,7 +144,7 @@ export function duplicateOf(html: string, slot: string): Edit | null {
 
 /** حذف العنصر بكل اللي جواه — أرقامهم كلها بترجع في ‎dropped‎ عشان مواضعهم تتمسح. */
 export function deleteOf(html: string, slot: string): Edit | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   const node = findSlot(root, slot)
   if (!node) return null
   const dropped = slotsIn(node)
@@ -148,7 +154,7 @@ export function deleteOf(html: string, slot: string): Edit | null {
 
 /** إضافة نص جديد أو صورة جوّه العنصر أو بعده. ‎value‎: نص الفقرة، أو رابط الصورة. */
 export function addOf(html: string, slot: string, kind: AddKind, value: string): Edit | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   const node = findSlot(root, slot)
   if (!node) return null
   const doc = root.ownerDocument
@@ -170,19 +176,19 @@ export function addOf(html: string, slot: string, kind: AddKind, value: string):
 
 /** حالة العنصر للوحة (نص، تنسيق مضمّن، مصدر الصورة…) من ‎props.html‎. */
 export function nodeInfo(html: string, slot: string): NodeInfo | null {
-  return readNode(parse(html), slot)
+  return readNode(parseFor(html, slot), slot)
 }
 
 /** تعديل خاصية/نص/صورة عنصر (لوحة العنصر): نفس ‎applyNodeEdit‎ اللي بتتطبّق بيه على المعاينة الحية. العنصر يفضل محدَّد. */
 export function editOf(html: string, slot: string, edit: NodeEdit): Edit | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   if (!applyNodeEdit(root, slot, edit)) return null
   return { html: out(root), select: slot, dropped: [] }
 }
 
 /** رقم أقرب أب مرقّم، أو ‎null‎ لو ده أعلى عنصر في القسم. */
 export function parentOf(html: string, slot: string): string | null {
-  const root = parse(html)
+  const root = parseFor(html, slot)
   const node = findSlot(root, slot)
   for (let up = node?.parentElement; up && up !== root; up = up.parentElement) {
     const move = up.getAttribute('data-move')
@@ -195,8 +201,8 @@ export function parentOf(html: string, slot: string): string | null {
  * طبقات القسم: العناصر المرقّمة اللي هي «حاجة مرئية فعلاً» — نص، أو عنصر ماجواهوش نص/صورة/فيديو/iframe
  * (Tilda بيحط الرقم على الحاوية وعلى اللي جواها، فالحاوية اللي فيها حاجة بتتخطّى). نفس قاعدة القديم.
  */
-export function layersOf(html: string): Layer[] {
-  const root = parse(html)
+export function layersOf(html: string, kind: SourceKind = 'html'): Layer[] {
+  const root = parse(html, kind)
   const units = textUnits(root)
   const layers: Layer[] = []
   for (const node of Array.from(root.querySelectorAll<HTMLElement>('[data-move]'))) {

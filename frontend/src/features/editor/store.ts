@@ -4,14 +4,14 @@ import { ApiError } from '@/api/client'
 
 import { postSave } from './api'
 import * as ops from './doc'
-import { findBlock } from './doc'
+import { findBlock, INTRO_ID } from './doc'
 import type { NodeEdit } from './imported/nodeEdit'
 import * as element from './imported/ops'
+import { numberByPath, sourceOf, writeSource, type PathItem } from './imported/source'
 import type {
   AssetRow,
   BlockSpec,
   Bootstrap,
-  DocBlock,
   Device,
   EditorDocument,
   EditorMeta,
@@ -110,6 +110,12 @@ interface Actions {
   /** تعديل نص/تنسيق/صورة العنصر المحدَّد من اللوحة. ‎coalesce‎: الشريط والكتابة المتتالية = خطوة تراجع واحدة */
   editElement: (edit: NodeEdit, coalesce?: string) => ElementOutcome
   selectParentElement: () => ElementOutcome
+  /**
+   * من المعاينة (صندوق «كود متقدّم» وكود الافتتاحية): أرقام ‎ce-N‎ اتحسبت على الـDOM الحي ← بتتكتب بالمسار في النص
+   * الأصلي من غير خطوة تراجع (مش تعديل من المستخدم)؛ وكتابة/تبديل صورة جوّه الصندوق ← تعديلات بالرقم.
+   */
+  applyCodeNumbers: (id: string, items: PathItem[]) => void
+  applyNodeEdits: (id: string, edits: { slot: string; edit: NodeEdit }[]) => void
   setTab: (tab: Tab) => void
   setDevice: (device: Device) => void
   setPreviewLang: (lang: string) => void
@@ -203,25 +209,32 @@ const translatedPreview = (state: Data) => state.renderedLang !== '' && state.re
 /** العنصر المحدَّد لازم يفضل موجود في النص بعد تراجع/إعادة (عنصر اتلصق ثم اتراجع عنه مثلاً). */
 const keepElement = (doc: EditorDocument, el: Data['selEl']): Data['selEl'] => {
   if (!el) return null
-  const html = findBlock(doc, el.blockId)?.props.html
-  return typeof html !== 'string' || element.hasSlot(html, el.slot) ? el : null
+  const source = sourceOf(doc, el.blockId, el.slot)
+  // مفيش مصدر (قسم عادي، أو الصندوق نفسه ‎code‎ لسه مالوش عناصر) = نسيب التحديد زي ما هو
+  return !source || element.hasSlot(source.html, el.slot) || el.slot === 'code' ? el : null
 }
 
-/** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع). */
+/** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع) — والافتتاحية (‎__intro‎) مش قسم في القايمة بس بتتحدّد. */
 const keepSelection = (doc: EditorDocument, selected: string | null) =>
-  selected && doc.blocks.some((b) => b.id === selected) ? selected : null
+  selected && (selected === INTRO_ID || doc.blocks.some((b) => b.id === selected)) ? selected : null
 
 interface ElementTarget {
-  block: DocBlock
+  blockId: string
   slot: string
+  /** جزء الـHTML اللي بنعدّل فيه (‎props.html‎، أو جزء الـHTML من «الكود») */
   html: string
+  source: NonNullable<ReturnType<typeof sourceOf>>
+  locked: boolean
 }
 
-/** القسم والعنصر والنص اللي العملية هتشتغل عليهم: المحدَّد، أو ‎slot‎ من الطبقات جوّه القسم المحدَّد. */
+/** المصدر والعنصر اللي العملية هتشتغل عليهم: المحدَّد، أو ‎slot‎ من الطبقات جوّه القسم المحدَّد. */
 function elementTarget(state: Data, slot?: string): ElementTarget | null {
-  const block = findBlock(state.doc, state.selEl?.blockId ?? state.selected)
+  const blockId = state.selEl?.blockId ?? state.selected
   const at = slot ?? state.selEl?.slot
-  return block && at && typeof block.props.html === 'string' ? { block, slot: at, html: block.props.html } : null
+  if (!blockId || !at) return null
+  const source = sourceOf(state.doc, blockId, at)
+  if (!source) return null
+  return { blockId, slot: at, html: source.html, source, locked: !!findBlock(state.doc, blockId)?.locked }
 }
 
 /** عملية هيكل واحدة = ‎commit‎ واحد (خطوة تراجع واحدة). بترفض في القسم المقفول وفي المعاينة المترجَمة. */
@@ -233,16 +246,16 @@ function runEdit(
   const state = useEditor.getState()
   const target = elementTarget(state, slot)
   if (!target) return 'missing'
-  if (target.block.locked) return 'locked'
+  if (target.locked) return 'locked'
   if (translatedPreview(state)) return 'translated'
   const edit = build(target)
   if (!edit) return 'missing'
   // تعديل ماغيّرش حاجة (نفس القيمة): مفيش خطوة تراجع ولا «غير محفوظ»
   if (edit.html === target.html && !edit.dropped.length) return 'ok'
-  state.commit((d) => ops.setBlockHtml(d, target.block.id, edit.html, edit.dropped), coalesce ? { coalesce } : undefined)
+  state.commit((d) => writeSource(d, target.blockId, target.source, edit.html, edit.dropped), coalesce ? { coalesce } : undefined)
   useEditor.setState({
-    selected: target.block.id,
-    selEl: edit.select ? { blockId: target.block.id, slot: edit.select } : null,
+    selected: target.blockId,
+    selEl: edit.select ? { blockId: target.blockId, slot: edit.select } : null,
   })
   return 'ok'
 }
@@ -290,7 +303,13 @@ export const useEditor = create<EditorState>()((set, get) => ({
   },
 
   selectElement: (blockId, slot) =>
-    set({ selected: blockId, selectSource: 'preview', selEl: slot ? { blockId, slot } : null }),
+    set((state) => ({
+      selected: blockId,
+      selectSource: 'preview',
+      selEl: slot ? { blockId, slot } : null,
+      // الافتتاحية مالهاش صف في قايمة الأقسام: عنصرها المتحدّد بيتعرض في الخصائص (وإلا المستخدم مايلاقيش حاجة)
+      tab: slot && blockId === INTRO_ID ? 'inspector' : state.tab,
+    })),
 
   setHtml: (id, html, silent = false) => {
     const state = get()
@@ -332,8 +351,38 @@ export const useEditor = create<EditorState>()((set, get) => ({
     if (!target) return 'missing'
     const up = element.parentOf(target.html, target.slot)
     if (!up) return 'top'
-    get().selectElement(target.block.id, up)
+    get().selectElement(target.blockId, up)
     return 'ok'
+  },
+
+  applyCodeNumbers: (id, items) => {
+    const state = get()
+    const first = items[0]
+    const source = first && sourceOf(state.doc, id, first.slot)
+    if (!source) return
+    const html = numberByPath(source.html, items)
+    if (html === null) return
+    // ترقيم تلقائي: بيترسّب في النص من غير ما يبقى خطوة تراجع (زي ترقيم القسم المستورد)
+    set({
+      doc: writeSource(state.doc, id, source, html),
+      saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
+      rev: state.rev + 1,
+      contentRev: state.contentRev + 1,
+    })
+  },
+  applyNodeEdits: (id, edits) => {
+    const state = get()
+    if (translatedPreview(state) || findBlock(state.doc, id)?.locked) return
+    const slots = edits.map((e) => e.slot).join('+')
+    // نفس العنصر بيتكتب فيه متتالي = خطوة واحدة (coalesce)، وتبديل صورتين = خطوة واحدة
+    let doc = state.doc
+    for (const { slot, edit } of edits) {
+      const source = sourceOf(doc, id, slot)
+      const result = source && element.editOf(source.html, slot, edit)
+      if (source && result) doc = writeSource(doc, id, source, result.html)
+    }
+    if (doc === state.doc) return
+    state.commit(() => doc, { coalesce: `node-edits:${id}:${slots}` })
   },
 
   select: (id, source = 'list') =>

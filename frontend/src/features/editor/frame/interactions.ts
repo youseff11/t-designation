@@ -1,6 +1,6 @@
 import type { BlockData } from '@/features/invite/types'
 
-import { commitHtml } from '../imported/frame'
+import { commitHtml, commitSwap } from '../imported/frame'
 import type { FromFrame, PreviewPayload } from '../types'
 
 /**
@@ -276,12 +276,12 @@ export function installInteractions({ payload, send }: Options): () => void {
   function movableAt(target: EventTarget | null): HTMLElement | null {
     if (!(target instanceof Element)) return null
     // الكانفس سطح رسم لكود المصمّم و‎[data-no-drag]‎ لأي عنصر تفاعلي — الضغطة بتروح له مش للسحب.
-    // مربع «كود متقدّم» والافتتاحية وعناصر فوق القسم لسه برّه (S5/S6)
-    if (target.closest('canvas, [data-no-drag], .lb-extra-html, .lb-intro, [data-section-text]')) return null
+    // الافتتاحية وعناصر فوق القسم لسه برّه (S6)
+    if (target.closest('canvas, [data-no-drag], .lb-intro, [data-section-text]')) return null
     const node = target.closest<HTMLElement>('[data-move]')
     if (!node) return null
-    // خانات البكسل (‎el-N‎) مالهاش معنى غير جوّه قسم مستورد
-    return isPxSlot(node.getAttribute('data-move')) && !node.closest('.lb-custom') ? null : node
+    // خانات البكسل (‎el-N‎ و‎ce-N‎ و‎code‎) مالهاش معنى غير جوّه قسم مستورد أو صندوق كود
+    return isPxSlot(node.getAttribute('data-move')) && !node.closest('.lb-custom, .lb-extra-html') ? null : node
   }
 
   const onPointerDown = (e: PointerEvent) => {
@@ -373,6 +373,7 @@ export function installInteractions({ payload, send }: Options): () => void {
       swapImages(d.node, d.swap)
       const root = d.node.closest('.lb-custom')
       if (root) commitHtml(root, send)
+      else commitSwap(d.node, d.swap, send)
       return
     }
     if (cancel || (d.dx === d.dx0 && d.dy === d.dy0)) {

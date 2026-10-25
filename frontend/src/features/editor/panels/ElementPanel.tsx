@@ -7,7 +7,9 @@ import { inspect, nameOf, nodeInfo } from '../imported/ops'
 import { useElementActions } from '../imported/useElementActions'
 import { useEditor } from '../store'
 import { FieldRenderer } from '../fields'
-import type { DocBlock, FieldSpec } from '../types'
+import { findBlock, layoutOf } from '../doc'
+import { sourceOf } from '../imported/source'
+import type { FieldSpec } from '../types'
 import { ElementFields } from './ElementFields'
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -33,9 +35,11 @@ const NUDGES: [string, number, number][] = [
  * العنصر المحدَّد جوّه قسم مستورد: اسمه، محتواه وتنسيقه (S4a)، موضعه، إضافة نص/صورة، نسخ/لصق/تكرار،
  * الأب، الإخفاء والحذف (S3)، والخريطة والفيديو (S4b) وموعد العدّاد واتجاهه لو العنصر جزء من عدّاد القالب.
  */
-export function ElementPanel({ block, countdown = [] }: { block: DocBlock; countdown?: FieldSpec[] }) {
+export function ElementPanel({ blockId, countdown = [] }: { blockId: string; countdown?: FieldSpec[] }) {
   const { t } = useTranslation()
-  const selEl = useEditor((s) => (s.selEl?.blockId === block.id ? s.selEl : null))
+  const selEl = useEditor((s) => (s.selEl?.blockId === blockId ? s.selEl : null))
+  const doc = useEditor((s) => s.doc)
+  const block = { id: blockId }
   const clear = useEditor((s) => s.selectElement)
   const hasClip = useEditor((s) => s.clip !== null)
   const nudge = useEditor((s) => s.nudgeLayout)
@@ -44,12 +48,13 @@ export function ElementPanel({ block, countdown = [] }: { block: DocBlock; count
   const actions = useElementActions()
   const [picking, setPicking] = useState(false)
 
-  const html = typeof block.props.html === 'string' ? block.props.html : ''
   const slot = selEl?.slot ?? ''
+  // جزء الـHTML اللي العنصر ده فيه: ‎props.html‎ لقسم مستورد، أو جزء الكود لصندوق «كود متقدّم» (وكود الافتتاحية)
+  const html = (slot && sourceOf(doc, blockId, slot)?.html) || ''
   const structure = useMemo(() => (slot ? inspect(html, slot) : null), [html, slot])
   const info = useMemo(() => (slot ? nodeInfo(html, slot) : null), [html, slot])
 
-  const pos = block.layout?.[slot] ?? { dx: 0, dy: 0 }
+  const pos = layoutOf(doc, blockId)[slot] ?? { dx: 0, dy: 0 }
   const px = isPxSlot(slot)
   const step = px ? 1 : 0.25
   const name = info
@@ -77,7 +82,12 @@ export function ElementPanel({ block, countdown = [] }: { block: DocBlock; count
               <>
                 <p className="ed-hint">{t('editorInline.element.countdown.hint')}</p>
                 {countdown.map((spec) => (
-                  <FieldRenderer key={spec.key} spec={spec} value={block.props[spec.key]} onChange={(v) => setProp(block.id, spec.key, v)} />
+                  <FieldRenderer
+                    key={spec.key}
+                    spec={spec}
+                    value={findBlock(doc, blockId)?.props[spec.key]}
+                    onChange={(v) => setProp(block.id, spec.key, v)}
+                  />
                 ))}
               </>
             )}

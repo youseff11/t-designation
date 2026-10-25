@@ -47,10 +47,53 @@ export function isCountdownLabel(n: Element): boolean {
   return n.classList.contains('label') && isImportedCountdownPart(n) && !n.querySelector(MEDIA)
 }
 
-export const isTextual = (n: Element) => isTextUnit(n) || isTildaTextUnit(n) || isCountdownLabel(n)
+/** جذور «كود متقدّم»: صندوق القسم وصندوق الافتتاحية (كود المصمّم، مش قالب مستورد). */
+export const CODE_ROOTS = '.lb-extra-html, .lb-intro-extra'
+
+const CODE_BLOCKERS = 'img,video,iframe,input,textarea,select,button,svg,canvas'
+const CODE_MEDIA = new Set(['IMG', 'VIDEO', 'IFRAME', 'SVG', 'CANVAS', 'PICTURE'])
+
+const hasOwnText = (node: Element) => Array.from(node.childNodes).some((c) => c.nodeType === 3 && (c.nodeValue ?? '').trim())
+
+/**
+ * وحدة نص جوّه كود المصمّم — أوسع من ‎isTextUnit‎ في حتة (مفيش قايمة وسوم: كود المصمّم بيكتب الأسامي في ‎<div>‎ زي ‎<h1>‎)
+ * وأضيق في حتة: ‎<div class="names"><span>ليلى</span><span>كريم</span></div>‎ الأب **حاوية** وكل ‎span‎ وحدة نص،
+ * إلا لو الأب نفسه فيه كلام مباشر (‎<h1>ليلى<span>&</span>كريم</h1>‎) فهو الوحدة.
+ */
+export function isCodeTextUnit(node: Element, box: Element): boolean {
+  if (node === box || !(node.textContent ?? '').trim() || node.querySelector(CODE_BLOCKERS)) return false
+  const own = hasOwnText(node)
+  return Array.from(node.children).every((c) => INLINE.has(c.tagName) && (own || !(c.textContent ?? '').trim()))
+}
+
+/** وحدة نص: جوّه صندوق الكود بقاعدته الأوسع، وإلا بقواعد القالب المستورد. */
+export function isTextual(n: Element): boolean {
+  const box = n.closest(CODE_ROOTS)
+  return box ? isCodeTextUnit(n, box) : isTextUnit(n) || isTildaTextUnit(n) || isCountdownLabel(n)
+}
+
+const big = (n: Element) => {
+  const r = n.getBoundingClientRect()
+  return r.width > 6 && r.height > 6
+}
+
+/**
+ * عناصر صندوق الكود اللي تتحدّد وتتحرّك: الطبقة الخارجية (سحبها بيحرّك الشكل كله) والكلام والوسايط.
+ * حاويات النص بتتشال. لازم تكون ليها حجم حقيقي (>٦px).
+ */
+export function codeMovables(root: Element): HTMLElement[] {
+  const out: HTMLElement[] = []
+  for (const n of Array.from(root.children)) if (big(n)) out.push(n as HTMLElement)
+  for (const n of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
+    if (out.includes(n) || !big(n)) continue
+    if (CODE_MEDIA.has(n.tagName.toUpperCase()) || isCodeTextUnit(n, root)) out.push(n)
+  }
+  return out
+}
 
 /** العناصر اللي ينفع تتحرّك: أي حاجة ليها حجم حقيقي (>٦px) — غير ‎BR/HR‎. */
 export function movableIn(root: Element): HTMLElement[] {
+  if (root.matches(CODE_ROOTS)) return codeMovables(root)
   return Array.from(root.querySelectorAll<HTMLElement>('*')).filter((n) => {
     if (n.tagName === 'BR' || n.tagName === 'HR') return false
     const r = n.getBoundingClientRect()
