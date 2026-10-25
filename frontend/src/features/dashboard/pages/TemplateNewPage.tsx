@@ -1,6 +1,8 @@
 import type { FormEvent } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+import { appPath } from '@/lib/appPath'
 
 import { useCreateTemplate, useTemplatesList } from '../api'
 import { FileField, MB, SelectField, TextAreaField, TextField, useFormErrors } from '../ui/forms'
@@ -15,6 +17,7 @@ export function TemplateNewPage() {
   const toast = useToast()
   const { data } = useTemplatesList()
   const create = useCreateTemplate()
+  const navigate = useNavigate()
   const errors = useFormErrors()
   usePageTitle(t('dashboard.templateNew.pageTitle'))
 
@@ -31,8 +34,7 @@ export function TemplateNewPage() {
     errors.clear()
     create.mutate(body, {
       onSuccess: (created) => {
-        // المحرر لسه صفحة Django قديمة لحد المرحلة C — نفتحها بتنقّل عادي
-        window.location.assign(created.editorUrl)
+        navigate(appPath(created.editorUrl))
       },
       onError: (error) => {
         if (errors.fail(error)) toast.error(t('dashboard.templateNew.reviewData'))

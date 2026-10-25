@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
+import { appPath } from '@/lib/appPath'
 
 import { useDeleteInvitation, useDuplicateInvitation, useInvitations } from '../api'
 import type { InvitationFilters, InvitationRow } from '../types'
@@ -147,9 +148,9 @@ export function InvitationsPage() {
               </td>
               <td className="cell--actions">
                 <div className="row-actions">
-                  <a className="btn btn--gold btn--sm" href={invitation.editorUrl}>
+                  <Link className="btn btn--gold btn--sm" to={appPath(invitation.editorUrl)}>
                     {t('dashboard.common.editor')}
-                  </a>
+                  </Link>
                   <Link className="btn btn--ghost btn--sm" to={`/dashboard/invitations/${invitation.id}/guests`}>
                     {t('dashboard.invitations.guests')}
                   </Link>

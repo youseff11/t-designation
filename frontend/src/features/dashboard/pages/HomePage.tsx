@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { appPath } from '@/lib/appPath'
 
 import { useOverview } from '../api'
 import { useLabels } from '../ui/labels'
@@ -67,9 +68,9 @@ export function HomePage() {
                   <Pill kind={invitation.status}>{labels.status(invitation.status)}</Pill>
                 </td>
                 <td>
-                  <a className="btn btn--ghost btn--sm" href={invitation.editorUrl}>
+                  <Link className="btn btn--ghost btn--sm" to={appPath(invitation.editorUrl)}>
                     {t('dashboard.common.editor')}
-                  </a>
+                  </Link>
                 </td>
               </tr>
             ))}

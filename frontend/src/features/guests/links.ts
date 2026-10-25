@@ -1,5 +1,3 @@
-import { boot } from '@/app/boot'
-
 /**
  * مسارات الضيوف.
  *
@@ -25,8 +23,8 @@ export const absoluteUrl = (path: string) => `${window.location.origin}${path}`
 export const exportUrl = (invitationId: number) => `/api/v1/invitations/${invitationId}/guests/export.xlsx`
 export const SAMPLE_CSV_URL = '/api/v1/guests/sample.csv'
 
-/** المحرر البصري الجديد (شاشة كاملة برّه غلاف اللوحة، فرابط عادي مش ‎<Link>‎). */
-export const editorPath = (invitationId: number) => `${boot.basename}/dashboard/invitations/${invitationId}/editor`
+/** المحرر البصري (شاشة كاملة برّه غلاف اللوحة) — مسار الـrouter، يتفتح بـ‎<Link>‎. */
+export const editorPath = (invitationId: number) => `/dashboard/invitations/${invitationId}/editor`
 
 export const guestsRoute = (invitationId: number | string) => `/dashboard/invitations/${invitationId}/guests`
 export const qrSheetRoute = (invitationId: number | string) => `/dashboard/invitations/${invitationId}/guests/qr-sheet`

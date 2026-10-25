@@ -1,7 +1,9 @@
 import type { FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 import { useSite } from '@/api/hooks'
+import { appPath } from '@/lib/appPath'
 import { useCreateInvitation, useInvitationOptions } from '../api'
 import type { InvitationCreateBody } from '../types'
 import { SelectField, TextField, useFormErrors } from '../ui/forms'
@@ -20,6 +22,7 @@ export function InvitationNewPage() {
   const { data: site } = useSite()
   const { data, isPending, isError } = useInvitationOptions()
   const create = useCreateInvitation()
+  const navigate = useNavigate()
   const errors = useFormErrors()
   usePageTitle(t('dashboard.invitationNew.pageTitle'))
 
@@ -40,8 +43,7 @@ export function InvitationNewPage() {
     errors.clear()
     create.mutate(body, {
       onSuccess: (created) => {
-        // المحرر لسه صفحة Django قديمة لحد المرحلة C — نفتحها بتنقّل عادي
-        window.location.assign(created.editorUrl)
+        navigate(appPath(created.editorUrl))
       },
       onError: (error) => {
         errors.fail(error)

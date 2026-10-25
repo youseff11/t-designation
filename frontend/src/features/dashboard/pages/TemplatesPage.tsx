@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { appPath } from '@/lib/appPath'
 
 import { useDeleteTemplate, useImportTemplate, useTemplatesList, useToggleTemplate } from '../api'
 import type { TemplateRow } from '../types'
@@ -82,9 +83,9 @@ function TemplateActionMenu({ template }: { template: TemplateRow }) {
           if ((event.target as HTMLElement).closest('a')) setOpen(false)
         }}
       >
-        <a href={template.editorUrl} role="menuitem">
+        <Link to={appPath(template.editorUrl)} role="menuitem">
           {t('dashboard.templates.edit')}
-        </a>
+        </Link>
         <a href={template.adminUrl} role="menuitem">
           {t('dashboard.templates.editData')}
         </a>

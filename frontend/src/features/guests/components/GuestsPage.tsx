@@ -121,9 +121,9 @@ export function GuestsPage() {
           <button className="btn btn--ghost" type="button" onClick={exportXlsx}>
             ⤓ {t('guests.actions.export')}
           </button>
-          <a className="btn btn--ghost" href={editorPath(invitation.id)}>
+          <Link className="btn btn--ghost" to={editorPath(invitation.id)}>
             ↩ {t('guests.actions.editor')}
-          </a>
+          </Link>
         </div>
       </div>
 
