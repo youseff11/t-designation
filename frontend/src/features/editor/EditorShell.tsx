@@ -13,6 +13,7 @@ import { InspectorPanel } from './panels/InspectorPanel'
 import { SettingsPanel } from './panels/SettingsPanel'
 import { ThemePanel } from './panels/ThemePanel'
 import { TranslationPanel } from './panels/TranslationPanel'
+import { SaveTemplateButton } from './SaveTemplateDialog'
 import { useEditorShortcuts, useSaveFeedback, useSaveNow } from './shortcuts'
 import { useEditor, type Tab } from './store'
 import type { Device, EditorSchema } from './types'
@@ -122,6 +123,7 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
               ⋯
             </button>
             <div className="ed-more-menu">
+              {mode === 'invitation' && <SaveTemplateButton />}
               {meta?.publicUrl && (
                 <a className="ed-btn ed-btn--sm" href={meta.publicUrl} target="_blank" rel="noopener" title={t('editor.top.preview')}>
                   {t('editor.top.open')}

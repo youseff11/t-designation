@@ -195,7 +195,7 @@ class OverviewTests(DashboardApiCase):
         row = data["recentInvitations"][0]
         self.assertEqual((row["title"], row["customerName"], row["templateName"], row["status"]),
                          (self.invitation.title, "عميل تجريبي", "ذهبي كلاسيكي", "published"))
-        self.assertEqual(row["editorUrl"], f"/dashboard/invitations/{self.invitation.pk}/editor/")
+        self.assertEqual(row["editorUrl"], f"/app/dashboard/invitations/{self.invitation.pk}/editor")
         rsvp = data["recentRsvps"][0]
         self.assertEqual((rsvp["name"], rsvp["status"], rsvp["companions"]), ("منى", "attending", 2))
         self.assertRegex(rsvp["createdLabel"], r"^\d{4}/\d{2}/\d{2} \d{2}:\d{2}$")
@@ -295,7 +295,7 @@ class InvitationTests(DashboardApiCase):
             "nameOne": "ليلى", "nameTwo": "أحمد", "eventType": "خطوبة"})
         self.assertEqual(response.status_code, 200, response.content)
         inv = Invitation.objects.get(pk=response.json()["id"])
-        self.assertEqual(response.json()["editorUrl"], f"/dashboard/invitations/{inv.pk}/editor/")
+        self.assertEqual(response.json()["editorUrl"], f"/app/dashboard/invitations/{inv.pk}/editor")
         self.assertEqual((inv.customer.name, inv.customer.phone), ("عميل جديد", "0123"))
         self.assertEqual((inv.status, inv.event_type, inv.plan), ("draft", "خطوبة", None))
         self.template.refresh_from_db()
@@ -371,7 +371,7 @@ class TemplateTests(DashboardApiCase):
             "slug": "", "description": "وصف", "coverUrl": "https://example.com/c.jpg"})
         self.assertEqual(response.status_code, 200, response.content)
         tpl = Template.objects.get(pk=response.json()["id"])
-        self.assertEqual(response.json()["editorUrl"], f"/dashboard/templates/{tpl.pk}/editor/")
+        self.assertEqual(response.json()["editorUrl"], f"/app/dashboard/templates/{tpl.pk}/editor")
         self.assertEqual((tpl.source, tpl.is_active, tpl.sort_order, tpl.created_by),
                          ("editor", True, 0, self.staff))
         self.assertEqual(tpl.document["blocks"], [])

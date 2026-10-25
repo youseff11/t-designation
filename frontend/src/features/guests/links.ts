@@ -23,8 +23,8 @@ export const absoluteUrl = (path: string) => `${window.location.origin}${path}`
 export const exportUrl = (invitationId: number) => `/api/v1/invitations/${invitationId}/guests/export.xlsx`
 export const SAMPLE_CSV_URL = '/api/v1/guests/sample.csv'
 
-/** المحرر لسه على الموقع القديم (مش جزء من الترحيل ده). */
-export const editorPath = (invitationId: number) => `/dashboard/invitations/${invitationId}/editor/`
+/** المحرر البصري الجديد (شاشة كاملة برّه غلاف اللوحة، فرابط عادي مش ‎<Link>‎). */
+export const editorPath = (invitationId: number) => `/app/dashboard/invitations/${invitationId}/editor`
 
 export const guestsRoute = (invitationId: number | string) => `/dashboard/invitations/${invitationId}/guests`
 export const qrSheetRoute = (invitationId: number | string) => `/dashboard/invitations/${invitationId}/guests/qr-sheet`

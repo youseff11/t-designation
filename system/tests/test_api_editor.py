@@ -26,6 +26,7 @@ def _endpoints(inv, tpl):
         ("POST", f"{BASE}/invitations/{inv}/preview/"),
         ("POST", f"{BASE}/invitations/{inv}/save/"),
         ("POST", f"{BASE}/invitations/{inv}/translations/"),
+        ("POST", f"{BASE}/invitations/{inv}/save-template/"),
         ("GET", f"{BASE}/templates/{tpl}/"),
         ("POST", f"{BASE}/templates/{tpl}/preview/"),
         ("POST", f"{BASE}/templates/{tpl}/save/"),
@@ -368,6 +369,69 @@ class SaveTests(EditorApiCase):
         self.template.refresh_from_db()
         self.assertEqual([b["id"] for b in self.template.get_document()["blocks"]], [block["id"]])
         self.assertEqual(self.template.preview_render, {})
+
+
+# ---------------------------------------------------------------- حفظ كقالب
+class SaveAsTemplateTests(EditorApiCase):
+    def path(self):
+        return f"{BASE}/invitations/{self.inv.pk}/save-template/"
+
+    def document(self):
+        doc = B.normalize_document(golden_classic.build())
+        hero = next(b for b in doc["blocks"] if b["type"] == "hero")
+        hero["props"]["date_text"] = "الإثنين ٢ نوفمبر"
+        return doc
+
+    def test_creates_a_template_from_the_unsaved_document_without_personal_data(self):
+        before = Template.objects.count()
+        response = self.post(self.path(), {
+            "document": self.document(), "name": "قالبي الجديد", "slug": "My New One",
+            "category": "wedding", "collection": "Gold", "description": "وصف", "isActive": False,
+        })
+        self.assertEqual(response.status_code, 200, response.content[:300])
+        data = response.json()
+        self.assertEqual(Template.objects.count(), before + 1)
+        template = Template.objects.get(pk=data["templateId"])
+        self.assertEqual((template.name, template.collection, template.description, template.source),
+                         ("قالبي الجديد", "Gold", "وصف", "editor"))
+        self.assertFalse(template.is_active)
+        self.assertEqual(template.created_by, self.staff)
+        self.assertEqual(data["slug"], template.slug)
+        hero = next(b for b in template.get_document()["blocks"] if b["type"] == "hero")
+        self.assertEqual(hero["props"]["date_text"], "")
+
+    def test_the_invitation_itself_is_untouched(self):
+        before = self.inv.get_document()
+        self.post(self.path(), {"document": self.document(), "name": "قالب"})
+        self.inv.refresh_from_db()
+        self.assertEqual(self.inv.get_document(), before)
+        self.assertEqual(self.inv.template_id, self.template.pk)
+
+    def test_required_features_come_from_the_sections(self):
+        document = B.empty_document()
+        document["blocks"] = [B.make_block("countdown")]
+        data = self.post(self.path(), {"document": document, "name": "بعد تنازلي"}).json()
+        template = Template.objects.get(pk=data["templateId"])
+        self.assertEqual(template.required_features,
+                         sorted({B.BLOCK_REGISTRY["countdown"]["feature"]} - {""}))
+
+    def test_defaults_when_optional_fields_are_missing_or_wrong(self):
+        data = self.post(self.path(), {"document": self.document(), "name": "قالب", "category": "nope"}).json()
+        template = Template.objects.get(pk=data["templateId"])
+        self.assertEqual((template.category, template.collection, template.is_active), ("wedding", "Premium", True))
+
+    def test_name_is_required(self):
+        before = Template.objects.count()
+        for name in ("", " ", "x"):
+            with self.subTest(name=name):
+                response = self.post(self.path(), {"document": self.document(), "name": name})
+                self.assertError(response, 400, "invalid")
+                self.assertIn("name", response.json()["error"]["fields"])
+        self.assertEqual(Template.objects.count(), before)
+
+    def test_missing_document_and_unknown_invitation(self):
+        self.assertError(self.post(self.path(), {"name": "قالب"}), 400, "invalid_document")
+        self.assertError(self.post(f"{BASE}/invitations/999999/save-template/", {"document": {}, "name": "قالب"}), 404, "not_found")
 
 
 # ---------------------------------------------------------------- إطار المعاينة (iframe)

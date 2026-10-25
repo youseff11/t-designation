@@ -32,4 +32,8 @@ export const PORTED: ReadonlySet<string> = new Set([
   'invite-demo1234',
   'invite-demo1234-guest',
   'template-preview-golden-classic',
+
+  // ---- C: المحرر البصري (شاشة كاملة برّه الغلاف)
+  'editor-invitation',
+  'editor-template',
 ])

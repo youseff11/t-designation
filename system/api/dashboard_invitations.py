@@ -10,11 +10,12 @@ from __future__ import annotations
 from django.db import transaction
 from django.db.models import Count, F, Q
 from django.http import Http404
-from django.urls import path, reverse
+from django.urls import path
 
 from ..models import Customer, Invitation, Plan, Template
 from ..views import _delete_invitation, _duplicate_invitation
 from .dashboard_common import (
+    editor_url,
     TEMPLATE_HEAVY_FIELDS,
     fmt_dt,
     iso,
@@ -43,7 +44,7 @@ def _invitation_row(inv) -> dict:
         "url": inv.get_absolute_url(),
         "clientUrl": inv.get_client_followup_url(),
         "venueUrl": inv.get_venue_url(),
-        "editorUrl": reverse("invitation_editor", args=[inv.pk]),
+        "editorUrl": editor_url("invitations", inv.pk),
     }
 
 
@@ -182,7 +183,7 @@ def _create_invitation(request) -> dict:
         Template.objects.filter(pk=template.pk).update(usage_count=F("usage_count") + 1)
     return {
         "id": invitation.pk,
-        "editorUrl": reverse("invitation_editor", args=[invitation.pk]),
+        "editorUrl": editor_url("invitations", invitation.pk),
     }
 
 

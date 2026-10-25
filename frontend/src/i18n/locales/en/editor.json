@@ -96,9 +96,19 @@
     "updating": "Updating…",
     "title": "Invitation preview"
   },
-  "later": {
-    "title": "This tab is still moving to the new editor",
-    "body": "You can keep editing it in the old editor until it's ready here.",
-    "open": "Open the old editor"
+  "saveTemplate": {
+    "open": "Save as template",
+    "title": "Save the design as a template",
+    "hint": "Creates a new library template from the current design (even unsaved). The invitation itself isn't changed and the cover date is cleared.",
+    "name": "Template name",
+    "slug": "Short link (optional)",
+    "slugHint": "Latin letters, digits and dashes — generated from the name when empty.",
+    "category": "Category",
+    "collection": "Collection",
+    "description": "Description",
+    "active": "Visible to customers",
+    "confirm": "Save template",
+    "saved": "Template “{{name}}” saved to the library",
+    "failed": "Couldn't save the template"
   }
 }

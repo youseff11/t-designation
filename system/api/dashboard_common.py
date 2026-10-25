@@ -49,6 +49,15 @@ def staff_api(*methods: str):
 _SNAKE_RE = re.compile(r"(?<!^)(?=[A-Z])")
 
 
+def editor_url(kind: str, pk: int) -> str:
+    """رابط المحرر البصري (React): ``kind`` = ``invitations`` أو ``templates``.
+
+    المحرر القديم (``/dashboard/…/editor/``) لسه موجود على الموقع القديم لحد التحويل النهائي،
+    لكن لوحة التحكم الجديدة بتفتح الجديد.
+    """
+    return f"/app/dashboard/{kind}/{pk}/editor"
+
+
 def to_snake(name: str) -> str:
     return _SNAKE_RE.sub("_", name).lower()
 

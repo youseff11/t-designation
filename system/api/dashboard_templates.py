@@ -18,6 +18,7 @@ from .. import templateimport
 from ..forms import TemplateForm
 from ..models import Template
 from .dashboard_common import (
+    editor_url,
     check_upload,
     raise_invalid,
     snake_keys,
@@ -42,7 +43,7 @@ def _template_row(tpl) -> dict:
         "uses": tpl.uses,
         "isActive": tpl.is_active,
         "cover": tpl.cover_src or None,
-        "editorUrl": reverse("template_editor", args=[tpl.pk]),
+        "editorUrl": editor_url("templates", tpl.pk),
         "adminUrl": reverse("admin:system_template_change", args=[tpl.pk]),
         "previewUrl": reverse("template_demo", args=[tpl.slug]),
     }
@@ -113,7 +114,7 @@ def _create_template(request) -> dict:
     return {
         "id": template.pk,
         "name": template.name,
-        "editorUrl": reverse("template_editor", args=[template.pk]),
+        "editorUrl": editor_url("templates", template.pk),
     }
 
 

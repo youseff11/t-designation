@@ -97,6 +97,7 @@ export function ColorBody({ spec, value, onChange, id }: FieldProps) {
         id={id}
         className="ed-input"
         type="text"
+        dir="ltr"
         value={text}
         placeholder={t('editor.fields.theme')}
         onChange={(e) => onChange(e.target.value)}
@@ -197,32 +198,3 @@ export function ToggleBody({ spec, value, onChange, id }: FieldProps) {
   )
 }
 
-/**
- * صورة / ملف وسائط: معاينة + رابط. اختيار ورفع وقص الصور من المكتبة (‎C3‎) بيستبدل المكوّن ده
- * عن طريق ‎registerField('image' | 'media', …)‎.
- */
-export function MediaBody({ spec, value, onChange, id }: FieldProps) {
-  const { t } = useTranslation()
-  const kind = spec.media_kind ?? 'image'
-  const url = str(value)
-  return (
-    <div className="ed-image">
-      <div
-        className="ed-image-thumb"
-        style={kind === 'image' && url ? { backgroundImage: `url("${url.replace(/"/g, '%22')}")` } : undefined}
-      >
-        {kind === 'image' && url ? '' : url ? (kind === 'video' ? '▶' : '♪') : '＋'}
-      </div>
-      <div className="ed-image-side">
-        <input
-          id={id}
-          className="ed-input"
-          type="text"
-          value={url}
-          placeholder={kind === 'image' ? t('editor.fields.pasteImage') : t('editor.fields.pasteFile')}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      </div>
-    </div>
-  )
-}

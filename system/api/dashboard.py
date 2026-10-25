@@ -24,6 +24,7 @@ from . import (
     dashboard_templates,
 )
 from .dashboard_common import (
+    editor_url,
     TEMPLATE_HEAVY_FIELDS,
     fmt_dt,
     money,
@@ -61,7 +62,7 @@ def overview(request):
                 "customerName": inv.customer.name,
                 "templateName": inv.template.name,
                 "status": inv.status,
-                "editorUrl": reverse("invitation_editor", args=[inv.pk]),
+                "editorUrl": editor_url("invitations", inv.pk),
             }
             for inv in recent_invitations
         ],

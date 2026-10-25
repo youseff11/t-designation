@@ -12,6 +12,8 @@
   ‎fields‎ اختيارية: بيانات المناسبة غير المحفوظة بتتطبّق على نسخة ذاكرة بس
 * ‎POST editor/invitations/<id>/save/‎          ‎{document, fields}‎
 * ‎POST editor/invitations/<id>/translations/‎  ‎{document, fields?}‎ → صفوف تبويب الترجمة
+* ‎POST editor/invitations/<id>/save-template/‎  ‎{document, name, slug?, category?, collection?, description?, isActive?}‎
+  يحوّل الدعوة الحالية لقالب جديد في المكتبة (من غير بياناتها الشخصية)
 * ‎GET/POST editor/templates/<id>/[preview|save]/‎   نفس الشيء لمحرر القالب (‎{document}‎ بس)
 
 الأصول والمفضلة والخطوط (C3) في ‎editor_assets.py‎.
@@ -27,6 +29,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import path, reverse
 from django.utils import timezone
+from django.utils.text import slugify
 
 from .. import blocks as blocks_engine
 from .. import renderer as R
@@ -258,6 +261,50 @@ def invitation_save(request, pk):
     }
 
 
+@staff_api("POST")
+def invitation_save_template(request, pk):
+    """يحوّل تصميم الدعوة الحالية (المستند اللي في المحرر، حتى غير المحفوظ) لقالب جديد في المكتبة — بدون كتابة كود.
+
+    نفس ‎api_save_as_template‎ القديمة: اسم لازم يتكتب، البيانات الشخصية (تاريخ الغلاف) بتتفرّغ، والميزات المطلوبة
+    بتتحسب من الأقسام، والتصنيف الغلط بيرجع ‎wedding‎.
+    """
+    get_object_or_404(Invitation, pk=pk)
+    body = json_body(request)
+    name = str(body.get("name") or "").strip()[:120]
+    if len(name) < 2:
+        raise ApiError(400, "invalid", "اكتب اسماً للقالب.", fields={"name": "اكتب اسماً للقالب."})
+    document = blocks_engine.normalize_document(_document_in(body))
+
+    # نفرّغ البيانات الشخصية حتى يبدأ القالب نظيفاً
+    for block in document["blocks"]:
+        if block["type"] == "hero":
+            block["props"]["date_text"] = ""
+
+    required = sorted({
+        blocks_engine.BLOCK_REGISTRY[b["type"]]["feature"]
+        for b in document["blocks"]
+        if blocks_engine.BLOCK_REGISTRY.get(b["type"], {}).get("feature")
+    })
+    category = body.get("category")
+    template = Template.objects.create(
+        name=name,
+        slug=slugify(str(body.get("slug") or name), allow_unicode=False) or "",
+        category=category if category in dict(Template.CATEGORY_CHOICES) else "wedding",
+        collection=str(body.get("collection") or "Premium")[:40],
+        description=str(body.get("description") or "")[:2000],
+        document=document,
+        required_features=required,
+        source="editor",
+        is_active=bool(body.get("isActive", True)),
+        created_by=request.user,
+    )
+    try:
+        R.get_template_preview(template)
+    except Exception:  # noqa: BLE001 — المعاينة المخزّنة تحسين، فشلها ما يمنعش الحفظ
+        logger.exception("template preview failed for new template %s", template.pk)
+    return {"templateId": template.pk, "slug": template.slug, "name": template.name}
+
+
 # ---------------------------------------------------------------- القالب
 def _template(pk) -> Template:
     return get_object_or_404(Template, pk=pk)
@@ -325,6 +372,8 @@ urlpatterns = [
          name="api_editor_invitation_preview"),
     path("editor/invitations/<int:pk>/save/", invitation_save,
          name="api_editor_invitation_save"),
+    path("editor/invitations/<int:pk>/save-template/", invitation_save_template,
+         name="api_editor_invitation_save_template"),
     path("editor/invitations/<int:pk>/translations/", invitation_translations,
          name="api_editor_invitation_translations"),
     path("editor/templates/<int:pk>/", template_editor, name="api_editor_template"),

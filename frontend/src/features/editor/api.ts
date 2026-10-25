@@ -1,6 +1,15 @@
 import { api } from '@/api/client'
 import type { Bootstrap, EditorDocument, EditorMode, EditorSchema, EventFields, PreviewPayload, SaveResponse, TranslationRows } from './types'
 
+export interface TemplateForm {
+  name: string
+  slug: string
+  category: string
+  collection: string
+  description: string
+  isActive: boolean
+}
+
 const base = (mode: EditorMode, id: number) => `/editor/${mode === 'invitation' ? 'invitations' : 'templates'}/${id}`
 
 export const fetchSchema = () => api<EditorSchema>('/editor/schema/')
@@ -40,4 +49,11 @@ export const fetchTranslations = (
     method: 'POST',
     body: mode === 'invitation' && fields ? { document, fields } : { document },
     signal,
+  })
+
+/** يحوّل تصميم الدعوة الحالي لقالب جديد في المكتبة (محرر الدعوة بس). */
+export const postSaveTemplate = (invitationId: number, document: EditorDocument, form: TemplateForm) =>
+  api<{ templateId: number; slug: string; name: string }>(`${base('invitation', invitationId)}/save-template/`, {
+    method: 'POST',
+    body: { document, ...form },
   })
