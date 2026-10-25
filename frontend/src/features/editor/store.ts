@@ -63,6 +63,8 @@ interface Data {
   selectSource: SelectSource
   /** العنصر المحدَّد جوّه قسم مستورد (‎el-N‎) — بيتصفّر لما القسم يتغيّر */
   selEl: { blockId: string; slot: string } | null
+  /** القسم اللي إطار حدوده ومقبض ارتفاعه ظاهرين في المعاينة (واحد في المرة) */
+  boundsBlock: string | null
   /** حافظة العناصر (نسخة نضيفة ‎outerHTML‎) — جوّه المحرر بس، مش حافظة النظام */
   clip: string | null
   /** آخر تعديل من لوحة العنصر: المعاينة بتطبّقه على DOM الحي لحظياً قبل رد السيرفر */
@@ -95,6 +97,7 @@ interface Actions {
   commit: (change: (doc: EditorDocument) => EditorDocument, opts?: { coalesce?: string }) => void
   select: (id: string | null, source?: SelectSource) => void
   selectElement: (blockId: string, slot: string | null) => void
+  toggleBounds: (id: string) => void
   /** ‎props.html‎ لقسم مستورد من المعاينة: ‎silent‎ للترقيم التلقائي (من غير خطوة تراجع) */
   setHtml: (id: string, html: string, silent?: boolean) => void
 
@@ -180,6 +183,7 @@ const initial = (): Data => ({
   selected: null,
   selectSource: null,
   selEl: null,
+  boundsBlock: null,
   clip: null,
   lastEdit: null,
   tab: 'blocks',
@@ -407,9 +411,13 @@ export const useEditor = create<EditorState>()((set, get) => ({
     state.commit(() => doc, { coalesce: `node-edits:${id}:${slots}` })
   },
 
+  toggleBounds: (id) => set((state) => ({ boundsBlock: state.boundsBlock === id ? null : id })),
+
   select: (id, source = 'list') =>
     set((state) => ({
       selected: id,
+      // الإطار بيتبع القسم المحدَّد: تحديد قسم تاني بيقفله (زي القديم)
+      boundsBlock: state.boundsBlock === id ? id : null,
       selectSource: id ? source : null,
       selEl: state.selEl && state.selEl.blockId === id ? state.selEl : null,
       tab: id && source === 'list' ? 'inspector' : state.tab,

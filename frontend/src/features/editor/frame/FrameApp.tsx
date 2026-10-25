@@ -11,6 +11,7 @@ import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
 import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
 import { installExtraDrags, prepareExtras } from './extraDrags'
+import { clearBounds, showBounds, type Bounds } from './sectionBounds'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 import { installNoHover, stripHover } from './noHover'
 
@@ -59,6 +60,8 @@ export function FrameApp() {
   const picked = useRef<{ id: string; slot: string } | null>(null)
   // آخر حمولة اترسمت (عشان تغيّر التحديد لوحده مايمسحش إزاحة سحب مستنية رد السيرفر)
   const drawn = useRef<PreviewPayload | null>(null)
+  // إطار حدود القسم المطلوب (الأم هي اللي بتحدّده) — بيتعاد بعد كل رسمة لأن القسم ممكن يتركّب من جديد
+  const bounds = useRef<Bounds | null>(null)
 
   function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
     const next = message.payload as PreviewPayload
@@ -86,6 +89,9 @@ export function FrameApp() {
         picked.current = message.id && message.slot ? { id: message.id, slot: message.slot } : null
         markPicked(picked.current)
         revealPicked() // اتحدّد من الطبقات وهو برّه الشاشة؟ ننزل له
+      } else if (message.type === 'lb-editor:bounds') {
+        bounds.current = message.bounds
+        showBounds(bounds.current, sendToParent)
       } else if (message.type === 'lb-editor:node') {
         patchNode(message.id, message.slot, message.edit)
       } else if (message.type === 'lb-editor:patch') {
@@ -134,6 +140,7 @@ export function FrameApp() {
       stop()
       stopImported()
       stopExtra()
+      clearBounds()
       stopNoHover()
     }
   }, [])
@@ -199,6 +206,7 @@ export function FrameApp() {
     markEditable(payload.blocks)
     prepareImported(payload, sendToParent)
     prepareExtras()
+    if (bounds.current) showBounds(bounds.current, sendToParent)
     markPicked(picked.current)
     // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق) — بنمسح المؤقتة مع رسمة جديدة بس، مش مع تغيّر التحديد
     if (drawn.current !== payload) clearDragVars(document, payload.blocks)

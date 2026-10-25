@@ -49,6 +49,7 @@ export function PreviewPane({ onKey }: Props) {
       else if (message.type === 'lb-editor:html') useEditor.getState().setHtml(message.id, message.value, message.silent)
       else if (message.type === 'lb-editor:code-number') useEditor.getState().applyCodeNumbers(message.id, message.items)
       else if (message.type === 'lb-editor:node-edits') useEditor.getState().applyNodeEdits(message.id, message.edits)
+      else if (message.type === 'lb-editor:section-height') useEditor.getState().setStyle(message.id, message.key, message.value)
       else if (message.type === 'lb-editor:overlay')
         useEditor.getState().setOverlay(message.id, message.index, message.values)
       else if (message.type === 'lb-editor:intro-item') useEditor.getState().setIntroItem(message.key, message.x, message.y)
@@ -119,6 +120,18 @@ export function PreviewPane({ onKey }: Props) {
   }, [lastEdit, ready])
 
   // زرار «الافتتاحية»: نبعت بس لما العدّاد يتغيّر بعد فتح المحرر (مش قيمته القديمة من فتحة سابقة)
+  // إطار حدود القسم ومقبض ارتفاعه: للمقاس الحالي، وبيتحدّث مع الارتفاع المحفوظ
+  const boundsBlock = useEditor((s) => s.boundsBlock)
+  const heightKey = `section_height_${device}`
+  const storedHeight = useEditor((s) => Number(s.doc.blocks.find((b) => b.id === s.boundsBlock)?.style[`section_height_${s.device}`] ?? 0))
+  useEffect(() => {
+    if (!ready) return
+    const bounds = boundsBlock
+      ? { id: boundsBlock, key: heightKey, label: `${t('editorInline.bounds.label')} · ${t(`editor.device.${device}`)}`, stored: storedHeight }
+      : null
+    sendToFrame(frame.current, { type: 'lb-editor:bounds', bounds })
+  }, [boundsBlock, heightKey, storedHeight, device, ready, t])
+
   const introCount = useIntroBus((s) => s.count)
   const seenIntro = useRef(introCount)
   useEffect(() => {

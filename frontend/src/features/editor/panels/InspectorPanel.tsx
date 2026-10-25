@@ -19,6 +19,8 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
   const features = useEditor((s) => s.features)
   const setTab = useEditor((s) => s.setTab)
   const rename = useEditor((s) => s.rename)
+  const boundsOn = useEditor((s) => s.boundsBlock === s.selected)
+  const toggleBounds = useEditor((s) => s.toggleBounds)
   const setProp = useEditor((s) => s.setProp)
   const setStyle = useEditor((s) => s.setStyle)
   const props = useOpenGroups()
@@ -80,6 +82,13 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
           value={block.label ?? ''}
           onChange={(e) => rename(block.id, e.target.value)}
         />
+      </div>
+
+      <div className="ed-section-bounds-tools">
+        <button type="button" className="ed-btn ed-btn--sm ed-btn--block" aria-pressed={boundsOn} onClick={() => toggleBounds(block.id)}>
+          {t(boundsOn ? 'editorInline.bounds.hide' : 'editorInline.bounds.show')}
+        </button>
+        <small className="ed-hint">{t('editorInline.bounds.hint')}</small>
       </div>
 
       {spec.description && <p className="ed-hint">{spec.description}</p>}

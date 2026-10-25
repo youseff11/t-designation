@@ -270,6 +270,8 @@ export type ToFrame =
   /** تعديل من لوحة العنصر يتطبّق على العقدة الحية فوراً (ما بيكتبش حاجة راجعة) */
   | { type: 'lb-editor:node'; id: string; slot: string; edit: NodeEdit }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
+  /** إطار حدود القسم ومقبض ارتفاعه (null = اخفِ): key = section_height_<مقاس>، stored المحفوظ (٠ = ماحدّش سحب) */
+  | { type: 'lb-editor:bounds'; bounds: { id: string; key: string; label: string; stored: number } | null }
   /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
   | { type: 'lb-editor:intro' }
 export type FromFrame =
@@ -289,6 +291,8 @@ export type FromFrame =
   | { type: 'lb-editor:overlay'; id: string; index: number; values: { x?: number; y?: number; width?: number } }
   /** سحب عنصر من الافتتاحية: ‎x/y‎ بوحدة ‎vw/vh‎ في ‎settings.intro_item_positions‎ */
   | { type: 'lb-editor:intro-item'; key: string; x: number; y: number }
+  /** سحب مقبض ارتفاع القسم: الارتفاع النهائي (بكسل، لأقرب ١٠) للمقاس الحالي */
+  | { type: 'lb-editor:section-height'; id: string; key: string; value: number }
   /** صندوق كود: أرقام ‎ce-N‎ اتحسبت على الـDOM الحي (مسار كل عنصر من الصندوق) — بتتكتب في النص الأصلي */
   | { type: 'lb-editor:code-number'; id: string; items: { path: number[]; slot: string; tag: string }[] }
   /** تعديلات بأرقام العناصر على النص الأصلي (كتابة وحدة نص، تبديل صورتين) — خطوة تراجع واحدة */

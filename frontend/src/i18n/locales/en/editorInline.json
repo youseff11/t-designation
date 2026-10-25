@@ -192,5 +192,11 @@
   "intro": {
     "title": "Intro — intro code",
     "hint": "Elements of the intro-screen code: click them in the preview (the Intro button replays it) or pick them from the layers."
+  },
+  "bounds": {
+    "label": "Section bounds",
+    "show": "Show section bounds",
+    "hide": "Hide section bounds",
+    "hint": "Show the frame, then drag the bottom handle to make the section taller or shorter (each device keeps its own height)."
   }
 }
