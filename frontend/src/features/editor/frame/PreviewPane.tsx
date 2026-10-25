@@ -53,6 +53,7 @@ export function PreviewPane({ onKey }: Props) {
       else if (message.type === 'lb-editor:overlay')
         useEditor.getState().setOverlay(message.id, message.index, message.values)
       else if (message.type === 'lb-editor:intro-item') useEditor.getState().setIntroItem(message.key, message.x, message.y)
+      else if (message.type === 'lb-editor:intro-text') useEditor.getState().setSetting(message.key, message.value)
       else if (message.type === 'lb-editor:layout')
         useEditor.getState().setLayout(message.id, message.slot, message.dx, message.dy)
       else if (message.type === 'lb-editor:refused') {

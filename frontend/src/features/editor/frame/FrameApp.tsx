@@ -11,6 +11,7 @@ import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent } from './bridge'
 import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
 import { installExtraDrags, prepareExtras } from './extraDrags'
+import { installIntroClicks } from './introClicks'
 import { clearBounds, showBounds, type Bounds } from './sectionBounds'
 import { clearDragVars, editingNode, installInteractions, markEditable, patchText } from './interactions'
 import { installNoHover, stripHover } from './noHover'
@@ -126,6 +127,7 @@ export function FrameApp() {
     document.addEventListener('focusout', flush)
     const stop = installInteractions({ payload: () => payloadRef.current, send: sendToParent })
     const stopExtra = installExtraDrags({ send: sendToParent })
+    const stopIntroClicks = installIntroClicks({ payload: () => payloadRef.current, send: sendToParent })
     const stopNoHover = installNoHover() // مفيش hover في المحرر — لا تأثيرات القالب ولا إطارات المحرر
     const stopImported = installImported({
       payload: () => payloadRef.current,
@@ -140,6 +142,7 @@ export function FrameApp() {
       stop()
       stopImported()
       stopExtra()
+      stopIntroClicks()
       clearBounds()
       stopNoHover()
     }

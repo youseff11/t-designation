@@ -76,7 +76,7 @@ describe('FrameApp intro screen', () => {
   it('stays closed once opened, even when the intro is edited afterwards', () => {
     const { container } = render(<FrameApp />)
     render_(intro({ text: 'أول نص' }))
-    fireEvent.click(container.querySelector('[data-intro-open]')!)
+    fireEvent.click(container.querySelector('[data-intro-open]')!, { detail: 3 })
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -89,7 +89,7 @@ describe('FrameApp intro screen', () => {
   it('shows it again on the intro message, with the latest content', () => {
     const { container } = render(<FrameApp />)
     render_(intro({ text: 'أول نص' }))
-    fireEvent.click(container.querySelector('[data-intro-open]')!)
+    fireEvent.click(container.querySelector('[data-intro-open]')!, { detail: 3 })
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -100,7 +100,7 @@ describe('FrameApp intro screen', () => {
     expect(introEl(container)?.classList.contains('is-open')).toBe(false)
 
     // ولما تتفتح تاني وتتعدّل، برضو مابترجعش لوحدها
-    fireEvent.click(container.querySelector('[data-intro-open]')!)
+    fireEvent.click(container.querySelector('[data-intro-open]')!, { detail: 3 })
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -111,7 +111,7 @@ describe('FrameApp intro screen', () => {
   it('turning the intro off and on again brings it back', () => {
     const { container } = render(<FrameApp />)
     render_(intro())
-    fireEvent.click(container.querySelector('[data-intro-open]')!)
+    fireEvent.click(container.querySelector('[data-intro-open]')!, { detail: 3 })
     act(() => {
       vi.advanceTimersByTime(800)
     })
@@ -137,5 +137,106 @@ describe('FrameApp intro screen', () => {
     render_(null)
     fromParent({ type: 'lb-editor:intro' })
     expect(introEl(container)).toBeNull()
+  })
+})
+
+describe('FrameApp intro clicks in the editor', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {})
+    document.body.style.overflow = ''
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
+  const sentToParent = () => vi.mocked(window.parent.postMessage).mock.calls.map((call) => call[0] as { type: string; key?: string; value?: string })
+
+  it('one click does not skip the intro', () => {
+    const { container } = render(<FrameApp />)
+    render_(intro({ text: 'نص', button: 'ابدأ' }))
+    fireEvent.click(container.querySelector('[data-intro-open]')!, { detail: 1 })
+    fireEvent.click(container.querySelector('.lb-intro')!, { detail: 1 })
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    expect(container.querySelector('.lb-intro')).not.toBeNull()
+    expect(container.querySelector('.lb-intro')?.classList.contains('is-open')).toBe(false)
+  })
+
+  it('two clicks edit the button text in place and Enter saves it to the intro setting', () => {
+    const { container } = render(<FrameApp />)
+    render_(intro({ text: 'نص', button: 'ابدأ' }))
+    const button = container.querySelector<HTMLElement>('[data-intro-open]')!
+    fireEvent.click(button, { detail: 1 })
+    fireEvent.click(button, { detail: 2 })
+    expect(button.getAttribute('contenteditable')).toBe('plaintext-only')
+    expect(container.querySelector('.lb-intro')?.classList.contains('is-open')).toBe(false)
+
+    button.textContent = 'يلا نبدأ'
+    fireEvent.keyDown(button, { key: 'Enter' })
+    expect(button.hasAttribute('contenteditable')).toBe(false)
+    expect(sentToParent()).toContainEqual({ type: 'lb-editor:intro-text', key: 'intro_button', value: 'يلا نبدأ' })
+  })
+
+  it('Escape cancels the edit, and an empty text is not saved', () => {
+    const { container } = render(<FrameApp />)
+    render_(intro({ text: 'نص', button: 'ابدأ' }))
+    const button = container.querySelector<HTMLElement>('[data-intro-open]')!
+    fireEvent.click(button, { detail: 2 })
+    button.textContent = 'حاجة تانية'
+    fireEvent.keyDown(button, { key: 'Escape' })
+    expect(button.textContent).toBe('ابدأ')
+
+    fireEvent.click(button, { detail: 2 })
+    button.textContent = '   '
+    fireEvent.keyDown(button, { key: 'Enter' })
+    expect(button.textContent).toBe('ابدأ')
+    expect(sentToParent().some((m) => m.type === 'lb-editor:intro-text')).toBe(false)
+  })
+
+  it('the paragraph text is editable too, and three clicks skip the intro', () => {
+    const { container } = render(<FrameApp />)
+    render_(intro({ text: 'نص', button: 'ابدأ' }))
+    const text = container.querySelector<HTMLElement>('[data-intro-item="text"]')!
+    fireEvent.click(text, { detail: 2 })
+    text.textContent = 'نص جديد'
+    fireEvent.click(text, { detail: 3 }) // التالتة: بتحفظ وبتفتح
+    expect(sentToParent()).toContainEqual({ type: 'lb-editor:intro-text', key: 'intro_text', value: 'نص جديد' })
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    expect(container.querySelector('.lb-intro')).toBeNull()
+  })
+
+  it('refuses editing while the translated preview is showing', () => {
+    const { container } = render(<FrameApp />)
+    fromParent({ type: 'lb-editor:render', selected: null, payload: { ...preview(intro({ button: 'ابدأ' })), lang: 'en', baseLang: 'ar' } })
+    const button = container.querySelector<HTMLElement>('[data-intro-open]')!
+    fireEvent.click(button, { detail: 2 })
+    expect(button.hasAttribute('contenteditable')).toBe(false)
+    expect(sentToParent()).toContainEqual({ type: 'lb-editor:refused' })
+  })
+
+  it('the video play button: one click does nothing, two edit its label, three open the invitation', () => {
+    const { container } = render(<FrameApp />)
+    render_(intro({ video: '/v.mp4', playMode: 'button', playLabel: 'ابدأ الفيديو' }))
+    const play = container.querySelector<HTMLElement>('[data-intro-play]')!
+    fireEvent.click(play, { detail: 1 })
+    expect(container.querySelector('.lb-intro')?.classList.contains('is-open')).toBe(false)
+
+    const label = container.querySelector<HTMLElement>('.lb-intro-play-text') ?? play
+    fireEvent.click(label, { detail: 2 })
+    expect(label.getAttribute('contenteditable')).toBe('plaintext-only')
+    label.textContent = 'شغّل'
+    fireEvent.keyDown(label, { key: 'Enter' })
+    expect(sentToParent()).toContainEqual({ type: 'lb-editor:intro-text', key: 'intro_play_label', value: 'شغّل' })
+
+    fireEvent.click(play, { detail: 3 })
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    expect(container.querySelector('.lb-intro')).toBeNull()
   })
 })

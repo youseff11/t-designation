@@ -291,6 +291,7 @@ export type FromFrame =
   | { type: 'lb-editor:overlay'; id: string; index: number; values: { x?: number; y?: number; width?: number } }
   /** سحب عنصر من الافتتاحية: ‎x/y‎ بوحدة ‎vw/vh‎ في ‎settings.intro_item_positions‎ */
   | { type: 'lb-editor:intro-item'; key: string; x: number; y: number }
+  | { type: 'lb-editor:intro-text'; key: string; value: string }
   /** سحب مقبض ارتفاع القسم: الارتفاع النهائي (بكسل، لأقرب ١٠) للمقاس الحالي */
   | { type: 'lb-editor:section-height'; id: string; key: string; value: number }
   /** صندوق كود: أرقام ‎ce-N‎ اتحسبت على الـDOM الحي (مسار كل عنصر من الصندوق) — بتتكتب في النص الأصلي */
