@@ -59,5 +59,14 @@
   "apps": {
     "system": "Site and invitations",
     "auth": "Users and permissions"
+  },
+  "hero": {
+    "preview": "Live preview",
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "hint": "Click any field to see where it appears in the preview.",
+    "editing": "Editing: {{field}}"
   }
 }

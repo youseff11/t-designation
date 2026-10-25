@@ -306,3 +306,74 @@ describe('data admin form', () => {
     expect(screen.queryByRole('button', { name: 'حذف' })).toBeNull()
   })
 })
+
+describe('hero live preview', () => {
+  const HERO_FIELDS: SchemaResponse['fields'] = [
+    { name: 'bg_dark_ar', label: 'خلفية دارك — عربي', kind: 'image', required: false, help: '', readonly: false },
+    { name: 'main_ar', label: 'العنوان الرئيسي — عربي', kind: 'text', required: false, help: '', readonly: false },
+    { name: 'main_en', label: 'العنوان الرئيسي — إنجليزي', kind: 'text', required: false, help: '', readonly: false },
+    { name: 'trust1_value_ar', label: 'خانة ١ — القيمة (عربي)', kind: 'text', required: false, help: '', readonly: false },
+  ]
+  const HERO: ObjectResponse = {
+    model: { key: 'system.homehero', name: 'هيرو الصفحة الرئيسية', singular: 'هيرو الصفحة الرئيسية' },
+    perms: PERMS,
+    fields: HERO_FIELDS,
+    fieldsets: [{ title: 'النصوص', description: '', fields: HERO_FIELDS.map((f) => f.name) }],
+    id: 1,
+    title: 'هيرو الصفحة الرئيسية',
+    values: { bg_dark_ar: { url: '/media/home/x/dark.webp', name: 'dark.webp' }, main_ar: '', main_en: 'Your story', trust1_value_ar: '' },
+    readonly: {},
+    inlines: [],
+  }
+
+  beforeEach(() => {
+    respond = (c) => (c.url.endsWith('/system.homehero/1/') ? json(HERO) : undefined)
+  })
+
+  it('shows the defaults in the preview, then the typed text live, marking the field being edited', async () => {
+    mount('/dashboard/data/system.homehero/1')
+    const stage = await screen.findByTestId('hero-bg')
+    const preview = stage.closest('.hp') as HTMLElement
+    expect(within(preview).getByText('تعكس قصة حبك')).toBeInTheDocument() // الافتراضي المترجم
+
+    const input = screen.getByLabelText('العنوان الرئيسي — عربي')
+    fireEvent.focus(input)
+    fireEvent.change(input, { target: { value: 'قصة حبكم تبدأ هنا' } })
+    const typed = within(preview).getByText('قصة حبكم تبدأ هنا')
+    expect(typed).toHaveClass('is-active')
+    expect(within(preview).queryByText('تعكس قصة حبك')).toBeNull()
+    expect(within(preview).getByText(/بتعدّل: العنوان الرئيسي — عربي/)).toBeInTheDocument()
+  })
+
+  it('flips the preview language and theme when a field of another language or theme gets the focus', async () => {
+    mount('/dashboard/data/system.homehero/1')
+    const preview = (await screen.findByTestId('hero-bg')).closest('.hp') as HTMLElement
+    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'rtl')
+    expect(preview.querySelector('.hp-stage')).toHaveAttribute('data-theme', 'light')
+
+    fireEvent.focus(screen.getByLabelText('العنوان الرئيسي — إنجليزي'))
+    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'ltr')
+    expect(within(preview).getByText('Your story')).toBeInTheDocument()
+
+    fireEvent.focus(screen.getByLabelText('خلفية دارك — عربي'))
+    expect(preview.querySelector('.hp-stage')).toHaveAttribute('data-theme', 'dark')
+    expect(preview.querySelector('.hp-stage')).toHaveAttribute('dir', 'rtl')
+    expect(screen.getByTestId('hero-bg').style.backgroundImage).toContain('/media/home/x/dark.webp')
+  })
+
+  it('lets the viewer switch language and theme by hand, falling back to the default image', async () => {
+    mount('/dashboard/data/system.homehero/1')
+    const preview = (await screen.findByTestId('hero-bg')).closest('.hp') as HTMLElement
+    expect(screen.getByTestId('hero-bg').style.backgroundImage).toContain('/static/images/home-arabic-light.webp')
+    fireEvent.click(within(preview).getByRole('button', { name: 'English' }))
+    fireEvent.click(within(preview).getByRole('button', { name: 'داكن' }))
+    expect(screen.getByTestId('hero-bg').style.backgroundImage).toContain('/static/images/home-english-dark.webp')
+  })
+
+  it('is not shown for other tables', async () => {
+    respond = (c) => (c.url.endsWith('/system.customer/5/') ? json(OBJECT) : undefined)
+    mount('/dashboard/data/system.customer/5')
+    await screen.findByLabelText(/الاسم/)
+    expect(screen.queryByTestId('hero-bg')).toBeNull()
+  })
+})

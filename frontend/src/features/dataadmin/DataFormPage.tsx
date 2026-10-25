@@ -12,6 +12,7 @@ import { errorText, useToast } from '@/features/dashboard/ui/Toast'
 import { dataKeys, saveObject, setUserPassword, useDataObject, useDataSchema } from './api'
 import { DeleteDialog } from './DeleteDialog'
 import { CellView, FieldInput } from './Fields'
+import { HeroPreview, viewForField, type HeroView } from './HeroPreview'
 import type { FieldInfo, FieldValue, ObjectResponse, SchemaResponse, Values } from './types'
 import './dataadmin.css'
 
@@ -148,6 +149,10 @@ function FormBody({ model, id, meta }: { model: string; id: string; meta: Schema
   const [busy, setBusy] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const top = useRef<HTMLDivElement>(null)
+  // معاينة هيرو الرئيسية: الحقل الواقف عليه + اللغة/المظهر المعروضين
+  const [focus, setFocus] = useState('')
+  const [heroView, setHeroView] = useState<HeroView>({ lang: 'ar', theme: 'light' })
+  const hasPreview = model === 'system.homehero'
 
   const title = object ? object.title : t('dataadmin.addNew', { name: meta.model.singular })
   usePageTitle(title)
@@ -234,8 +239,25 @@ function FormBody({ model, id, meta }: { model: string; id: string; meta: Schema
           <li>{general}</li>
         </ul>
       )}
+      <div className={hasPreview ? 'da-split' : undefined}>
+      {hasPreview && (
+        <HeroPreview
+          values={values}
+          files={files}
+          focus={focus}
+          focusLabel={byName.get(focus)?.label ?? ''}
+          view={heroView}
+          onView={setHeroView}
+        />
+      )}
       <form
         className="da-form"
+        onFocusCapture={(event) => {
+          if (!hasPreview) return
+          const name = (event.target as HTMLElement).closest<HTMLElement>('[data-field]')?.dataset.field ?? ''
+          setFocus(name)
+          if (name) setHeroView((now) => viewForField(name, now))
+        }}
         onSubmit={(event) => {
           event.preventDefault()
           void save('stay')
@@ -305,6 +327,7 @@ function FormBody({ model, id, meta }: { model: string; id: string; meta: Schema
           )}
         </div>
       </form>
+      </div>
 
       {!creating && model === 'auth.user' && meta.perms.change && <PasswordPanel id={id} />}
 
