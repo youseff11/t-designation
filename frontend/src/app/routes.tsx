@@ -4,6 +4,7 @@ import { Layout } from '@/components/Layout'
 import { RequireStaff } from '@/components/RequireStaff'
 import { DashboardLayout } from '@/features/dashboard/DashboardLayout'
 import { dashboardRoutes } from '@/features/dashboard/routes'
+import { dataAdminRoutes } from '@/features/dataadmin/routes'
 import { editorRoutes } from '@/features/editor/routes'
 import { guestDashboardRoutes, guestPublicRoutes } from '@/features/guests/routes'
 import { inviteRoutes } from '@/features/invite/routes'
@@ -36,7 +37,7 @@ export const routes: RouteObject[] = [
     children: [
       {
         element: <DashboardLayout />,
-        children: [{ index: true, element: <DashboardPage /> }, ...dashboardRoutes, ...guestDashboardRoutes],
+        children: [{ index: true, element: <DashboardPage /> }, ...dashboardRoutes, ...dataAdminRoutes, ...guestDashboardRoutes],
       },
       // المحرر البصري: ملء الشاشة من غير غلاف اللوحة
       ...editorRoutes,

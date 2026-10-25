@@ -206,7 +206,9 @@ export function DashboardHeader() {
                 </Link>
               ),
             )}
-            <a href="/admin/">{t('dashboard.nav.admin')}</a>
+            <Link to="/dashboard/data" className={pathname.startsWith('/dashboard/data') ? 'is-active' : undefined}>
+              {t('dashboard.nav.admin')}
+            </Link>
             <Link className="nav-only-mobile" to="/">
               {t('dashboard.nav.publicSite')}
             </Link>
