@@ -147,9 +147,8 @@ export function PreviewPane({ onKey }: Props) {
   }, [selected, selectSource, ready])
 
   return (
-    <div className="ed-device" data-device={device}>
+    <div className="ed-device" data-device={device} data-busy={busy || undefined}>
       <iframe ref={frame} src="/editor-frame/" title={t('editor.preview.title')} />
-      <div className={`ed-loading${busy ? ' is-on' : ''}`}>{t('editor.preview.updating')}</div>
     </div>
   )
 }

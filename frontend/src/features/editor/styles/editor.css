@@ -236,16 +236,6 @@
 .ed-device[data-device="desktop"] { width: 100%; max-width: 1280px; max-height: none; border-radius: 8px; }
 .ed-device iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--e-device); }
 
-.ed-loading {
-  position: absolute; inset: 0;
-  display: grid; place-items: center;
-  background: var(--e-overlay);
-  color: var(--e-accent);
-  font-size: 12px;
-  opacity: 0; pointer-events: none;
-  transition: opacity .2s;
-}
-.ed-loading.is-on { opacity: 1; }
 
 /* ---------------------------------------------------------- قائمة الأقسام */
 .ed-section { margin-bottom: 18px; }
