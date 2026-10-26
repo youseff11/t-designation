@@ -157,15 +157,12 @@ function FileVideo({
       watch()
     }
 
-    // الفيديو من غير شريط تحكم دايماً: اللمسة عليه هي زر التشغيل/الإيقاف
+    // الفيديو من غير شريط تحكم دايماً: اللمسة عليه بتشغّله لو واقف (الفيديو غير التلقائي
+    // ملوش طريقة تانية) — لكن مابتوقّفوش: الضغطة على فيديو شغّال ماتعملش حاجة
     const onClick = () => {
-      if (v.paused) {
-        setWanted(v, true)
-        tryPlay()
-      } else {
-        setWanted(v, false)
-        v.pause()
-      }
+      if (!v.paused) return
+      setWanted(v, true)
+      tryPlay()
     }
     v.style.cursor = 'pointer'
     v.addEventListener('click', onClick)
