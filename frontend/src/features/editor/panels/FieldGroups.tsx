@@ -34,15 +34,19 @@ interface Props {
   onToggle: (name: string, open: boolean) => void
   /** أول مجموعة بتتفتح لوحدها لو المستخدم لسه ماختارش */
   openFirst?: boolean
+  /** مجموعات مش هتتعرض خالص (بالاسم) */
+  hide?: string[]
+  /** مجموعات بتتفتح لوحدها لو المستخدم لسه ماقفلهاش */
+  defaultOpen?: string[]
 }
 
 /**
  * مجموعات الحقول القابلة للطي (‎<details>‎) — مشتركة بين خصائص القسم والتصميم والإعدادات.
  * حقول التنسيق المخفية (‎style_of‎) بتظهر كترس جنب النص اللي بتنسّقه.
  */
-export function FieldGroups({ specs, get, set, open, onToggle, openFirst = true }: Props) {
+export function FieldGroups({ specs, get, set, open, onToggle, openFirst = true, hide = [], defaultOpen = [] }: Props) {
   const { t } = useTranslation()
-  const groups = groupFields(specs, t('editor.inspector.defaultGroup'))
+  const groups = groupFields(specs, t('editor.inspector.defaultGroup')).filter((g) => !hide.includes(g.name))
   const scope = useStyleScope(specs, get, set)
   return (
     <>
@@ -50,7 +54,7 @@ export function FieldGroups({ specs, get, set, open, onToggle, openFirst = true 
         <details
           key={group.name}
           className={`ed-group${group.specs.some((s) => s.group_open) ? ' ed-group--accent' : ''}`}
-          open={open[group.name] ?? (group.open || (openFirst && index === 0))}
+          open={open[group.name] ?? (group.open || defaultOpen.includes(group.name) || (openFirst && index === 0))}
           onToggle={(e) => onToggle(group.name, e.currentTarget.open)}
         >
           <summary>

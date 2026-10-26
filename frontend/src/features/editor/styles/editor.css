@@ -98,7 +98,7 @@
 }
 .ed-brand-logo {
   display: block; height: 28px; aspect-ratio: 714 / 200; flex: none;
-  background: url("/static/images/brand-light.png") center/contain no-repeat;
+  background: var(--site-logo-light, url("/site-logo/light.png")) center/contain no-repeat;
 }
 .ed-title {
   color: var(--e-muted); font-size: 13px;
@@ -603,7 +603,7 @@
    تلميع + فروق المظهر الفاتح
    ================================================================ */
 
-[data-theme="dark"] .ed-brand-logo { background-image: url("/static/images/brand-dark.png"); }
+[data-theme="dark"] .ed-brand-logo { background-image: var(--site-logo-dark, url("/site-logo/dark.png")); }
 
 /* الشريط العلوي واللوحة بيرتفعوا شوية عن الكانفس بظل خفيف بدل خط جاف */
 .ed-top   { box-shadow: 0 1px 0 var(--e-line), 0 6px 18px -14px rgba(0, 0, 0, .35); }
@@ -688,6 +688,7 @@
 .ed-input[type="tel"] { direction: ltr; text-align: start; }
 
 .ed-canvas-tools { display: flex; align-items: center; gap: 10px; }
+.ed-overlay-add { display: flex; align-items: center; gap: 4px; }
 
 /* ---------------------------------------------------------- قصّ الصورة */
 .ed-modal-card--wide { width: min(760px, 94vw); }

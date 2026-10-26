@@ -132,6 +132,35 @@ describe('FrameApp intro screen', () => {
     expect(posted.filter((m) => (m as { type: string }).type === 'lb-editor:select')).toEqual([])
   })
 
+  it('opens the invitation on the skip message, and tells the parent when the intro is covering the preview', () => {
+    const posted: unknown[] = []
+    vi.mocked(window.parent.postMessage).mockImplementation((message: unknown) => {
+      posted.push(message)
+    })
+    const visible = () => posted.filter((m) => (m as { type: string }).type === 'lb-editor:intro-visible').at(-1)
+    const { container } = render(<FrameApp />)
+    render_(intro({ text: 'نص', button: 'ابدأ' }))
+    expect(visible()).toEqual({ type: 'lb-editor:intro-visible', visible: true })
+
+    fromParent({ type: 'lb-editor:intro-skip' })
+    expect(visible()).toEqual({ type: 'lb-editor:intro-visible', visible: false })
+    act(() => {
+      vi.advanceTimersByTime(800)
+    })
+    expect(introEl(container)).toBeNull()
+
+    fromParent({ type: 'lb-editor:intro' })
+    expect(visible()).toEqual({ type: 'lb-editor:intro-visible', visible: true })
+  })
+
+  it('skip with no intro showing does nothing', () => {
+    const { container } = render(<FrameApp />)
+    render_(null)
+    fromParent({ type: 'lb-editor:intro-skip' })
+    expect(introEl(container)).toBeNull()
+    expect(container.querySelector('[data-block="q1"]')).not.toBeNull()
+  })
+
   it('ignores the intro message when there is nothing to show', () => {
     const { container } = render(<FrameApp />)
     render_(null)

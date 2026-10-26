@@ -8,7 +8,7 @@ import { Intro } from '@/features/invite/Intro'
 import { makeT } from '@/features/invite/strings'
 
 import type { PreviewPayload, ToFrame } from '../types'
-import { parseMessage, sendToParent } from './bridge'
+import { parseMessage, sendToParent, shortcutKey } from './bridge'
 import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
 import { installExtraDrags, prepareExtras } from './extraDrags'
 import { installIntroClicks } from './introClicks'
@@ -35,6 +35,14 @@ function applyBody(payload: PreviewPayload) {
   }
 }
 
+/** علامة العنصر فوق القسم المحدَّد (‎.lb-ovl-picked‎) — بتتعاد بعد كل رسمة زي ‎markPicked‎. */
+function markOverlay(picked: { id: string; index: number } | null) {
+  document.querySelectorAll('.lb-ovl-picked').forEach((n) => n.classList.remove('lb-ovl-picked'))
+  if (!picked) return
+  const block = Array.from(document.querySelectorAll('[data-block]')).find((n) => n.getAttribute('data-block') === picked.id)
+  block?.querySelector(`[data-section-text][data-section-text-index="${picked.index}"]`)?.classList.add('lb-ovl-picked')
+}
+
 function markSelected(id: string | null) {
   for (const node of document.querySelectorAll('[data-block]')) {
     node.classList.toggle('is-selected', node.getAttribute('data-block') === id)
@@ -59,6 +67,8 @@ export function FrameApp() {
   const pending = useRef<Extract<ToFrame, { type: 'lb-editor:render' }> | null>(null)
   // العنصر المحدَّد جوّه قسم مستورد (علامته بتتعاد بعد كل رسمة)
   const picked = useRef<{ id: string; slot: string } | null>(null)
+  // العنصر فوق القسم المحدَّد (نص/صورة/زرار) — علامته بتتعاد بعد كل رسمة
+  const pickedOverlay = useRef<{ id: string; index: number } | null>(null)
   // آخر حمولة اترسمت (عشان تغيّر التحديد لوحده مايمسحش إزاحة سحب مستنية رد السيرفر)
   const drawn = useRef<PreviewPayload | null>(null)
   // إطار حدود القسم المطلوب (الأم هي اللي بتحدّده) — بيتعاد بعد كل رسمة لأن القسم ممكن يتركّب من جديد
@@ -90,6 +100,9 @@ export function FrameApp() {
         picked.current = message.id && message.slot ? { id: message.id, slot: message.slot } : null
         markPicked(picked.current)
         revealPicked() // اتحدّد من الطبقات وهو برّه الشاشة؟ ننزل له
+      } else if (message.type === 'lb-editor:overlay-pick') {
+        pickedOverlay.current = message.id && message.index !== null ? { id: message.id, index: message.index } : null
+        markOverlay(pickedOverlay.current)
       } else if (message.type === 'lb-editor:bounds') {
         bounds.current = message.bounds
         showBounds(bounds.current, sendToParent)
@@ -100,6 +113,8 @@ export function FrameApp() {
       } else if (message.type === 'lb-editor:intro') {
         setIntroClosedAt(null)
         setIntroRun((n) => n + 1)
+      } else if (message.type === 'lb-editor:intro-skip') {
+        window.__lbIntro?.open() // نفس التلات ضغطات (introClicks) — لو الافتتاحية مش ظاهرة مفيش حاجة تتعمل
       } else if (message.type === 'lb-editor:select') {
         setState((current) => (current ? { ...current, selected: message.id } : current))
         if (message.scroll && message.id) {
@@ -154,6 +169,12 @@ export function FrameApp() {
       if (event.target instanceof Element && event.target.closest('a[href], button[type="submit"]')) event.preventDefault()
       const id = blockIdAt(event.target)
       if (id) sendToParent({ type: 'lb-editor:select', id })
+      // ضغطة على أي حاجة غير العنصر فوق القسم بتلغي تحديده
+      if (pickedOverlay.current && !(event.target instanceof Element && event.target.closest('[data-section-text]'))) {
+        pickedOverlay.current = null
+        markOverlay(null)
+        sendToParent({ type: 'lb-editor:overlay-pick', id: null, index: null })
+      }
     }
     const onSubmit = (event: Event) => event.preventDefault()
     const onKey = (event: KeyboardEvent) => {
@@ -161,14 +182,15 @@ export function FrameApp() {
       const mod = event.ctrlKey || event.metaKey
       // اختصارات المحرر بس (حفظ/تراجع/إعادة) — باقي Ctrl+حرف (تحديد الكل، نسخ، لصق…) للمتصفح جوّه النص.
       // استثناء: عنصر محدَّد مش بنكتب فيه — Ctrl+C/V/D بتنسخ/تلصق/تكرّر العنصر نفسه
-      const lower = event.key.toLowerCase()
+      const pressed = mod ? shortcutKey(event) : event.key
+      const lower = pressed.toLowerCase()
       const forElement = !typing && !!picked.current && !event.shiftKey && ELEMENT_MOD_KEYS.has(lower)
       if (mod && !EDITOR_MOD_KEYS.has(lower) && !forElement) return
       // الأسهم بتحرّك العنصر المحدَّد جوّه القسم المستورد (من غيره بتمرّر الصفحة زي العادي)
       const arrow = ARROWS.has(event.key) && !!picked.current
       if (!mod && (typing || !(arrow || ['Delete', 'Backspace', 'Escape'].includes(event.key)))) return
       if (mod || arrow) event.preventDefault()
-      sendToParent({ type: 'lb-editor:key', key: event.key, shiftKey: event.shiftKey, mod })
+      sendToParent({ type: 'lb-editor:key', key: pressed, shiftKey: event.shiftKey, mod })
     }
     document.addEventListener('click', onClick, true)
     document.addEventListener('submit', onSubmit, true)
@@ -189,6 +211,12 @@ export function FrameApp() {
     document.addEventListener('lb:intro-open', onOpen)
     return () => document.removeEventListener('lb:intro-open', onOpen)
   }, [])
+
+  // الأم محتاجة تعرف الافتتاحية مغطّية المعاينة ولا لأ (زرار «تخطّي الافتتاحية»)
+  const introShown = Boolean(payload?.intro) && introClosedAt === null
+  useEffect(() => {
+    sendToParent({ type: 'lb-editor:intro-visible', visible: introShown })
+  }, [introShown])
 
   const ctx = useMemo(
     () =>
@@ -211,6 +239,7 @@ export function FrameApp() {
     prepareExtras()
     if (bounds.current) showBounds(bounds.current, sendToParent)
     markPicked(picked.current)
+    markOverlay(pickedOverlay.current)
     // الإزاحة الدايمة جاية من ستايل layout في الرأس (syncHeadStyles فوق) — بنمسح المؤقتة مع رسمة جديدة بس، مش مع تغيّر التحديد
     if (drawn.current !== payload) clearDragVars(document, payload.blocks)
     drawn.current = payload

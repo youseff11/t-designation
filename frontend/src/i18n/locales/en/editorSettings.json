@@ -14,6 +14,8 @@
   "intro": {
     "button": "Intro",
     "title": "Show the intro screen in the preview",
+    "skip": "Skip intro",
+    "skipTitle": "Open the invitation and skip the intro screen",
     "disabled": "Turn on “Intro screen” in the first Settings group."
   },
   "data": {

@@ -1,4 +1,4 @@
-{% load static vite %}<!doctype html>
+{% load static vite siteicon %}<!doctype html>
 <html lang="{{ lang|default:'ar' }}" dir="{{ dir|default:'rtl' }}">
 <head>
 <meta charset="utf-8">
@@ -6,7 +6,7 @@
 <title>{{ page_title }}</title>
 <meta name="description" content="{{ page_description }}">
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="{% if favicon %}{{ favicon }}{% else %}{% static 'img/favicon.svg' %}{% endif %}">
+<link rel="icon" href="{% if favicon %}{{ favicon }}{% else %}{% site_icon_href 'img/favicon.svg' %}{% endif %}">
 {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
 {% comment %}
   معاينة الرابط عند المشاركة (نفس ميتا ‎render.html‎ القديم). فيسبوك وماسنجر

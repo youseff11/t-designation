@@ -11,11 +11,12 @@ import mimetypes
 import re
 from pathlib import Path
 from django.conf import settings
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
+from django.templatetags.static import static
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_safe
-from . import qrcodes
+from . import qrcodes, siteicon
 from .models import Guest, Invitation
 
 
@@ -185,3 +186,41 @@ def guest_qr(request, slug, token):
     guest = get_object_or_404(Guest, invitation=invitation, token=(token or "").strip())
     url = request.build_absolute_uri(guest.get_absolute_url())
     return HttpResponse(qrcodes.svg_for(url), content_type="image/svg+xml")
+
+
+@require_safe
+def site_icon(request):
+    """أيقونة الموقع المرفوعة من لوحة «إدارة البيانات» — ‎/site-icon.png?v=…‎ و‎/favicon.ico‎.
+
+    لو ماترفعتش أيقونة بنحوّل للافتراضية. الرابط اللي فيه ‎v‎ بيتخزّن يوم كامل (بيتغيّر مع كل أيقونة جديدة)،
+    وغيره (‎/favicon.ico‎ اللي المتصفح بيطلبه لوحده) مابيتخزّنش عشان التغيير يبان فوراً.
+    """
+    path = siteicon.icon_path()
+    if not path.is_file():
+        return HttpResponseRedirect(static("images/logo.jpeg"))
+    response = HttpResponse(path.read_bytes(), content_type="image/png")  # ملف صغير: نقراه كله (مفيش مقبض مفتوح يمنع الاستبدال على ويندوز)
+    response["Cache-Control"] = "public, max-age=86400" if request.GET.get("v") else "no-cache"
+    return response
+
+
+@require_safe
+def site_logo(request, slot):
+    """لوجو الموقع — ‎/site-logo/light.png‎ و‎/site-logo/dark.png‎. من غير لوجو مرفوع بنحوّل للافتراضي.
+
+    الرابط ثابت (الـCSS وأقسام الدعاية بتكتبه)، فالرد ‎no-cache‎ مع ‎ETag‎: المتصفح بيسأل السيرفر كل مرة ويلاقي
+    ‎304‎ طول ما اللوجو ماتغيّرش، ولما يتغيّر يبان فوراً.
+    """
+    if slot not in siteicon.LOGO_SLOTS:
+        raise Http404
+    path = siteicon.logo_file(slot)
+    if path is None:
+        return HttpResponseRedirect(static(f"images/brand-{slot}.png"))
+    stat = path.stat()
+    etag = f'"{int(stat.st_mtime)}-{stat.st_size}"'
+    if request.headers.get("If-None-Match") == etag:
+        response = HttpResponse(status=304)
+    else:
+        response = HttpResponse(path.read_bytes(), content_type="image/png")  # ملف صغير: نقراه كله (مفيش مقبض مفتوح يمنع الاستبدال على ويندوز)
+    response["ETag"] = etag
+    response["Cache-Control"] = "no-cache"
+    return response

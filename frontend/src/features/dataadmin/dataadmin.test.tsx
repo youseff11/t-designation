@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { initI18n } from '@/i18n'
+import { ConfirmProvider } from '@/features/dashboard/ui/ConfirmDialog'
 import { ToastProvider } from '@/features/dashboard/ui/Toast'
 
 import { DataFormPage } from './DataFormPage'
@@ -92,15 +93,17 @@ function mount(path: string) {
   return render(
     <QueryClientProvider client={client}>
       <ToastProvider>
-        <MemoryRouter initialEntries={[path]}>
-          <Routes>
-            <Route path="/dashboard/data" element={<DataHomePage />} />
-            <Route path="/dashboard/data/:model" element={<DataListPage />} />
-            <Route path="/dashboard/data/:model/new" element={<DataFormPage />} />
-            <Route path="/dashboard/data/:model/:id" element={<DataFormPage />} />
-          </Routes>
-          <Probe />
-        </MemoryRouter>
+        <ConfirmProvider>
+          <MemoryRouter initialEntries={[path]}>
+            <Routes>
+              <Route path="/dashboard/data" element={<DataHomePage />} />
+              <Route path="/dashboard/data/:model" element={<DataListPage />} />
+              <Route path="/dashboard/data/:model/new" element={<DataFormPage />} />
+              <Route path="/dashboard/data/:model/:id" element={<DataFormPage />} />
+            </Routes>
+            <Probe />
+          </MemoryRouter>
+        </ConfirmProvider>
       </ToastProvider>
     </QueryClientProvider>,
   )
@@ -136,8 +139,13 @@ describe('data admin home', () => {
     mount('/dashboard/data')
     expect(await screen.findByText('العملاء')).toBeInTheDocument()
     expect(screen.getByText('3 سجل')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /العملاء/ })).toHaveAttribute('href', '/dashboard/data/system.customer')
-    expect(screen.getAllByRole('link', { name: /إضافة/ })).toHaveLength(1) // الأسئلة من غير صلاحية إضافة
+    expect(screen.getByRole('link', { name: /^العملاء/ })).toHaveAttribute('href', '/dashboard/data/system.customer')
+    expect(screen.getAllByRole('link', { name: /^إضافة/ })).toHaveLength(1) // الأسئلة من غير صلاحية إضافة
+    // البانر: عدد الجداول وإجمالي السجلات، وأيقونة لكل جدول
+    const stats = document.querySelector('.da-banner-stats') as HTMLElement
+    expect(stats.textContent).toContain('2')
+    expect(stats.textContent).toContain('4')
+    expect(document.querySelectorAll('.da-model-icon svg')).toHaveLength(2)
 
     fireEvent.change(screen.getByLabelText('ابحث عن جدول…'), { target: { value: 'أسئلة' } })
     expect(screen.queryByText('العملاء')).toBeNull()

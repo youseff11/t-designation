@@ -168,3 +168,23 @@ describe('element keys (imported sections)', () => {
     expect(layoutOf('a')).toBeUndefined()
   })
 })
+
+describe('Ctrl shortcuts on a non-Latin keyboard layout', () => {
+  it('Ctrl+Z / Ctrl+Y work when the layout is Arabic (key is ئ / ؤ, code is KeyZ / KeyY)', () => {
+    renderHook(() => useEditorShortcuts(), { wrapper })
+    const store = useEditor.getState()
+    store.rename('a', 'اسم')
+    expect(useEditor.getState().doc.blocks[0].label).toBe('اسم')
+    expect(press('ئ', { ctrlKey: true, code: 'KeyZ' }).defaultPrevented).toBe(true)
+    expect(useEditor.getState().doc.blocks[0].label).toBeUndefined()
+    press('ؤ', { ctrlKey: true, code: 'KeyY' })
+    expect(useEditor.getState().doc.blocks[0].label).toBe('اسم')
+  })
+
+  it('shortcutKey keeps a Latin key as is (AZERTY/Dvorak) and falls back to the physical key otherwise', async () => {
+    const { shortcutKey } = await import('./frame/bridge')
+    expect(shortcutKey({ key: 'z', code: 'KeyW' })).toBe('z')
+    expect(shortcutKey({ key: 'ئ', code: 'KeyZ' })).toBe('z')
+    expect(shortcutKey({ key: 'Delete', code: 'Delete' })).toBe('Delete')
+  })
+})

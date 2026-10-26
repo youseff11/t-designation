@@ -43,6 +43,8 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 from django.utils.text import capfirst
 
+from .. import siteicon
+from ..models import Invitation, Template
 from .dashboard_common import staff_api
 from .http import ApiError, json_body
 
@@ -705,7 +707,66 @@ def user_password(request, pk):
     return {"ok": True}
 
 
+@staff_api("GET", "POST", "DELETE")
+def site_icon(request):
+    """أيقونة الموقع (الـfavicon): ‎GET‎ الحالية، ‎POST file‎ لرفع أيقونة جديدة، ‎DELETE‎ لاستعادة الافتراضية."""
+    if request.method != "GET":
+        _need_site_settings(request)
+    if request.method == "POST":
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise ApiError(400, "file_required", "اختار صورة الأيقونة.")
+        try:
+            siteicon.save_icon(upload.read(siteicon.MAX_BYTES + 1))
+        except siteicon.IconError as exc:
+            raise ApiError(400, "bad_image", str(exc)) from exc
+    elif request.method == "DELETE":
+        siteicon.reset_icon()
+    return {"custom": siteicon.is_custom(), "url": siteicon.icon_url()}
+
+
+def _need_site_settings(request) -> None:
+    user = request.user
+    if not (user.is_superuser or user.has_perm("system.change_sitesetting")):
+        raise PermissionDenied("مفيش صلاحية على إعدادات الموقع.")
+
+
+@staff_api("GET", "POST", "DELETE")
+def site_logo(request):
+    """لوجو الموقع (النافبار وقسم الدعاية): ‎GET‎ الحالة، ‎POST slot+file‎ رفع (‎light‎/‎dark‎)، ‎DELETE ?slot=‎ استعادة."""
+    slot = request.POST.get("slot") if request.method == "POST" else request.GET.get("slot")
+    if request.method != "GET":
+        _need_site_settings(request)
+        if slot not in siteicon.LOGO_SLOTS:
+            raise ApiError(400, "bad_slot", "اختار لوجو فاتح أو غامق.")
+    if request.method == "POST":
+        upload = request.FILES.get("file")
+        if upload is None:
+            raise ApiError(400, "file_required", "اختار صورة اللوجو.")
+        try:
+            siteicon.save_logo(slot, upload.read(siteicon.MAX_BYTES + 1))
+        except siteicon.IconError as exc:
+            raise ApiError(400, "bad_image", str(exc)) from exc
+    elif request.method == "DELETE":
+        siteicon.reset_logo(slot)
+    return siteicon.logo_state()
+
+
+@staff_api("POST")
+def site_logo_apply(request):
+    """يطبّق لوجو الموقع على قسم «الدعاية» في كل القوالب والدعوات."""
+    _need_site_settings(request)
+    for model in (Template, Invitation):
+        model_admin = admin.site._registry.get(model)
+        if model_admin is None or not model_admin.has_change_permission(request):
+            raise PermissionDenied("مفيش صلاحية تعديل القوالب والدعوات.")
+    return siteicon.apply_logo_to_branding()
+
+
 urlpatterns = [
+    path("data/site-logo/", site_logo, name="api_data_site_logo"),
+    path("data/site-logo/apply/", site_logo_apply, name="api_data_site_logo_apply"),
+    path("data/site-icon/", site_icon, name="api_data_site_icon"),
     path("data/", catalog, name="api_data_catalog"),
     path("data/auth.user/<int:pk>/password/", user_password, name="api_data_user_password"),
     path("data/<str:key>/", model_root, name="api_data_model"),

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { SaveFavoriteButton } from '../assets/FavoritesDialog'
 import { findBlock, INTRO_ID } from '../doc'
 import { splitCode } from '../imported/source'
+import { hasCountdown } from '../imported/units'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
@@ -10,6 +11,7 @@ import { ColorGroup } from './ColorGroup'
 import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
 import { LayoutGroup } from './LayoutGroup'
+import { OverlayPanel } from './OverlayPanel'
 
 /** خصائص القسم المحدَّد: الاسم، ثم مجموعات حقول المحتوى ثم التنسيق — كلها مبنية من السكيما. */
 export function InspectorPanel({ schema }: { schema: EditorSchema }) {
@@ -23,6 +25,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
   const toggleBounds = useEditor((s) => s.toggleBounds)
   const setProp = useEditor((s) => s.setProp)
   const setStyle = useEditor((s) => s.setStyle)
+  const elementPicked = useEditor((s) => s.selEl?.blockId === s.selected)
   const props = useOpenGroups()
   const style = useOpenGroups()
 
@@ -54,6 +57,22 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
   // «كود متقدّم» فيه HTML (مش ستايل وسكربت بس) = صندوق عناصر بتتحدّد وتتحرّك
   const hasCodeBox = typeof block.props.code === 'string' && splitCode(block.props.code).region.trim() !== ''
 
+  // قسم «كود مخصص»: بنعرض بس اللي ليه لازمة — الكود مفتوح وجاهز، العدّاد لو فيه عدّاد، والمواضع بتتسحب بالماوس. الألوان من العنصر المحدَّد.
+  const custom = block.type === 'custom_html'
+  const groupsOf = (...keys: string[]) => spec.props.filter((f) => keys.includes(f.key)).map((f) => f.group || '')
+  // «عناصر فوق القسم» (نص/صورة/زرار) مابتظهرش في لوحة أي قسم: بتتضاف من شريط المعاينة وبتتحدّد وتتسحب وتتحذف من المعاينة
+  const hide = [
+    ...groupsOf('text_overlays'),
+    ...(custom && !hasCountdown(typeof block.props.html === 'string' ? block.props.html : '')
+      ? groupsOf('countdown_date', 'countdown_dir')
+      : []),
+  ]
+  const overlaySpec = spec.props.find((f) => f.key === 'text_overlays')
+  const element = custom || hasCodeBox
+  const elementPanel = element && (
+    <ElementPanel blockId={block.id} countdown={spec.props.filter((f) => f.key === 'countdown_date' || f.key === 'countdown_dir')} />
+  )
+
   return (
     <>
       <div className="ed-section-head">
@@ -68,6 +87,8 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
           </button>
         </div>
       </div>
+
+      {overlaySpec && <OverlayPanel block={block} spec={overlaySpec} />}
 
       <div className="ed-field">
         <label htmlFor="ed-block-name">
@@ -94,13 +115,16 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
       {spec.description && <p className="ed-hint">{spec.description}</p>}
       {gated && <p className="ed-hint ed-hint--danger">{t('editor.inspector.gated')}</p>}
 
+      {custom && elementPanel}
       <FieldGroups
         specs={spec.props}
+        hide={hide}
+        defaultOpen={custom ? groupsOf('code') : []}
         get={(s) => block.props[s.key]}
         set={(s, v) => setProp(block.id, s.key, v)}
         open={props.open}
         onToggle={props.onToggle}
-        openFirst
+        openFirst={!custom}
       />
       {spec.style.length > 0 && (
         <FieldGroups
@@ -112,12 +136,10 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
           openFirst={false}
         />
       )}
-      <LayoutGroup block={block} spec={spec} />
-      {block.type === 'custom_html' && <ColorGroup block={block} />}
-      {(block.type === 'custom_html' || hasCodeBox) && (
-        <ElementPanel blockId={block.id} countdown={spec.props.filter((f) => f.key === 'countdown_date' || f.key === 'countdown_dir')} />
-      )}
-      {block.type === 'custom_html' && <LayersGroup blockId={block.id} />}
+      {!custom && <LayoutGroup block={block} spec={spec} />}
+      {custom && !elementPicked && <ColorGroup block={block} />}
+      {!custom && elementPanel}
+      {custom && <LayersGroup blockId={block.id} />}
       {hasCodeBox && <LayersGroup blockId={block.id} kind="code" />}
     </>
   )

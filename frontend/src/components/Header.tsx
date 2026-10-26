@@ -98,7 +98,7 @@ export function Header() {
   const whatsappUrl = site?.whatsapp.url ?? ''
   const siteName = site ? pick(lang, site.name.ar, site.name.en) : ''
 
-  const spyIds = ['templates', 'how', ...(plansPublic ? ['plans'] : []), ...(ordersEnabled ? ['order'] : [])]
+  const spyIds = ['templates', 'how', ...(plansPublic ? ['plans'] : []), 'faq']
   const active = useScrollSpy(spyIds, pathname === '/')
 
   useEffect(() => {
@@ -167,17 +167,9 @@ export function Header() {
                 {t('public.nav.plans')}
               </Link>
             )}
-            {ordersEnabled ? (
-              <Link to={home('#order')} className={spyClass('order')}>
-                {orderLabel}
-              </Link>
-            ) : (
-              whatsappUrl && (
-                <a href={whatsappUrl} target="_blank" rel="noopener">
-                  {orderLabel}
-                </a>
-              )
-            )}
+            <Link to={home('#faq')} className={spyClass('faq')}>
+              {t('public.nav.faq')}
+            </Link>
             {user?.isStaff && <Link to="/dashboard">{t('public.nav.dashboard')}</Link>}
             {orderCta('btn btn--gold btn--sm nav-cta-inline')}
           </nav>

@@ -267,6 +267,8 @@ export type ToFrame =
   | { type: 'lb-editor:patch'; id: string; key: string; value: string }
   /** العنصر المحدَّد جوّه قسم مستورد (للعلامة ‎.lb-el-picked‎) */
   | { type: 'lb-editor:element'; id: string | null; slot: string | null }
+  /** العنصر فوق القسم المحدَّد (للعلامة ‎.lb-ovl-picked‎) */
+  | { type: 'lb-editor:overlay-pick'; id: string | null; index: number | null }
   /** تعديل من لوحة العنصر يتطبّق على العقدة الحية فوراً (ما بيكتبش حاجة راجعة) */
   | { type: 'lb-editor:node'; id: string; slot: string; edit: NodeEdit }
   | { type: 'lb-editor:select'; id: string | null; scroll: boolean }
@@ -274,8 +276,12 @@ export type ToFrame =
   | { type: 'lb-editor:bounds'; bounds: { id: string; key: string; label: string; stored: number } | null }
   /** زرار «الافتتاحية»: يعيد عرض الشاشة الافتتاحية فوق المعاينة */
   | { type: 'lb-editor:intro' }
+  /** زرار «تخطّي الافتتاحية»: يفتح الدعوة بدل التلات ضغطات (نفس اللي بيعمله ‎__lbIntro.open‎) */
+  | { type: 'lb-editor:intro-skip' }
 export type FromFrame =
   | { type: 'lb-editor:ready' }
+  /** الافتتاحية مغطّية المعاينة دلوقتي ولا لأ — عشان زرار التخطّي يظهر وقت الحاجة بس */
+  | { type: 'lb-editor:intro-visible'; visible: boolean }
   | { type: 'lb-editor:select'; id: string }
   /** اختصارات لوحة المفاتيح اللي ضُغطت جوّه الـiframe (مابتوصلش للصفحة الأم) */
   | { type: 'lb-editor:key'; key: string; shiftKey: boolean; mod: boolean }
@@ -285,6 +291,8 @@ export type FromFrame =
   | { type: 'lb-editor:layout'; id: string; slot: string; dx: number; dy: number }
   /** عنصر اتحدّد جوّه قسم مستورد */
   | { type: 'lb-editor:element'; id: string; slot: string }
+  /** ضغطة على عنصر فوق القسم (index) أو على أي حاجة تانية (null) */
+  | { type: 'lb-editor:overlay-pick'; id: string | null; index: number | null }
   /** ‎props.html‎ الجديد لقسم مستورد من الـDOM الحي. ‎silent‎ = ترقيم تلقائي (مش خطوة تراجع) */
   | { type: 'lb-editor:html'; id: string; value: string; silent: boolean }
   /** سحب عنصر فوق القسم (‎x/y‎ نسبة من حاويته) أو مقبض عرضه (‎width‎ نسبة) — بتتكتب في ‎props.text_overlays[index]‎ */

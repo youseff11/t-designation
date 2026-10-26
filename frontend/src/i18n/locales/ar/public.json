@@ -18,7 +18,8 @@
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق القائمة",
     "switchLanguage": "Switch to English",
-    "switchLanguageShort": "EN"
+    "switchLanguageShort": "EN",
+    "faq": "الأسئلة الشائعة"
   },
   "hero": {
     "alt": "دعوة إلكترونية أنيقة داخل هاتف محاط بالورود",

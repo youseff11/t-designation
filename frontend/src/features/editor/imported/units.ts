@@ -30,6 +30,14 @@ export function isImportedCountdownPart(n: Element | null): boolean {
   return false
 }
 
+/** القسم فيه عدّاد مستورد؟ (من نص الـHTML المحفوظ — من غير DOM — عشان لوحة الخصائص تعرض إعدادات العدّاد لما يكون فيه عدّاد بس). */
+export function hasCountdown(html: string): boolean {
+  for (const match of html.matchAll(/\b(?:class|id)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+    if (COUNTDOWN_MARK.test(match[1] ?? match[2] ?? '')) return true
+  }
+  return false
+}
+
 /** عنصر Tilda النصي (‎.tn-atom‎) — أبناؤه سطريين ومفيش وسايط جواه. */
 export function isTildaTextUnit(n: Element): boolean {
   if (!n.classList.contains('tn-atom') || !hasText(n) || n.querySelector(MEDIA)) return false

@@ -74,11 +74,11 @@
   display: block; flex: none; text-decoration: none;
   height: 44px; aspect-ratio: 714 / 200;
   margin-inline-start: 10px;
-  background-image: url("/static/images/brand-light.png");
+  background-image: var(--site-logo-light, url("/site-logo/light.png"));
   background-size: contain; background-position: center; background-repeat: no-repeat;
   transition: height .28s ease, opacity .18s ease;
 }
-[data-theme="dark"] .brand { background-image: url("/static/images/brand-dark.png"); }
+[data-theme="dark"] .brand { background-image: var(--site-logo-dark, url("/site-logo/dark.png")); }
 .brand:hover { opacity: .82; }
 .brand:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
 .nav.is-stuck .brand { height: 38px; }

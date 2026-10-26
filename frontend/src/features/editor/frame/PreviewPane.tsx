@@ -42,10 +42,16 @@ export function PreviewPane({ onKey }: Props) {
       const message = parseMessage<FromFrame>(event, frame.current?.contentWindow)
       if (!message) return
       if (message.type === 'lb-editor:ready') setReady((n) => n + 1)
+      else if (message.type === 'lb-editor:intro-visible') useIntroBus.getState().setVisible(message.visible)
       else if (message.type === 'lb-editor:select') useEditor.getState().select(message.id, 'preview')
       else if (message.type === 'lb-editor:key') onKeyRef.current(message.key, message.shiftKey, message.mod)
       else if (message.type === 'lb-editor:text') useEditor.getState().setProp(message.id, message.key, message.value)
       else if (message.type === 'lb-editor:element') useEditor.getState().selectElement(message.id, message.slot)
+      else if (message.type === 'lb-editor:overlay-pick') {
+        const state = useEditor.getState()
+        if (message.id && message.index !== null) state.selectOverlay(message.id, message.index)
+        else if (state.selOverlay) state.selectOverlay(state.selOverlay.blockId, null)
+      }
       else if (message.type === 'lb-editor:html') useEditor.getState().setHtml(message.id, message.value, message.silent)
       else if (message.type === 'lb-editor:code-number') useEditor.getState().applyCodeNumbers(message.id, message.items)
       else if (message.type === 'lb-editor:node-edits') useEditor.getState().applyNodeEdits(message.id, message.edits)
@@ -104,6 +110,12 @@ export function PreviewPane({ onKey }: Props) {
     sendToFrame(frame.current, { type: 'lb-editor:element', id: selEl?.blockId ?? null, slot: selEl?.slot ?? null })
   }, [selEl, ready])
 
+  // العنصر فوق القسم المحدَّد → علامته في الإطار
+  const selOverlay = useEditor((s) => s.selOverlay)
+  useEffect(() => {
+    sendToFrame(frame.current, { type: 'lb-editor:overlay-pick', id: selOverlay?.blockId ?? null, index: selOverlay?.index ?? null })
+  }, [selOverlay, ready])
+
   // نص اتكتب في خانة باللوحة → يظهر في المعاينة في نفس اللحظة (من غير ما نستنى السيرفر).
   // مانبعتش لو المعاينة معروضة بالنسخة المترجَمة: النص اللي هناك مش نص الدعوة.
   const lastText = useEditor((s) => s.lastText)
@@ -140,6 +152,18 @@ export function PreviewPane({ onKey }: Props) {
     seenIntro.current = introCount
     sendToFrame(frame.current, { type: 'lb-editor:intro' })
   }, [introCount])
+
+  // زرار «تخطّي الافتتاحية»: نفس قاعدة العدّاد فوق
+  const skipCount = useIntroBus((s) => s.skipCount)
+  const seenSkip = useRef(skipCount)
+  useEffect(() => {
+    if (skipCount === seenSkip.current) return
+    seenSkip.current = skipCount
+    sendToFrame(frame.current, { type: 'lb-editor:intro-skip' })
+  }, [skipCount])
+
+  // المعاينة اتقفلت مع المحرر: ماتفضلش «الافتتاحية ظاهرة» في الستور لمرة تانية
+  useEffect(() => () => useIntroBus.getState().setVisible(false), [])
 
   // التحديد بيتزامن من غير طلب جديد؛ التمرير للقسم بس لو الضغطة من القايمة
   useEffect(() => {

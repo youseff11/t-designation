@@ -141,7 +141,7 @@
   height: 44px;
   aspect-ratio: 714 / 200;
   margin-inline-start: 10px;
-  background-image: url('/static/images/brand-light.png');
+  background-image: var(--site-logo-light, url('/site-logo/light.png'));
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
@@ -150,7 +150,7 @@
     opacity 0.18s ease;
 }
 [data-theme='dark'] .dash-root .brand {
-  background-image: url('/static/images/brand-dark.png');
+  background-image: var(--site-logo-dark, url('/site-logo/dark.png'));
 }
 .dash-root .brand:hover {
   opacity: 0.82;

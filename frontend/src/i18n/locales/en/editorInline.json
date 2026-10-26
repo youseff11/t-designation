@@ -198,5 +198,14 @@
     "show": "Show section bounds",
     "hide": "Hide section bounds",
     "hint": "Show the frame, then drag the bottom handle to make the section taller or shorter (each device keeps its own height)."
+  },
+  "overlays": {
+    "title": "Add an element on top of the selected section — drag it anywhere with the mouse",
+    "pick": "Select a section first to add this to it.",
+    "unsupported": "This section does not accept elements on top of it.",
+    "selected": "Element on the section",
+    "done": "Done",
+    "remove": "Delete element",
+    "hint": "Drag it anywhere with the mouse; the two handles on its sides change its width. Delete removes it."
   }
 }

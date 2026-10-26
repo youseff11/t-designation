@@ -30,6 +30,9 @@ urlpatterns = [
     # ---- ملفات مش صفحات: Django بيقدّمها زي ما هي
     path("robots.txt", files.robots_txt, name="robots_txt"),
     path("sitemap.xml", files.sitemap_xml, name="sitemap_xml"),
+    path("site-icon.png", files.site_icon, name="site_icon"),
+    path("site-logo/<str:slot>.png", files.site_logo, name="site_logo"),
+    path("favicon.ico", files.site_icon, name="favicon"),
     path("media-video/<path:path>", files.media_video, name="media_video"),
     path("share-image/<path:path>", files.share_image, name="share_image"),
     path("i/<slug:slug>/qr.svg", files.invitation_qr, name="invitation_qr"),

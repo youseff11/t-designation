@@ -179,6 +179,9 @@
     overflow: hidden;
   min-height: var(--block-section-height, 0px);
 }
+/* القسم اللي عليه عناصر فوقه بيعلى على اللي بعده: العنصر ممكن يتسحب لبرّه حدود قسمه (فوق القسم اللي تحته)،
+   ولو القسم التاني فضل أعلى منه كان بيغطّيه (وضغطة الماوس تروح للقسم التاني بدل العنصر). */
+.lb:has([data-section-text]) { z-index: 3; }
 .lb--has-bg::before {
 
   content: "";
@@ -1676,6 +1679,20 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 .lb-doc--editing .lb-el-picked {
   outline: 2px solid var(--accent) !important;
   outline-offset: 2px;
+}
+/* قوالب كتير بتكتب ‎pointer-events: none‎ على الزينة والأيقونات (عشان ضغطة الضيف تعدّي لتحتها) — فالمصمّم ماكانش بيعرف
+   يحدّدها (أيقونة الكف مثلاً). في المحرر كل عنصر مرقّم بيتحدّد ويتحرّك. */
+.lb-doc--editing .lb-custom [data-move^="el-"],
+.lb-doc--editing .lb-extra-html [data-move^="ce-"],
+.lb-doc--editing .lb-intro-extra [data-move^="ce-"] { pointer-events: auto !important; }
+/* صورة العنصر فوق القسم مابتاخدش الضغطة (الضغطة للصندوق اللي بيتسحب)، ومفيش سحب أصلي للصورة أو اللينك */
+.lb-doc--editing .lb-ovl--image img { pointer-events: none; }
+.lb-doc--editing .lb-ovl img,
+.lb-doc--editing .lb-ovl a { -webkit-user-drag: none; user-drag: none; }
+/* عنصر فوق القسم محدَّد: الحذف بيمسحه هو مش القسم */
+.lb-doc--editing .lb [data-section-text].lb-ovl-picked {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
 }
 /* العنصر وانت بتكتب جوّاه */
 .lb-doc--editing .lb-el-typing {

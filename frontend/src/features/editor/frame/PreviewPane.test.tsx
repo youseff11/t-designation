@@ -104,4 +104,23 @@ describe('PreviewPane', () => {
     await waitFor(() => expect(post).toHaveBeenCalledWith({ type: 'lb-editor:intro' }, window.location.origin))
     expect(useIntroBus.getState().count).toBeGreaterThan(0)
   })
+
+  it('shows a skip button only while the frame says the intro covers the preview, and forwards the click', async () => {
+    const { iframe, ready } = mount()
+    ready()
+    const post = vi.spyOn(iframe.contentWindow!, 'postMessage')
+    const fromFrame = (data: unknown) =>
+      act(() => {
+        window.dispatchEvent(new MessageEvent('message', { data, origin: window.location.origin, source: iframe.contentWindow }))
+      })
+    const skip = () => screen.queryByRole('button', { name: 'تخطّي الافتتاحية' })
+
+    expect(skip()).toBeNull()
+    fromFrame({ type: 'lb-editor:intro-visible', visible: true })
+    fireEvent.click(skip()!)
+    await waitFor(() => expect(post).toHaveBeenCalledWith({ type: 'lb-editor:intro-skip' }, window.location.origin))
+
+    fromFrame({ type: 'lb-editor:intro-visible', visible: false })
+    expect(skip()).toBeNull()
+  })
 })

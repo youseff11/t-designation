@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { shortcutKey } from './frame/bridge'
 import { isPxSlot } from './frame/interactions'
 import { useElementActions } from './imported/useElementActions'
 import { useEditor } from './store'
@@ -56,6 +57,17 @@ export function useEditorShortcuts() {
         else return false
         return true
       }
+      // عنصر فوق القسم محدَّد (نص/صورة/زرار)؟ الحذف بيمسحه هو، وEsc بيلغي تحديده
+      if (state.selOverlay && !isTyping(target)) {
+        if (key === 'Delete' || key === 'Backspace') {
+          state.removeOverlay()
+          return true
+        }
+        if (key === 'Escape') {
+          state.selectOverlay(state.selOverlay.blockId, null)
+          return true
+        }
+      }
       // عنصر محدَّد جوّه قسم مستورد؟ الأسهم بتحرّكه، وEsc بيلغي تحديده، والحذف بيحذف العنصر مش القسم كله
       if (state.selEl && !isTyping(target)) {
         const dir = ARROW_DIRS[key]
@@ -90,7 +102,7 @@ export function useEditorShortcuts() {
     const onKey = (event: KeyboardEvent) => {
       if (document.querySelector('.ed-modal')) return
       const mod = event.ctrlKey || event.metaKey
-      if (handle(event.key, event.shiftKey, mod, event.target)) event.preventDefault()
+      if (handle(mod ? shortcutKey(event) : event.key, event.shiftKey, mod, event.target)) event.preventDefault()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)

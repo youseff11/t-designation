@@ -40,9 +40,9 @@ describe('section text overlays', () => {
     overlay().dispatchEvent(mouse('pointermove', { clientX: 40, clientY: 80 }))
     expect(overlay().style.getPropertyValue('--video-text-x')).toBe('20%') // 10 + 40/400
     expect(overlay().style.getPropertyValue('--video-text-y')).toBe('5%') // -5 + 80/800
-    expect(sent).toEqual([])
+    expect(sent).toEqual([{ type: 'lb-editor:overlay-pick', id: 'b1', index: 1 }]) // الضغطة بتحدّده، والإزاحة بتتبعت مرة واحدة في الآخر
     overlay().dispatchEvent(mouse('pointerup'))
-    expect(sent).toEqual([{ type: 'lb-editor:overlay', id: 'b1', index: 1, values: { x: 20, y: 5 } }])
+    expect(sent).toEqual([{ type: 'lb-editor:overlay-pick', id: 'b1', index: 1 }, { type: 'lb-editor:overlay', id: 'b1', index: 1, values: { x: 20, y: 5 } }])
     expect(overlay().classList.contains('is-dragging')).toBe(false)
   })
 
@@ -50,7 +50,7 @@ describe('section text overlays', () => {
     overlay().dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
     overlay().dispatchEvent(mouse('pointermove', { clientX: 2, clientY: 1 }))
     overlay().dispatchEvent(mouse('pointerup'))
-    expect(sent).toEqual([])
+    expect(sent).toEqual([{ type: 'lb-editor:overlay-pick', id: 'b1', index: 1 }]) // ضغطة من غير سحب = تحديد بس
 
     overlay().dispatchEvent(mouse('pointerdown', { clientX: 0, clientY: 0 }))
     overlay().dispatchEvent(mouse('pointermove', { clientX: 30, clientY: 0 }))
@@ -58,6 +58,16 @@ describe('section text overlays', () => {
     const click = mouse('click')
     overlay().dispatchEvent(click)
     expect(click.defaultPrevented).toBe(true)
+  })
+
+  it('blocks the native image and link drag inside an overlay (it would cancel our drag), but not elsewhere', () => {
+    const native = () => new Event('dragstart', { bubbles: true, cancelable: true })
+    const inside = native()
+    document.querySelector('[data-section-text] a')!.dispatchEvent(inside)
+    expect(inside.defaultPrevented).toBe(true)
+    const outside = native()
+    document.body.dispatchEvent(outside)
+    expect(outside.defaultPrevented).toBe(false)
   })
 
   it('a button link inside an overlay never navigates the preview', () => {
@@ -78,7 +88,7 @@ describe('section text overlays', () => {
     grips[1].dispatchEvent(mouse('pointermove', { clientX: 300, clientY: 0 }))
     expect(overlay().style.getPropertyValue('--section-text-w')).toBe('60%') // (160 + 2×40) / 400
     grips[1].dispatchEvent(mouse('pointerup'))
-    expect(sent).toEqual([{ type: 'lb-editor:overlay', id: 'b1', index: 1, values: { width: 60 } }])
+    expect(sent).toEqual([{ type: 'lb-editor:overlay-pick', id: 'b1', index: 1 }, { type: 'lb-editor:overlay', id: 'b1', index: 1, values: { width: 60 } }])
   })
 
   it('clamps the width between 8% and 100%', () => {

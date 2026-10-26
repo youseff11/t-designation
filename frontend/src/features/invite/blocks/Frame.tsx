@@ -18,7 +18,13 @@ interface FrameProps {
 
 /** عناصر «فوق القسم» و«كود متقدّم»: بيتحقنوا آخر حاجة في القسم (زي ‎render_document‎). */
 export function Tail({ block }: { block: BlockData }) {
-  return <Raw html={block.overlays + block.code} />
+  // كل واحد في ‎Raw‎ لوحده: تغيير عنصر فوق القسم (إضافة/سحب) ماينفعش يعيد بناء صندوق الكود وسكربته (وإلا الأنيميشن بتبدأ من الأول)
+  return (
+    <>
+      <Raw html={block.overlays} />
+      <Raw html={block.code} />
+    </>
+  )
 }
 
 /** تنبيه المحرر: القسم مفعّل في المستند بس خارج باقة العميل (الحمولة بتبعت ‎gated‎ للمحرر بس). */

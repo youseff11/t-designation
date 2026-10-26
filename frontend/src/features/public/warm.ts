@@ -3,7 +3,7 @@
  * الفراغ — زي ‎site.js‎ القديم: من غيره المكان بيفضل فاضي لحد ما النسخة التانية
  * تنزل من الشبكة (قياس القديم ~٤٧٠ms) فتبديل المظهر مايبقاش فوري.
  */
-const BRAND = { light: '/static/images/brand-light.png', dark: '/static/images/brand-dark.png' }
+const BRAND = { light: '/site-logo/light.png', dark: '/site-logo/dark.png' }
 const HERO = {
   ar: { light: '/static/images/home-arabic-light.webp', dark: '/static/images/home-arabic-dark.webp' },
   en: { light: '/static/images/home-english-light.webp', dark: '/static/images/home-english-dark.webp' },

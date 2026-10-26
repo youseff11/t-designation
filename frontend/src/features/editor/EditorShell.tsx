@@ -6,6 +6,7 @@ import { useTheme } from '@/lib/theme'
 
 import { startAutosave } from './autosave'
 import { IntroButton } from './frame/IntroButton'
+import { OverlayButtons } from './frame/OverlayButtons'
 import { PreviewPane } from './frame/PreviewPane'
 import { BlocksPanel } from './panels/BlocksPanel'
 import { DataPanel } from './panels/DataPanel'
@@ -151,6 +152,7 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
           <div className="ed-canvas-bar">
             <span>{t('editor.blocks.hint')}</span>
             <span className="ed-canvas-tools">
+              <OverlayButtons />
               <IntroButton />
               <span>{blockCount}</span>
             </span>

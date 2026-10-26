@@ -164,7 +164,10 @@ export function ElementFields({ blockId, slot, info }: Props) {
   const [gear, setGear] = useState(false)
   const { data: schema } = useSchema()
   const library = useEditor((s) => s.lib.fonts)
-  const fields = useMemo(() => styleFields(t, info.kind), [t, info.kind])
+  const all = useMemo(() => styleFields(t, info.kind), [t, info.kind])
+  // الألوان قدّام طول الوقت (حدّد عنصر وغيّر لونه)، وباقي التنسيق ورا الترس
+  const colors = all.filter((item) => item.spec.type === 'color')
+  const fields = all.filter((item) => item.spec.type !== 'color')
 
   const computed = (prop: string) => computedValue(blockId, slot, prop)
   const number = (prop: StyleProp): number => {
@@ -259,6 +262,14 @@ export function ElementFields({ blockId, slot, info }: Props) {
             {panel}
           </div>
         )
+      )}
+
+      {colors.length > 0 && (
+        <div data-field-key="element-colors">
+          {colors.map((item) => (
+            <FieldRenderer key={item.prop} spec={item.spec} value={value(item)} onChange={(next) => write(item, next)} />
+          ))}
+        </div>
       )}
 
       {info.kind === 'image' && (

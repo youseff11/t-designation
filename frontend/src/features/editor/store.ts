@@ -63,6 +63,8 @@ interface Data {
   selectSource: SelectSource
   /** العنصر المحدَّد جوّه قسم مستورد (‎el-N‎) — بيتصفّر لما القسم يتغيّر */
   selEl: { blockId: string; slot: string } | null
+  /** «عنصر فوق القسم» (نص/صورة/زرار) المحدَّد في المعاينة: القسم + ترتيبه في ‎text_overlays‎ */
+  selOverlay: { blockId: string; index: number } | null
   /** القسم اللي إطار حدوده ومقبض ارتفاعه ظاهرين في المعاينة (واحد في المرة) */
   boundsBlock: string | null
   /** حافظة العناصر (نسخة نضيفة ‎outerHTML‎) — جوّه المحرر بس، مش حافظة النظام */
@@ -97,6 +99,9 @@ interface Actions {
   commit: (change: (doc: EditorDocument) => EditorDocument, opts?: { coalesce?: string }) => void
   select: (id: string | null, source?: SelectSource) => void
   selectElement: (blockId: string, slot: string | null) => void
+  selectOverlay: (blockId: string, index: number | null) => void
+  /** يمسح العنصر فوق القسم المحدَّد (خطوة تراجع واحدة) */
+  removeOverlay: () => void
   toggleBounds: (id: string) => void
   /** ‎props.html‎ لقسم مستورد من المعاينة: ‎silent‎ للترقيم التلقائي (من غير خطوة تراجع) */
   setHtml: (id: string, html: string, silent?: boolean) => void
@@ -183,6 +188,7 @@ const initial = (): Data => ({
   selected: null,
   selectSource: null,
   selEl: null,
+  selOverlay: null,
   boundsBlock: null,
   clip: null,
   lastEdit: null,
@@ -219,6 +225,13 @@ const keepElement = (doc: EditorDocument, el: Data['selEl']): Data['selEl'] => {
   const source = sourceOf(doc, el.blockId, el.slot)
   // مفيش مصدر (قسم عادي، أو الصندوق نفسه ‎code‎ لسه مالوش عناصر) = نسيب التحديد زي ما هو
   return !source || element.hasSlot(source.html, el.slot) || el.slot === 'code' ? el : null
+}
+
+/** العنصر فوق القسم المحدَّد لازم يفضل موجود بعد حذف/تراجع/إعادة. */
+const keepOverlay = (doc: EditorDocument, sel: Data['selOverlay']): Data['selOverlay'] => {
+  if (!sel) return null
+  const list = findBlock(doc, sel.blockId)?.props.text_overlays
+  return Array.isArray(list) && sel.index < list.length ? sel : null
 }
 
 /** التحديد لازم يفضل على قسم موجود (بعد حذف/تراجع) — والافتتاحية (‎__intro‎) مش قسم في القايمة بس بتتحدّد. */
@@ -303,6 +316,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
       future: [],
       coalesce: opts?.coalesce ? { key: opts.coalesce, at: now } : null,
       selected: keepSelection(next, state.selected),
+      selOverlay: keepOverlay(next, state.selOverlay),
       saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
       rev: state.rev + 1,
       contentRev: state.contentRev + contentChanged(state.doc, next),
@@ -314,9 +328,36 @@ export const useEditor = create<EditorState>()((set, get) => ({
       selected: blockId,
       selectSource: 'preview',
       selEl: slot ? { blockId, slot } : null,
+      selOverlay: null,
       // الافتتاحية مالهاش صف في قايمة الأقسام: عنصرها المتحدّد بيتعرض في الخصائص (وإلا المستخدم مايلاقيش حاجة)
       tab: slot && blockId === INTRO_ID ? 'inspector' : state.tab,
     })),
+
+  selectOverlay: (blockId, index) =>
+    set({
+      selected: blockId,
+      selectSource: 'preview',
+      selEl: null,
+      selOverlay: index === null ? null : { blockId, index },
+      // اتحدّد عنصر: لوحة خصائصه تفتح جنب المعاينة
+      tab: index === null ? get().tab : 'inspector',
+    }),
+
+  removeOverlay: () => {
+    const sel = get().selOverlay
+    if (!sel) return
+    const list = findBlock(get().doc, sel.blockId)?.props.text_overlays
+    if (!Array.isArray(list)) return
+    get().commit((d) =>
+      ops.setBlockProp(
+        d,
+        sel.blockId,
+        'text_overlays',
+        list.filter((_, i) => i !== sel.index),
+      ),
+    )
+    set({ selOverlay: null })
+  },
 
   setHtml: (id, html, silent = false) => {
     const state = get()
@@ -420,6 +461,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
       boundsBlock: state.boundsBlock === id ? id : null,
       selectSource: id ? source : null,
       selEl: state.selEl && state.selEl.blockId === id ? state.selEl : null,
+      selOverlay: state.selOverlay && state.selOverlay.blockId === id ? state.selOverlay : null,
       tab: id && source === 'list' ? 'inspector' : state.tab,
     })),
   setTab: (tab) => set({ tab }),
@@ -523,6 +565,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         coalesce: null,
         selected: keepSelection(previous, state.selected),
         selEl: keepElement(previous, state.selEl),
+        selOverlay: keepOverlay(previous, state.selOverlay),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, previous),
@@ -540,6 +583,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         coalesce: null,
         selected: keepSelection(next, state.selected),
         selEl: keepElement(next, state.selEl),
+        selOverlay: keepOverlay(next, state.selOverlay),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, next),

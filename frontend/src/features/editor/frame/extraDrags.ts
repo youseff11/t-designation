@@ -65,6 +65,13 @@ export function installExtraDrags({ send }: { send: Send }): () => void {
   const blockId = (node: HTMLElement) => node.closest('[data-block]')?.getAttribute('data-block') ?? null
   const index = (node: HTMLElement) => parseInt(node.getAttribute('data-section-text-index') ?? '', 10)
 
+  /** الضغطة على عنصر فوق القسم بتحدّده (للحذف والعلامة) — من قبل السحب، فالسحب نفسه بيحدّده كمان */
+  const pick = (node: HTMLElement) => {
+    const id = blockId(node)
+    const at = index(node)
+    if (id && !Number.isNaN(at)) send({ type: 'lb-editor:overlay-pick', id, index: at })
+  }
+
   const base = (kind: Drag['kind'], node: HTMLElement, e: PointerEvent): Drag => ({
     kind, node, pointerId: e.pointerId, x0: e.clientX, y0: e.clientY, moved: false,
     startX: 0, startY: 0, width: 1, height: 1, startWidth: 0, dir: 1, x: 0, y: 0, percent: 0,
@@ -79,6 +86,7 @@ export function installExtraDrags({ send }: { send: Send }): () => void {
       const node = grip.closest<HTMLElement>('[data-section-text]')
       const holder = node && holderOf(node)
       if (!node || !holder) return
+      pick(node)
       const nodeRect = node.getBoundingClientRect()
       const gripRect = grip.getBoundingClientRect()
       e.preventDefault()
@@ -98,6 +106,7 @@ export function installExtraDrags({ send }: { send: Send }): () => void {
       const holder = holderOf(overlay)
       if (!holder || !blockId(overlay) || Number.isNaN(index(overlay))) return
       const rect = holder.getBoundingClientRect()
+      pick(overlay)
       drag = {
         ...base('overlay', overlay, e),
         startX: num(overlay.style.getPropertyValue('--video-text-x')),
@@ -206,12 +215,20 @@ export function installExtraDrags({ send }: { send: Send }): () => void {
     if (e.target instanceof Element && e.target.closest('[data-section-text] a[href]')) e.preventDefault()
   }
 
+  // صورة أو لينك جوّه عنصر فوق القسم: المتصفح كان بيبدأ «سحب صورة/لينك» أصلي أول ما الماوس يتحرّك فيلغي سحبنا (pointercancel)،
+  // فالمصمّم كان محتاج ضغطتين. ممنوع السحب الأصلي هنا.
+  const onDragStart = (e: DragEvent) => {
+    if (e.target instanceof Element && e.target.closest('[data-section-text]')) e.preventDefault()
+  }
+
+  document.addEventListener('dragstart', onDragStart, true)
   document.addEventListener('pointerdown', onPointerDown, true)
   document.addEventListener('pointermove', onPointerMove, true)
   document.addEventListener('pointerup', onPointerUp, true)
   document.addEventListener('pointercancel', onPointerCancel, true)
   document.addEventListener('click', onClick, true)
   return () => {
+    document.removeEventListener('dragstart', onDragStart, true)
     document.removeEventListener('pointerdown', onPointerDown, true)
     document.removeEventListener('pointermove', onPointerMove, true)
     document.removeEventListener('pointerup', onPointerUp, true)

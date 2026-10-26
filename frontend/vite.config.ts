@@ -28,6 +28,9 @@ export default defineConfig(({ command }) => ({
       '/i18n': DJANGO,
       '/static/images': DJANGO,
       '/static/img': DJANGO,
+      '/site-logo': DJANGO,
+      '/site-icon.png': DJANGO,
+      '/favicon.ico': DJANGO,
     },
   },
   build: {
