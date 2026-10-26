@@ -60,6 +60,8 @@ export function FrameApp() {
   // الافتتاحية بتقرا إعداداتها مرة عند التركيب، فبنعيد تركيبها (key) مع كل تعديل في محتواها —
   // إلا بعد ما تتفتح: مفتاحها يتجمّد على آخر محتوى عشان ماترجعش تغطي المعاينة مع كل حرف
   const [introRun, setIntroRun] = useState(0)
+  // أقسام بنعيد تركيبها (مفتاح جديد) بعد تراجع/إعادة وهو بيكتب فيها
+  const [remount, setRemount] = useState<Record<string, number>>({})
   const [introClosedAt, setIntroClosedAt] = useState<string | null>(null)
   const introSignature = useRef('')
   // آخر حمولة (لتفاعلات السحب والكتابة) + رد اتأجّل لأن المستخدم بيكتب في نص دلوقتي
@@ -89,10 +91,18 @@ export function FrameApp() {
       const message = parseMessage<ToFrame>(event, window.parent)
       if (!message) return
       if (message.type === 'lb-editor:render') {
-        // بيكتب في نص؟ الرد فيه النص القديم وتطبيقه كان هيمسح اللي اتكتب — نأجّله لحد ما يسيب النص
-        if (editingNode()) {
+        // بيكتب في نص؟ الرد فيه النص القديم وتطبيقه كان هيمسح اللي اتكتب — نأجّله لحد ما يسيب النص.
+        // إلا التراجع/الإعادة: هو اللي بيغيّر النص قصداً، فمايستناش
+        const editing = editingNode()
+        if (editing && !message.force) {
           pending.current = message
           return
+        }
+        if (editing) {
+          // الكتابة غيّرت الـDOM من وراء React (ورسمتها اتأجّلت)، فلو النص بعد التراجع زي اللي React فاكره
+          // مش هيكتب حاجة وكلامك يفضل ظاهر: نعيد تركيب القسم ده بس
+          const id = blockIdAt(editing)
+          if (id) setRemount((r) => ({ ...r, [id]: (r[id] ?? 0) + 1 }))
         }
         pending.current = null
         applyRender(message)
@@ -277,7 +287,7 @@ export function FrameApp() {
       {payload.intro && <Intro key={`${introRun}:${introClosedAt ?? introJson}`} data={payload.intro} />}
       <div className={stageClass}>
         {payload.blocks.map((block) => (
-          <BlockView key={block.id} block={block} />
+          <BlockView key={`${block.id}:${remount[block.id] ?? 0}`} block={block} />
         ))}
         {payload.showBranding && (
           <footer className="lb-footer">

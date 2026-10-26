@@ -103,6 +103,38 @@ describe('FrameApp', () => {
     expect(container.querySelector('.is-selected')).toBeNull()
   })
 
+  it('holds a server render while text is being typed, but applies an undo/redo render at once', () => {
+    const { container } = render(<FrameApp />)
+    const withText = (text: string) => preview([block('quote', { text, source: '' }, { id: 'q1', attrs: { id: 'q1', className: 'lb lb--quote', style: '' } })])
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('قديم') })
+    const node = container.querySelector<HTMLElement>('[data-lb-text]')!
+    node.setAttribute('contenteditable', 'true')
+    node.focus()
+    expect(document.activeElement).toBe(node)
+
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('وسيط') })
+    expect(container.textContent).toContain('قديم') // اتأجّلت: المستخدم لسه بيكتب
+
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('بعد التراجع'), force: true })
+    expect(container.textContent).toContain('بعد التراجع') // التراجع مايستناش
+  })
+
+  it('undo while typing restores the old text even though React never saw the typed text', () => {
+    const { container } = render(<FrameApp />)
+    const withText = (text: string) => preview([block('quote', { text, source: '' }, { id: 'q1', attrs: { id: 'q1', className: 'lb lb--quote', style: '' } })])
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('قديم') })
+    const node = container.querySelector<HTMLElement>('[data-lb-text]')!
+    node.setAttribute('contenteditable', 'true')
+    node.focus()
+    node.firstChild!.nodeValue = 'قديم وكتبت' // الكتابة بتغيّر الـDOM مباشرة، والرسمة الجاية بتتأجّل
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('قديم وكتبت') })
+
+    // التراجع بيرجّع نفس النص اللي React فاكره: لازم المكتوب يتمسح برضه
+    fromParent({ type: 'lb-editor:render', selected: null, payload: withText('قديم'), force: true })
+    expect(container.textContent).toContain('قديم')
+    expect(container.textContent).not.toContain('وكتبت')
+  })
+
   it('reports a click on a block and blocks link navigation', () => {
     const { container } = render(<FrameApp />)
     const withLink = quote({ code: '' })

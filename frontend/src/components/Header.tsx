@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useMe, useSite } from '@/api/hooks'
 import { pick, useLang } from '@/features/public/text'
@@ -88,6 +88,7 @@ export function Header() {
   const { t } = useTranslation()
   const lang = useLang()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const { data: site } = useSite()
   const { data: user } = useMe()
   const [open, setOpen] = useState(false)
@@ -144,7 +145,16 @@ export function Header() {
 
       <header className={'nav' + (stuck ? ' is-stuck' : '')} id="site-nav">
         <div className="nav-shell">
-          <Link className="brand" to="/">
+          <Link
+            className="brand"
+            to="/"
+            onClick={(event) => {
+              // ثلاث ضغطات متتالية على الأيقونة = باب خلفي لصفحة تسجيل الدخول (‎detail‎ = عدد الضغطات المتتالية)
+              if (event.detail < 3) return
+              event.preventDefault()
+              navigate('/login')
+            }}
+          >
             <span className="sr-only">{siteName}</span>
           </Link>
 

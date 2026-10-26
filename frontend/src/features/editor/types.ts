@@ -262,7 +262,8 @@ export type PreviewPayload = Omit<RenderPayload, 'head' | 'music' | 'scroll' | '
 /** رسائل الـiframe ↔ الصفحة الأم (‎postMessage‎، نفس الأصل) */
 export const FRAME_PREFIX = 'lb-editor:'
 export type ToFrame =
-  | { type: 'lb-editor:render'; payload: unknown; selected: string | null }
+  /** ‎force‎: تراجع/إعادة — الرسمة تتطبّق حتى لو المستخدم جوّه نص (وإلا بتتأجّل لحد ما يسيبه) */
+  | { type: 'lb-editor:render'; payload: unknown; selected: string | null; force?: boolean }
   /** نص اتكتب في خانة باللوحة: يتحط في المعاينة لحظياً قبل ما رد السيرفر يوصل */
   | { type: 'lb-editor:patch'; id: string; key: string; value: string }
   /** العنصر المحدَّد جوّه قسم مستورد (للعلامة ‎.lb-el-picked‎) */

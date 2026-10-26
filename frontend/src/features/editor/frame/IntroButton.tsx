@@ -17,7 +17,7 @@ export function IntroButton() {
   return (
     <>
       {covering && (
-        <button type="button" className="ed-btn ed-btn--sm ed-btn--primary" title={t('editorSettings.intro.skipTitle')} onClick={skip}>
+        <button type="button" className="ed-btn ed-btn--sm ed-btn--primary ed-btn--skip-intro" title={t('editorSettings.intro.skipTitle')} onClick={skip}>
           {t('editorSettings.intro.skip')}
         </button>
       )}

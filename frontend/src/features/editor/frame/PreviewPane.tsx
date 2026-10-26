@@ -11,6 +11,37 @@ import { useIntroBus } from './introBus'
 /** وقفة بعد آخر تعديل قبل ما نطلب معاينة جديدة (السيرفر بيرندر المستند كله). */
 export const PREVIEW_WAIT = 280
 
+type Payload = Awaited<ReturnType<typeof fetchPreview>>
+type Rendered = { lang: string; fields: unknown; payload: Payload }
+
+/**
+ * آخر رسمة اتجابت لكل نسخة من المستند (المستند غير قابل للتعديل: كل تعديل بيعمل كائن جديد).
+ * التراجع/الإعادة بيرجّعوا نفس الكائن، فبنعرض رسمته فوراً من غير وقفة ولا سيرفر.
+ * ‎WeakMap‎: النسخة اللي بتخرج من سجل التراجع بتتشال معاها رسمتها.
+ */
+const rendered = new WeakMap<object, Rendered>()
+
+/** كام نسخة من سجل التراجع بنجهّز رسمتها في الخلفية، والوقفة قبل ما نبدأ. */
+const PREFETCH_DEPTH = 3
+const PREFETCH_WAIT = 150
+
+/** الرابط بيتنضّف مع الحفظ (كائن بيانات جديد) ومابيأثرش على الرسم، فمابنقارنوش. */
+function sameFields(a: unknown, b: unknown): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  const x = a as Record<string, unknown>
+  const y = b as Record<string, unknown>
+  const keys = new Set([...Object.keys(x), ...Object.keys(y)])
+  keys.delete('slug')
+  return [...keys].every((key) => x[key] === y[key])
+}
+
+/** رسمة نسخة المستند دي لو اتجابت قبل كده بنفس اللغة وبيانات المناسبة. */
+function lookup(doc: object, lang: string, fields: unknown): Payload | null {
+  const hit = rendered.get(doc)
+  return hit && hit.lang === lang && sameFields(hit.fields, fields) ? hit.payload : null
+}
+
 interface Props {
   /** اختصار لوحة مفاتيح اتضغط جوّه الـiframe */
   onKey: (key: string, shiftKey: boolean, mod: boolean) => void
@@ -79,27 +110,63 @@ export function PreviewPane({ onKey }: Props) {
   useEffect(() => {
     if (!ready) return
     const controller = new AbortController()
-    const timer = setTimeout(
-      async () => {
-        setBusy(true)
+    const { signal } = controller
+
+    // نجهّز في الخلفية رسمة آخر نسخ في سجل التراجع، فالتراجع الجاي (حتى لو التعديلات لسه مش محفوظة) يلاقيها جاهزة
+    const warmHistory = async () => {
+      for (let i = 0; i < PREFETCH_DEPTH; i++) {
+        const { mode, id, history, fields, previewLang } = useEditor.getState()
+        const doc = history.at(-1 - i)
+        if (!doc || signal.aborted) return
+        if (lookup(doc, previewLang, fields)) continue
         try {
-          // بيانات المناسبة غير المحفوظة بتتبعت مع المستند: المعاينة تعكس تبويب «البيانات» قبل الحفظ
-          const { mode, id, doc, fields, previewLang, selected: current } = useEditor.getState()
-          const payload = await fetchPreview(mode, id, doc, previewLang, controller.signal, fields)
-          useEditor.getState().setRenderedLang(payload.lang)
-          sendToFrame(frame.current, { type: 'lb-editor:render', payload, selected: current })
-          setBusy(false)
-        } catch (error) {
-          if (controller.signal.aborted) return
-          setBusy(false)
-          ui.toast(t('editor.toast.previewFailed'), 'error')
-          console.error(error)
+          const payload = await fetchPreview(mode, id, doc, previewLang, signal, fields)
+          rendered.set(doc, { lang: previewLang, fields, payload })
+        } catch {
+          return // التجهيز اختياري: لو فشل، التراجع بيطلب المعاينة بالطريقة العادية
         }
-      },
-      rev === 0 ? 0 : PREVIEW_WAIT,
-    )
+      }
+    }
+    const warmLater = () => setTimeout(() => void warmHistory(), PREFETCH_WAIT)
+
+    // رجعنا لنسخة اتعرضت قبل كده (تراجع/إعادة)؟ نعرضها في نفس اللحظة
+    const now = useEditor.getState()
+    const cached = lookup(now.doc, now.previewLang, now.fields)
+    if (cached) {
+      useEditor.getState().setRenderedLang(cached.lang)
+      sendToFrame(frame.current, { type: 'lb-editor:render', payload: cached, selected: now.selected, force: now.instantRev === rev })
+      setBusy(false)
+      const warm = warmLater()
+      return () => {
+        clearTimeout(warm)
+        controller.abort()
+      }
+    }
+
+    let warm: ReturnType<typeof setTimeout> | undefined
+    // التراجع/الإعادة مالهمش وقفة كتابة نستناها: نطلب فوراً
+    const wait = rev === 0 || now.instantRev === rev ? 0 : PREVIEW_WAIT
+    const timer = setTimeout(async () => {
+      setBusy(true)
+      try {
+        // بيانات المناسبة غير المحفوظة بتتبعت مع المستند: المعاينة تعكس تبويب «البيانات» قبل الحفظ
+        const { mode, id, doc, fields, previewLang, selected: current } = useEditor.getState()
+        const payload = await fetchPreview(mode, id, doc, previewLang, signal, fields)
+        rendered.set(doc, { lang: previewLang, fields, payload })
+        useEditor.getState().setRenderedLang(payload.lang)
+        sendToFrame(frame.current, { type: 'lb-editor:render', payload, selected: current, force: now.instantRev === rev })
+        setBusy(false)
+        warm = warmLater()
+      } catch (error) {
+        if (signal.aborted) return
+        setBusy(false)
+        ui.toast(t('editor.toast.previewFailed'), 'error')
+        console.error(error)
+      }
+    }, wait)
     return () => {
       clearTimeout(timer)
+      clearTimeout(warm)
       controller.abort()
     }
   }, [rev, ready, t, ui])

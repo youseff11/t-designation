@@ -130,6 +130,7 @@
 .ed-btn:focus-visible { outline: 2px solid var(--e-accent); outline-offset: 2px; }
 .ed-btn--primary { background: var(--e-accent); border-color: var(--e-accent); color: var(--e-on-accent); font-weight: 600; }
 .ed-btn--primary:hover:not(:disabled) { filter: brightness(1.08); }
+.ed-root .ed-btn--skip-intro { color: #fff; }
 .ed-btn--icon { padding: 8px; width: 34px; }
 .ed-btn--sm { padding: 5px 10px; font-size: 12px; }
 .ed-btn--danger:hover { border-color: var(--e-danger); color: var(--e-danger); }

@@ -85,6 +85,8 @@ interface Data {
   coalesce: { key: string; at: number } | null
   /** بيزيد مع أي تعديل في المستند أو بيانات المناسبة — المعاينة والحفظ بيراقبوه */
   rev: number
+  /** قيمة ‎rev‎ اللي نتجت عن تراجع/إعادة: المعاينة مابتستناش وقفة الكتابة قبلها */
+  instantRev: number
   /** بيزيد لما محتوى الدعوة نفسه يتغيّر (أقسام/إعدادات/بيانات) — مش لما الترجمة بس تتغيّر */
   contentRev: number
 
@@ -201,6 +203,7 @@ const initial = (): Data => ({
   future: [],
   coalesce: null,
   rev: 0,
+  instantRev: -1,
   contentRev: 0,
   saveStatus: 'saved',
   savedAt: '',
@@ -568,6 +571,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         selOverlay: keepOverlay(previous, state.selOverlay),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
+        instantRev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, previous),
       }
     }),
@@ -586,6 +590,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         selOverlay: keepOverlay(next, state.selOverlay),
         saveStatus: state.saveStatus === 'saving' ? 'saving' : 'dirty',
         rev: state.rev + 1,
+        instantRev: state.rev + 1,
         contentRev: state.contentRev + contentChanged(state.doc, next),
       }
     }),

@@ -80,6 +80,55 @@ describe('PreviewPane', () => {
     expect(useEditor.getState().saveStatus).toBe('dirty') // لسه مااتحفظش
   })
 
+  it('shows an undone/redone version at once from the earlier render, without asking the server again', async () => {
+    const { iframe, ready } = mount()
+    ready()
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1))
+    const original = { blocks: [], tag: 'original' } as unknown as PreviewPayload
+    preview.mockResolvedValue(original)
+    const post = vi.spyOn(iframe.contentWindow!, 'postMessage')
+
+    act(() => useEditor.getState().setSetting('intro_enabled', true))
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(2), { timeout: PREVIEW_WAIT * 6 })
+    await waitFor(() => expect(post).toHaveBeenCalled())
+    post.mockClear()
+
+    act(() => useEditor.getState().undo())
+    // نفس اللحظة: مفيش وقفة ولا طلب جديد، والرسمة الأولى اتبعتت للإطار
+    expect(post).toHaveBeenCalledWith(expect.objectContaining({ type: 'lb-editor:render' }), window.location.origin)
+    expect(preview).toHaveBeenCalledTimes(2)
+
+    post.mockClear()
+    act(() => useEditor.getState().redo())
+    expect(post).toHaveBeenCalledWith(expect.objectContaining({ type: 'lb-editor:render' }), window.location.origin)
+    expect(preview).toHaveBeenCalledTimes(2)
+  })
+
+  it('undoes at once even after quick unsaved edits, because the history versions are rendered in the background', async () => {
+    const { iframe, ready } = mount()
+    ready()
+    await waitFor(() => expect(preview).toHaveBeenCalledTimes(1))
+    const post = vi.spyOn(iframe.contentWindow!, 'postMessage')
+
+    // ٣ تعديلات ورا بعض أسرع من وقفة المعاينة: النسخ الوسيطة ماتعرضتش
+    act(() => useEditor.getState().setSetting('intro_enabled', true))
+    act(() => useEditor.getState().setSetting('music_volume', 0.5))
+    act(() => useEditor.getState().setSetting('music_autoplay', true))
+    expect(useEditor.getState().saveStatus).toBe('dirty')
+
+    // بعد ما تسكت: رسمة النسخة الأخيرة + تجهيز النسختين اللي قبلها
+    await waitFor(() => expect(preview.mock.calls.length).toBeGreaterThanOrEqual(4), { timeout: PREVIEW_WAIT * 10 })
+    const asked = preview.mock.calls.length
+    post.mockClear()
+
+    act(() => useEditor.getState().undo())
+    expect(post).toHaveBeenCalledWith(expect.objectContaining({ type: 'lb-editor:render' }), window.location.origin)
+    act(() => useEditor.getState().undo())
+    expect(post).toHaveBeenCalledTimes(2)
+    expect(preview.mock.calls.length).toBe(asked) // لا طلب جديد للسيرفر
+    expect(useEditor.getState().saveStatus).toBe('dirty') // وكله لسه غير محفوظ
+  })
+
   it('sends no event fields for a template', async () => {
     resetEditor()
     useEditor.getState().load(boot({ mode: 'template', fields: null }))
