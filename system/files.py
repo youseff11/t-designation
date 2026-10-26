@@ -16,6 +16,7 @@ from django.templatetags.static import static
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_GET, require_safe
+from django.views.static import serve as static_serve
 from . import qrcodes, siteicon
 from .models import Guest, Invitation
 
@@ -75,6 +76,17 @@ def media_video(request, path):
     if status == 206:
         response["Content-Range"] = f"bytes {start}-{end}/{size}"
     return response
+
+
+def media_file(request, path):
+    """‎/media/…‎ من Django — شبكة أمان لو الاستضافة مش مظبوطة تقدّم المجلد (وإلا الـcatch-all يرجّع الـshell).
+
+    الفيديو بيروح لـ‎media_video‎ (Range)، والباقي لـ‎serve‎ بتاع Django (بيمنع الخروج من المجلد).
+    لو الاستضافة بتقدّم ‎/media/‎ لوحدها الطلب مابيوصلش هنا أصلاً.
+    """
+    if Path(path).suffix.lower() in {".mp4", ".m4v", ".mov", ".webm", ".ogv"}:
+        return media_video(request, path)
+    return static_serve(request, path, document_root=settings.MEDIA_ROOT)
 
 
 @require_safe        # كراولر ميتا ساعات بيبعت HEAD قبل GET

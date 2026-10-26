@@ -3,8 +3,8 @@ import re
 from django.contrib import admin
 from django.urls import include, path, re_path
 from django.conf import settings
-from django.conf.urls.static import static
 
+from system import files
 from system.api import invite_page
 from system.api.editor_page import editor_frame
 from system.spa import spa_shell
@@ -35,8 +35,8 @@ urlpatterns += [
             invite_page.template_page, name="spa_template_preview"),
 ]
 
-# ملفات الوسائط وقت التطوير لازم قبل الـcatch-all (وإلا ‎/media/…‎ يرجّع الـshell).
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# ملفات الوسائط لازم قبل الـcatch-all (وإلا ‎/media/…‎ يرجّع الـshell). في الإنتاج الاستضافة
+# المفروض تقدّمها هي (Static files mapping)؛ ده شبكة أمان لو المسار ناقص أو غلط عندها.
+urlpatterns.append(re_path(rf"^{re.escape(settings.MEDIA_URL.strip('/'))}/(?P<path>.*)$", files.media_file))
 
 urlpatterns.append(re_path(rf"^{_prefix}(?:/.*)?$" if _prefix else r"^.*$", spa_shell, name="spa"))
