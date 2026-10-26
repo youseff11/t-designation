@@ -263,3 +263,11 @@ E2E_USER=… E2E_PASSWORD=… TARGET=react npx playwright test # بيقارن ا
 `ported` لـ `true` في `frontend/e2e/pages.ts`. لإعادة توليدها من الموقع القديم:
 `TARGET=legacy npx playwright test --project=parity --update-snapshots`.
 استخدم **قاعدة بيانات تجريبية** مش الحقيقية.
+
+
+cd frontend
+npm run ship
+
+cd ..
+git commit -am "..."
+git push

@@ -20,8 +20,7 @@ django-followup-preview.err.log
 db.sqlite3.bak-20260827-213413
 lax.zip
 Claude outputs
-# واجهة React: الـbuild بيتولّد، ومجلدات الأدوات
-static/app/
+# واجهة React: مجلدات الأدوات. الـbuild (static/app) متتبّع في git عن قصد عشان الاستضافة تاخده بـ git pull من غير رفع يدوي.
 frontend/node_modules/
 frontend/dist/
 frontend/test-results/
