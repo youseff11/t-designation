@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import formats, timezone
 
 from ..models import Guest, Invitation, RSVPResponse
-from ..views import _scan_entry
+from ..services import _scan_entry
 from .http import ApiError
 
 

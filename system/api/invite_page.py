@@ -18,7 +18,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_safe
 
-from .. import views as legacy
+from .. import services
 from ..models import Invitation, Template
 from . import invite
 
@@ -94,7 +94,7 @@ def invitation_page(request, slug, token=None):
 
     _count_view(request, invitation)
     payload = invite.invitation_response(
-        request, invitation, guest=guest, lang=legacy._lang(request))  # noqa: SLF001
+        request, invitation, guest=guest, lang=services._lang(request))  # noqa: SLF001
     return _response(request, payload)
 
 
@@ -104,5 +104,5 @@ def invitation_page(request, slug, token=None):
 def template_page(request, slug):
     template = get_object_or_404(Template, slug=slug, is_active=True)
     payload = invite.template_response(
-        request, template, lang=legacy._lang(request))  # noqa: SLF001
+        request, template, lang=services._lang(request))  # noqa: SLF001
     return _response(request, payload)

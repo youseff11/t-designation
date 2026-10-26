@@ -17,9 +17,7 @@ urlpatterns = [
     path('api/v1/', include('system.api.urls')),
     # إطار معاينة محرر React (iframe) — مسار ثابت على الجذر
     path('editor-frame/', editor_frame, name='editor_frame'),
-    # أثناء الترحيل (SPA_BASENAME=/app) الموقع القديم على الجذر؛ بعد التحويل النهائي
-    # (SPA_BASENAME= فاضي) React هو اللي على الجذر والقديم مش مسجّل.
-    path('', include('system.urls' if settings.SPA_BASENAME else 'system.urls_cutover')),
+    path('', include('system.urls')),
 ]
 
 # تطبيق React: كل ما تحت SPA_BASENAME بيرجّع الـshell والـrouter بيكمّل.

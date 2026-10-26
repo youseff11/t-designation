@@ -23,7 +23,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import path
 
 from .. import blocks as blocks_engine
-from .. import views as legacy
+from .. import services
 from ..forms import CustomFontForm
 from ..models import FavoriteBlock, Invitation, Template
 from .dashboard_common import raise_invalid, staff_api
@@ -87,27 +87,27 @@ def make_views(kind: str):
         if not request.FILES.get("file"):
             raise ApiError(400, "validation_error", "لم يصل أي ملف.",
                            fields={"file": "لم يصل أي ملف."})
-        return _with_used(_unwrap(legacy._upload_asset_for_editor(  # noqa: SLF001
+        return _with_used(_unwrap(services._upload_asset_for_editor(  # noqa: SLF001
             request, **owner), status=201))
 
     @staff_api("POST")
     def crop(request, pk):
         owner = _owner(kind, pk)
-        return _with_used(_unwrap(legacy._crop_asset_for_editor(  # noqa: SLF001
+        return _with_used(_unwrap(services._crop_asset_for_editor(  # noqa: SLF001
             request, **owner), status=201))
 
     @staff_api("POST")
     def delete(request, pk):
         owner = _owner(kind, pk)
         body = json_body(request)
-        return _unwrap(legacy._delete_asset_for_editor(  # noqa: SLF001
+        return _unwrap(services._delete_asset_for_editor(  # noqa: SLF001
             request, body.get("asset"), kind=_kind_in(body), **owner))
 
     @staff_api("POST")
     def bulk_delete(request, pk):
         owner = _owner(kind, pk)
         body = json_body(request)
-        return _unwrap(legacy._bulk_delete_assets_for_editor(  # noqa: SLF001
+        return _unwrap(services._bulk_delete_assets_for_editor(  # noqa: SLF001
             body.get("assets"), kind=_kind_in(body), **owner))
 
     return listing, upload, crop, delete, bulk_delete
@@ -133,11 +133,11 @@ def _favorite_block(body: dict) -> tuple[str, dict]:
 @staff_api("GET", "POST")
 def favorites(request):
     if request.method == "GET":
-        return {"favorites": legacy._favorites_json()}  # noqa: SLF001
+        return {"favorites": services._favorites_json()}  # noqa: SLF001
     name, block = _favorite_block(json_body(request))
     favorite = FavoriteBlock.objects.create(
         name=name, block_type=block["type"], block_data=block, created_by=request.user)
-    return json_response({"favorite": legacy._favorite_payload(favorite)}, status=201)  # noqa: SLF001
+    return json_response({"favorite": services._favorite_payload(favorite)}, status=201)  # noqa: SLF001
 
 
 @staff_api("DELETE")
@@ -162,7 +162,7 @@ def font_create(request):
     font = form.save(commit=False)
     font.uploaded_by = request.user
     font.save()
-    return json_response({"font": legacy._font_payload(font)}, status=201)  # noqa: SLF001
+    return json_response({"font": services._font_payload(font)}, status=201)  # noqa: SLF001
 
 
 def _routes():

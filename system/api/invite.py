@@ -28,7 +28,7 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 
 from .. import blocks as blocks_engine
-from .. import views as legacy
+from .. import services
 from ..models import Guest, Invitation, RSVPResponse, Template
 from . import invite_render
 from .http import ApiError, api_view, client_hash, json_body
@@ -96,7 +96,7 @@ def invitation_response(request, invitation: Invitation, *, guest=None,
     description = s.get("share_description") or (
         f"{invitation.event_type} — {private['data'].get('date_text', '')}"
     ).strip(" —")
-    image = legacy._share_image(  # noqa: SLF001
+    image = services._share_image(  # noqa: SLF001
         request, s.get("share_image"),
         getattr(getattr(invitation, "template", None), "cover_image", None),
         getattr(getattr(invitation, "template", None), "cover_url", ""),
@@ -112,7 +112,7 @@ def invitation_response(request, invitation: Invitation, *, guest=None,
             "canonical": request.build_absolute_uri(invitation.get_absolute_url()),
         },
         "music": _music(s),
-        "scroll": legacy._scroll_config(s),  # noqa: SLF001
+        "scroll": services._scroll_config(s),  # noqa: SLF001
         "cta": None,
         "demo": False,
         "siteName": settings.SITE_NAME,
@@ -127,7 +127,7 @@ def _template_canonical(request, template: Template) -> str:
 
     url = request.build_absolute_uri(
         reverse("template_demo", kwargs={"slug": template.slug}))
-    asked = legacy._lang(request)  # noqa: SLF001
+    asked = services._lang(request)  # noqa: SLF001
     return f"{url}?lang={asked}" if asked else url
 
 
@@ -144,14 +144,14 @@ def template_response(request, template: Template, *, lang: str = "") -> dict:
                 template.display_description
                 or f"شوف قالب {template.display_name} من {settings.SITE_NAME}"
             ),
-            "image": legacy._share_image(  # noqa: SLF001
+            "image": services._share_image(  # noqa: SLF001
                 request, template.cover_image, template.cover_url),
             "favicon": s.get("favicon") or "",
             "canonical": _template_canonical(request, template),
         },
         "music": _music(s),
-        "scroll": legacy._scroll_config(s),  # noqa: SLF001
-        "cta": legacy._preview_cta(template),  # noqa: SLF001
+        "scroll": services._scroll_config(s),  # noqa: SLF001
+        "cta": services._preview_cta(template),  # noqa: SLF001
         "demo": True,
         "siteName": settings.SITE_NAME,
         "siteUrl": request.build_absolute_uri("/"),
@@ -172,14 +172,14 @@ def invitation_render(request, slug):
     elif not is_unlocked(request, invitation):
         raise ApiError(401, "locked", "هذه الدعوة محمية بكلمة سر.")
     return invitation_response(
-        request, invitation, guest=guest, lang=legacy._lang(request))  # noqa: SLF001
+        request, invitation, guest=guest, lang=services._lang(request))  # noqa: SLF001
 
 
 @never_cache
 @api_view("GET")
 def template_preview(request, slug):
     template = get_object_or_404(Template, slug=slug, is_active=True)
-    return template_response(request, template, lang=legacy._lang(request))  # noqa: SLF001
+    return template_response(request, template, lang=services._lang(request))  # noqa: SLF001
 
 
 # ---------------------------------------------------------------- كلمة السر
@@ -242,7 +242,7 @@ def _answers(answers_in, rsvp_props: dict) -> list[dict]:
                 continue
             if question.get("multiple"):
                 picked = [v for v in many(name) if v in allowed]
-                value = legacy.RSVP_MULTI_SEP.join(picked[:20])
+                value = services.RSVP_MULTI_SEP.join(picked[:20])
             else:
                 raw = one(name)
                 value = raw if raw in allowed else ""
@@ -252,7 +252,7 @@ def _answers(answers_in, rsvp_props: dict) -> list[dict]:
 
         if value:
             out.append({"i": index, "q": label[:200], "a": value})
-        if len(out) >= legacy.MAX_RSVP_ANSWERS:
+        if len(out) >= services.MAX_RSVP_ANSWERS:
             break
     return out
 

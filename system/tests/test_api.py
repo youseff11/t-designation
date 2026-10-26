@@ -236,9 +236,11 @@ class ShellTests(TestCase):
     def test_shell_only_allows_safe_methods(self):
         self.assertEqual(self.client.post("/app/").status_code, 405)
 
-    def test_legacy_routes_untouched(self):
-        self.assertEqual(self.client.get("/login/").status_code, 200)
-        self.assertTemplateNotUsed(self.client.get("/login/"), "spa/shell.html")
+    def test_root_pages_are_served_by_the_shell(self):
+        # الموقع الكلاسيك اتحذف: ‎/login/‎ وغيرها بتتقدّم من React على الجذر
+        response = self.client.get("/login/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "spa/shell.html")
 
 
 class ViteTagTests(SimpleTestCase):

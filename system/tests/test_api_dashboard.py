@@ -777,9 +777,8 @@ class SiteTests(DashboardApiCase):
 
 
 class RoutesAreReversible(TestCase):
-    def test_legacy_urls_used_in_payloads_exist(self):
-        for name, args in [("invitation_editor", [1]), ("template_editor", [1]),
-                           ("template_demo", ["x"]), ("admin:system_order_change", [1]),
+    def test_urls_used_in_payloads_exist(self):
+        for name, args in [("template_demo", ["x"]), ("admin:system_order_change", [1]),
                            ("admin:system_plan_change", [1]), ("admin:system_template_change", [1])]:
             with self.subTest(name=name):
                 self.assertTrue(reverse(name, args=args))

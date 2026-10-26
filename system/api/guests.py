@@ -25,7 +25,7 @@ from django.views.decorators.cache import never_cache
 from .. import guestexport, guestimport, qrcodes
 from ..forms import GuestForm
 from ..models import Guest
-from ..views import _rsvp_pass_enabled
+from ..services import _rsvp_pass_enabled
 from . import guests_public
 from .guests_common import (
     guest_row, invitation_basic, invitation_or_404, latest_rsvp_map, rsvp_row,

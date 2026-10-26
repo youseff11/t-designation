@@ -33,7 +33,7 @@ from django.utils.text import slugify
 
 from .. import blocks as blocks_engine
 from .. import renderer as R
-from .. import views as legacy
+from .. import services
 from ..forms import InvitationSettingsForm
 from ..models import Asset, IntroVideo, Invitation, MusicTrack, Template
 from . import invite_render
@@ -57,7 +57,7 @@ def schema(request):
     """سكيما المحرر (~٦٠٠ كيلو). مشتقّة من الكود فمابتتغيّرش غير مع نشر جديد:
     ‎ETag‎ بالبصمة، والمتصفح بيسأل ويستلم ‎304‎ بدل ما ينزّلها كل فتحة."""
     require_staff(request)
-    stamp, payload = legacy._editor_schema_blob()  # noqa: SLF001
+    stamp, payload = services._editor_schema_blob()  # noqa: SLF001
     etag = f'"{stamp}"'
     if request.headers.get("If-None-Match") == etag:
         response = HttpResponse(status=304)
@@ -78,7 +78,7 @@ def _assets(invitation: Invitation | None) -> list[dict]:
     else:
         rows = Asset.objects.filter(invitation__isnull=True)
     assets = list(rows.order_by("-id")[:ASSET_LIMIT])
-    usage = legacy._asset_usage_map(assets)  # noqa: SLF001
+    usage = services._asset_usage_map(assets)  # noqa: SLF001
     return [
         {"id": a.pk, "url": a.url, "thumb": a.thumb_url, "source": a.source_url,
          "name": a.original_name, "kind": a.kind, "used": usage.get(a.pk, False)}
@@ -88,7 +88,7 @@ def _assets(invitation: Invitation | None) -> list[dict]:
 
 def _libraries() -> dict:
     return {
-        "fonts": legacy._font_library_json(),  # noqa: SLF001
+        "fonts": services._font_library_json(),  # noqa: SLF001
         "intros": [
             {"id": v.pk, "name": v.name, "url": v.url, "poster": v.poster_url,
              "seconds": v.seconds, "note": v.note}

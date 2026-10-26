@@ -16,8 +16,10 @@ from system.tests.test_api_invite import InviteBase
 
 def _reload_urls():
     import Core.urls
+    import system.urls
 
     clear_url_caches()
+    importlib.reload(system.urls)  # الـredirect من ‎/app/‎ بيتسجّل حسب ‎SPA_BASENAME‎ وقت الاستيراد
     importlib.reload(Core.urls)
     clear_url_caches()
 

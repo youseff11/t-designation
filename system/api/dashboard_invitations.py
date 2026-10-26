@@ -13,7 +13,7 @@ from django.http import Http404
 from django.urls import path
 
 from ..models import Customer, Invitation, Plan, Template
-from ..views import _delete_invitation, _duplicate_invitation
+from ..services import _delete_invitation, _duplicate_invitation
 from .dashboard_common import (
     editor_url,
     TEMPLATE_HEAVY_FIELDS,
