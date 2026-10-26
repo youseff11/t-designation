@@ -5,8 +5,10 @@
  * مطابق لـ‎makeClientVideoThumbnail‎ و‎captureLibraryFrame‎ في ‎editor.js‎ القديم.
  */
 
-/** الغلاف بيتعرض ملء الشاشة قبل الفيديو، فمقاس الفيديو نفسه (الحد ١٩٢٠) مش ٦٤٠px. */
-const UPLOAD_EDGE = 1920
+/** الغلاف بيتعرض ملء الشاشة قبل الفيديو: بمقاس الفيديو الأصلي من غير تصغير (PNG من غير فقد). */
+const UPLOAD_EDGE = Infinity
+/** PNG لفريم 4K ممكن يكبر أوي؛ فوق الحد ده بنرجع لـJPEG بأعلى جودة (السيرفر بيقبل لحد ٢٤ ميجا). */
+const PNG_MAX_BYTES = 20 * 1024 * 1024
 /** فريم مكتبة الافتتاحيات بيتحفظ جوّه المستند نفسه (data URL) فالحجم بيتحسب مرتين. */
 const LIBRARY_EDGE = 1440
 const TIMEOUT_MS = 8000
@@ -53,7 +55,7 @@ export function waitForFrame(video: HTMLVideoElement, timeout = 1800): Promise<s
   })
 }
 
-/** JPEG لأول فريم من ملف فيديو، أو ‎null‎ (مش فيديو / فشل / عدّى ٨ ثواني). */
+/** أول فريم من ملف فيديو بمقاسه الأصلي (PNG، أو JPEG بجودة ١٠٠٪ لو الـPNG كبير أوي)، أو ‎null‎ (مش فيديو / فشل / عدّى ٨ ثواني). */
 export function makeClientVideoThumbnail(file: File): Promise<Blob | null> {
   if (!/^video\//i.test(file.type || '')) return Promise.resolve(null)
   return new Promise((resolve) => {
@@ -76,7 +78,10 @@ export function makeClientVideoThumbnail(file: File): Promise<Blob | null> {
       try {
         const canvas = draw(video, UPLOAD_EDGE)
         if (!canvas) return
-        canvas.toBlob((blob) => finish(blob), 'image/jpeg', 0.92)
+        canvas.toBlob((png) => {
+          if (png && png.size <= PNG_MAX_BYTES) finish(png)
+          else canvas.toBlob((jpeg) => finish(jpeg ?? png), 'image/jpeg', 1)
+        }, 'image/png')
       } catch {
         finish(null)
       }

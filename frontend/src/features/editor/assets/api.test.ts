@@ -86,6 +86,14 @@ describe('uploadAsset', () => {
     await expect(promise).resolves.toMatchObject({ id: 5 })
   })
 
+  it('names a lossless PNG frame -thumb.png', async () => {
+    const promise = uploadAsset('template', 12, file, new Blob(['png'], { type: 'image/png' }))
+    const xhr = await started()
+    expect((xhr.body!.get('thumb') as File).name).toBe('clip-thumb.png')
+    xhr.reply(201, JSON.stringify({ asset: { id: 6 } }))
+    await promise
+  })
+
   it('uses the invitation route, and sends no thumb field when there is no frame', async () => {
     const promise = uploadAsset('invitation', 3, new File(['x'], 'a.png', { type: 'image/png' }), null)
     const xhr = await started()

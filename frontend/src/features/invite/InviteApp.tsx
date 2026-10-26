@@ -19,12 +19,14 @@ const Locked = lazy(() => import('./Locked').then((m) => ({ default: m.Locked })
 const DATA_ATTR = /^data-[a-zA-Z0-9_-]{1,64}$/
 
 /** حركات الظهور: القسم بيظهر أول ما يقرّب من الشاشة (قبلها بـ٤٥٪ عشان الانتقال يخلص). */
+const PENDING = '.lb-anim:not(.is-in)'
+
 function useReveal(dep: unknown) {
   useEffect(() => {
-    const nodes = Array.from(document.querySelectorAll('.lb-anim:not(.is-in)'))
-    if (!nodes.length) return
+    const scan = (observe: (node: Element) => void) =>
+      document.querySelectorAll(PENDING).forEach(observe)
     if (!('IntersectionObserver' in window)) {
-      nodes.forEach((n) => n.classList.add('is-in'))
+      scan((n) => n.classList.add('is-in'))
       return
     }
     const io = new IntersectionObserver(
@@ -39,8 +41,23 @@ function useReveal(dep: unknown) {
       // threshold:0 = أول ما أي جزء يلمس صندوق القياس؛ ٤٥٪ بتمدّه تحت الشاشة
       { threshold: 0, rootMargin: '0px 0px 45% 0px' },
     )
-    nodes.forEach((n) => io.observe(n))
-    return () => io.disconnect()
+    const watch = (node: Element) => io.observe(node)
+    scan(watch)
+    // الأقسام اللي بتتحمّل متأخر (فيديو، معرض، RSVP) بتحلّ محل مكانها الفاضي بعنصر جديد
+    // مالوش مراقب — من غير ده يفضل opacity:0 للأبد (الفيديو بيشتغل بس مش باين)
+    const mo = new MutationObserver((records) => {
+      const added = records.some((r) =>
+        Array.from(r.addedNodes).some(
+          (n) => n instanceof Element && (n.matches(PENDING) || n.querySelector(PENDING)),
+        ),
+      )
+      if (added) scan(watch)
+    })
+    mo.observe(document.body, { childList: true, subtree: true })
+    return () => {
+      io.disconnect()
+      mo.disconnect()
+    }
   }, [dep])
 }
 

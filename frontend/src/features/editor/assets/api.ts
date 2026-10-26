@@ -84,7 +84,10 @@ export async function uploadAsset(
   const token = await csrfToken()
   const form = new FormData()
   form.append('file', file)
-  if (thumb) form.append('thumb', thumb, `${file.name.replace(/\.[^.]+$/, '') || 'video'}-thumb.jpg`)
+  if (thumb) {
+    const ext = thumb.type === 'image/png' ? 'png' : 'jpg'
+    form.append('thumb', thumb, `${file.name.replace(/\.[^.]+$/, '') || 'video'}-thumb.${ext}`)
+  }
 
   return new Promise<AssetRow>((resolve, reject) => {
     const xhr = new XMLHttpRequest()

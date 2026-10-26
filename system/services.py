@@ -467,9 +467,9 @@ def _upload_asset_for_editor(request, *, invitation=None, template=None):
     # المتصفح يرسل أول فريم كصورة JPEG عندما لا يتوفر ffmpeg على السيرفر.
     if kind == "video":
         client_thumb = request.FILES.get("thumb")
-        # الحد ٨ ميجا مش ٢: نسخة المتصفح بقت بمقاس الفيديو الأصلي عشان
-        # الغلاف ما يطلعش مبكسل، وفريم ١٩٢٠px بجودة عالية ممكن يعدّي ٢ ميجا.
-        if client_thumb and client_thumb.size <= 8 * 1024 * 1024:
+        # الحد ٢٤ ميجا: نسخة المتصفح PNG بمقاس الفيديو الأصلي من غير ضغط عشان
+        # الغلاف يطلع بالجودة الأصلية، وفريم 4K ممكن يعدّي ١٠ ميجا.
+        if client_thumb and client_thumb.size <= 24 * 1024 * 1024:
             thumb_type = (getattr(client_thumb, "content_type", "") or "").lower()
             if thumb_type in {"image/jpeg", "image/png", "image/webp"}:
                 try:

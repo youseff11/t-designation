@@ -30,6 +30,24 @@ describe('InviteApp', () => {
     expect(document.querySelector('footer.lb-footer')!.textContent).toContain('T DESIGNATION')
   })
 
+  it('reveals a lazily loaded block (video) once its chunk replaces the placeholder', async () => {
+    const watched = new Set<Element>()
+    class FakeObserver {
+      observe(node: Element) {
+        watched.add(node)
+      }
+      unobserve() {}
+      disconnect() {}
+    }
+    vi.stubGlobal('IntersectionObserver', FakeObserver)
+    const video = block('video', { url: '/media/a.mp4' }, {
+      attrs: { id: 'video-1', className: 'lb lb--video lb-anim lb-anim--fade', style: '' },
+    })
+    render(<InviteApp boot={{ mode: 'view', ...payload({ blocks: [video] }) }} />)
+    await waitFor(() => expect(document.querySelector('section#video-1 video')).not.toBeNull())
+    await waitFor(() => expect(watched.has(document.querySelector('section#video-1')!)).toBe(true))
+  })
+
   it('skips unknown block types instead of crashing', () => {
     render(<InviteApp boot={{ mode: 'view', ...payload({ blocks: [block('from-the-future'), hero('ليلى')] }) }} />)
     expect(document.querySelectorAll('[data-block]').length).toBe(1)
