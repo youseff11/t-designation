@@ -12,6 +12,7 @@ import { ColorGroup } from './ColorGroup'
 import { ElementPanel } from './ElementPanel'
 import { LayersGroup } from './LayersGroup'
 import { LayoutGroup } from './LayoutGroup'
+import { OverlayLayers } from './OverlayLayers'
 import { OverlayPanel } from './OverlayPanel'
 
 /** خصائص القسم المحدَّد: الاسم، ثم مجموعات حقول المحتوى ثم التنسيق — كلها مبنية من السكيما. */
@@ -92,6 +93,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
       </div>
 
       {overlaySpec && <OverlayPanel block={block} spec={overlaySpec} />}
+      {overlaySpec && <OverlayLayers block={block} spec={overlaySpec} />}
 
       <div className="ed-field">
         <label htmlFor="ed-block-name">

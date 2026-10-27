@@ -1044,3 +1044,21 @@
 .ed-gate-tag { font-size: 10px; color: var(--e-accent-ink) !important; }
 .ed-hint--danger { color: var(--e-danger); }
 .ed-empty a.ed-btn { margin-top: 6px; }
+
+/* ترتيب طبقات العناصر فوق القسم */
+.ed-ovl-layers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.ed-ovl-layer {
+  display: flex; align-items: center; gap: 4px; padding: 3px 4px;
+  border: 1px solid var(--e-line); border-radius: 8px; background: var(--e-panel-2);
+}
+.ed-ovl-layer.is-selected { border-color: var(--e-accent); background: var(--e-line-soft); }
+.ed-ovl-layer-pick {
+  flex: 1 1 auto; min-width: 0; padding: 5px 6px; border: 0; background: none; color: inherit;
+  font: inherit; font-size: 12.5px; text-align: start; cursor: pointer;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ed-ovl-layer-move { flex: 0 0 auto; padding: 3px 8px; line-height: 1.2; }
+.ed-ovl-layer--content {
+  justify-content: center; padding: 6px; border-style: dashed; background: transparent;
+  color: var(--e-muted); font-size: 11.5px; letter-spacing: .02em;
+}

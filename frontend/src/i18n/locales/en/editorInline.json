@@ -206,6 +206,15 @@
     "selected": "Element on the section",
     "done": "Done",
     "remove": "Delete element",
-    "hint": "Drag it anywhere with the mouse; the two handles on its sides change its width. Delete removes it."
+    "hint": "Drag it anywhere with the mouse; the two handles on its sides change its width. Delete removes it.",
+    "layers": {
+      "title": "Layer order",
+      "front": "⤒ Bring to front",
+      "back": "⤓ Send to back",
+      "up": "Forward",
+      "down": "Backward",
+      "content": "▣ Section content (text and ornaments)",
+      "hint": "Top to bottom: what's higher covers what's below. Move an element under “Section content” to put it behind the text; select it from here if it gets covered in the preview."
+    }
   }
 }

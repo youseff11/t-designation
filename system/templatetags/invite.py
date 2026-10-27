@@ -458,6 +458,15 @@ def video_text_style(item):
     if size > 0:
         style += f";--section-text-size:{_fluid(size)}"
 
+    # ترتيب الطبقات: الافتراضي ‎4‎ (فوق المحتوى بترتيب الإضافة). ‎behind‎
+    # بينزّل العنصر تحت محتوى القسم — الخلفية نفسها (‎.lb--has-bg‎) أرضيتها
+    # ‎-200‎ فمفيش عنصر بيغطّيها.
+    z = int(_ovl_num(item, "z", 0.0, 60.0))
+    if item.get("behind") is True:
+        style += f";--ovl-z:{-100 + z}"
+    elif z:
+        style += f";--ovl-z:{4 + z}"
+
     kind = str(item.get("kind") or "text")
     # الظل اختياري ومقفول افتراضياً. العنصر القديم مالوش المفتاح ده
     # فبيطلع من غير ظل — وده المقصود: النص فوق خلفية سادة كان بيبان

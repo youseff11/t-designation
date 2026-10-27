@@ -2676,6 +2676,24 @@ class OverlayTextGearTests(TestCase):
                     "--section-text-size:clamp(1",
                     invite_tags.video_text_style({"text": "x", "size": bad}))
 
+    def test_layer_order_is_written_only_when_set(self):
+        """القديم من غير z/behind مايتكتبلوش متغيّر — بيفضل ‎4‎ من الـCSS."""
+        self.assertNotIn("--ovl-z", invite_tags.video_text_style({"text": "x"}))
+        self.assertNotIn("--ovl-z", invite_tags.video_text_style(
+            {"text": "x", "z": 0, "behind": False}))
+
+    def test_layer_order_above_and_behind_the_section_content(self):
+        above = invite_tags.video_text_style({"text": "x", "z": 3})
+        self.assertIn("--ovl-z:7", above)
+        behind = invite_tags.video_text_style({"text": "x", "z": 2, "behind": True})
+        self.assertIn("--ovl-z:-98", behind)
+
+    def test_junk_layer_order_is_clamped(self):
+        style = invite_tags.video_text_style({"text": "x", "z": 99999, "behind": True})
+        self.assertIn("--ovl-z:-40", style)
+        self.assertNotIn("--ovl-z", invite_tags.video_text_style(
+            {"text": "x", "z": "abc"}))
+
 
 # ==========================================================================
 class SectionOverlayElementsTests(TestCase):
