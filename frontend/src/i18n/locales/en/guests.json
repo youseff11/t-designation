@@ -206,6 +206,7 @@
     "noGuests": "No guests or passes yet.",
     "wishesTitle": "Well-wishes",
     "wishesCount": "Messages: {{n}}",
+    "wishesPdf": "Download PDF",
     "noWishes": "No well-wishes yet.",
     "emptyTitle": "No follow-up tools are enabled",
     "emptyText": "Add RSVP, QR or well-wishes to the invitation and they'll appear here."

@@ -6,6 +6,7 @@ import { splitCode } from '../imported/source'
 import { hasCountdown } from '../imported/units'
 import { useEditor } from '../store'
 import type { EditorSchema } from '../types'
+import { CollapseAllButton } from './CollapseAllButton'
 import { FieldGroups, useOpenGroups } from './FieldGroups'
 import { ColorGroup } from './ColorGroup'
 import { ElementPanel } from './ElementPanel'
@@ -33,6 +34,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
   if (selected === INTRO_ID) {
     return (
       <>
+        <CollapseAllButton />
         <div className="ed-section-head">
           <div>
             <p className="ed-kicker">{t('editor.inspector.selected')}</p>
@@ -75,6 +77,7 @@ export function InspectorPanel({ schema }: { schema: EditorSchema }) {
 
   return (
     <>
+      <CollapseAllButton />
       <div className="ed-section-head">
         <div>
           <p className="ed-kicker">{t('editor.inspector.selected')}</p>

@@ -248,6 +248,7 @@
   font-size: 10.5px; letter-spacing: .22em; text-transform: uppercase;
   color: var(--e-accent); margin: 0;
 }
+.ed-collapse-all { margin-bottom: 10px; }
 .ed-hint { font-size: 11.5px; color: var(--e-muted); margin: 0 0 10px; line-height: 1.6; }
 
 .ed-blocks { display: flex; flex-direction: column; gap: 5px; }

@@ -69,7 +69,8 @@
     "rename": "Section name in the list",
     "gated": "This section isn't included in the client's plan and won't show to guests.",
     "outsidePlan": "Warning: outside the plan",
-    "defaultGroup": "Content"
+    "defaultGroup": "Content",
+    "collapseAll": "▴ Collapse all menus"
   },
   "fields": {
     "clear": "Clear",

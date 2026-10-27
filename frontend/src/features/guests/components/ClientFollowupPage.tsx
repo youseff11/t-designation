@@ -13,6 +13,23 @@ import '../styles/base.css'
 import '../styles/client.css'
 
 /**
+ * تحميل رسائل التهنئة PDF: بنطبع القسم ده لوحده (الـCSS بيخفي الباقي لما ‎body.print-wishes‎ موجود)
+ * والمتصفح بيحفظه PDF بالخط العربي الصح من غير مكتبات. عنوان الصفحة هو اسم الملف الافتراضي.
+ */
+function printWishes(fileTitle: string) {
+  const previousTitle = document.title
+  const done = () => {
+    document.body.classList.remove('print-wishes')
+    document.title = previousTitle
+    window.removeEventListener('afterprint', done)
+  }
+  document.title = fileTitle
+  document.body.classList.add('print-wishes')
+  window.addEventListener('afterprint', done)
+  window.print()
+}
+
+/**
  * ‎/i/:slug/client/:token‎ — لوحة متابعة خاصة بصاحب الدعوة (للقراءة فقط):
  * الحضور، رموز QR، ورسائل التهنئة. بتعرض الوحدات اللي اتجمّع فيها بيانات فعلاً.
  */
@@ -260,13 +277,25 @@ export function ClientFollowupPage() {
         )}
 
         {hasGuestbook && (
-          <section className="client-followup-section" aria-labelledby="messages-title">
+          <section className="client-followup-section client-followup-wishes" aria-labelledby="messages-title">
             <div className="client-followup-section-head">
               <div>
                 <p className="client-followup-kicker">GUESTBOOK</p>
                 <h2 id="messages-title">{t('guests.client.wishesTitle')}</h2>
+                {invitation.nameOne && <p className="client-followup-print-names">{names}</p>}
               </div>
-              <span className="client-followup-count">{t('guests.client.wishesCount', { n: stats.messages })}</span>
+              <span className="client-followup-section-tools">
+                <span className="client-followup-count">{t('guests.client.wishesCount', { n: stats.messages })}</span>
+                {messageRows.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn--gold btn--sm no-print"
+                    onClick={() => printWishes(`${t('guests.client.wishesTitle')} — ${names || invitation.slug}`)}
+                  >
+                    {t('guests.client.wishesPdf')}
+                  </button>
+                )}
+              </span>
             </div>
             <div className="client-followup-messages">
               {messageRows.map((row) => (

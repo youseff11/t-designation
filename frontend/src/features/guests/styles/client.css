@@ -132,6 +132,8 @@
   gap: 14px; padding: 20px 22px; border-bottom: 1px solid var(--line);
 }
 .client-followup-section-head .client-followup-kicker { margin-bottom: 2px; }
+.client-followup-section-tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.client-followup-print-names { display: none; }
 .client-followup-table-wrap { overflow-x: auto; }
 .client-followup-table { min-width: 720px; }
 .client-followup-table th { background: var(--surface-2); }
@@ -217,3 +219,22 @@
 }
 
 
+
+/* تحميل رسائل التهنئة PDF: بنطبع قسمها لوحده */
+@media print {
+  body.print-wishes { background: #fff; }
+  body.print-wishes .client-followup-page { background: #fff; min-height: 0; }
+  body.print-wishes .client-followup > :not(.client-followup-wishes) { display: none !important; }
+  body.print-wishes .no-print { display: none !important; }
+  body.print-wishes .client-followup { width: 100%; padding: 0; }
+  body.print-wishes .client-followup-wishes {
+    margin: 0; border: 0; box-shadow: none; background: #fff; color: #000; overflow: visible;
+  }
+  body.print-wishes .client-followup-print-names { display: block; margin: 4px 0 0; color: #333; }
+  body.print-wishes .client-followup-messages { display: block; padding: 14px 0 0; }
+  body.print-wishes .client-followup-message-card {
+    break-inside: avoid; margin-bottom: 10px; background: #fff; border-color: #bbb; color: #000;
+  }
+  body.print-wishes .client-followup-message-card p,
+  body.print-wishes .client-followup-message-card time { color: #333; }
+}
