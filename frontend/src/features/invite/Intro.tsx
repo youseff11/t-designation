@@ -108,6 +108,7 @@ export function Intro({ data }: { data: IntroData }) {
             canvas.height = vid.videoHeight || 1
             canvas.getContext('2d')?.drawImage(vid, 0, 0, canvas.width, canvas.height)
             vid.poster = canvas.toDataURL('image/jpeg', 0.82)
+            vid.style.backgroundImage = `url("${vid.poster}")`
           } catch {
             // روابط الفيديو الخارجية قد تمنع canvas بسبب CORS — لا نعطل التشغيل
           }
@@ -237,6 +238,9 @@ export function Intro({ data }: { data: IntroData }) {
   if (awaiting) cls.push('is-awaiting-play')
   if (blocked) cls.push('is-video-blocked')
   const items = data.itemStyles
+  // أول ما play() يتنادى المتصفح بيشيل الغلاف قبل ما أول فريم يترسم، فبتظهر
+  // ومضة بلون الصفحة. الغلاف نفسه كخلفية للفيديو بيسد الفجوة دي.
+  const videoStyle = data.poster ? { backgroundImage: `url(${JSON.stringify(data.poster)})` } : undefined
 
   return (
     <div
@@ -255,6 +259,7 @@ export function Intro({ data }: { data: IntroData }) {
             data-intro-audio={data.audio}
             src={data.video}
             poster={data.poster || undefined}
+            style={videoStyle}
             muted={data.audio !== 'sound'}
             playsInline
             preload="auto"
@@ -267,6 +272,7 @@ export function Intro({ data }: { data: IntroData }) {
             data-intro-audio={data.audio}
             src={data.video}
             poster={data.poster || undefined}
+            style={videoStyle}
             autoPlay
             muted={data.audio !== 'sound'}
             playsInline
