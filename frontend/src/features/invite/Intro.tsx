@@ -26,6 +26,12 @@ function codeHtml(intro: IntroData): string {
   return style + box + js
 }
 
+/** سكربت الافتتاحية بيذكر الفيديو وبينادي ‎.play()‎ — يعني هو اللي بيقرر إمتى يبدأ. */
+function ownsVideo(intro: IntroData): boolean {
+  const js = intro.code?.js
+  return Boolean(intro.video && js && /video/i.test(js) && /\.play\s*\(/.test(js))
+}
+
 interface MusicHandle {
   play: () => void
 }
@@ -47,6 +53,8 @@ export function Intro({ data }: { data: IntroData }) {
   const openBtn = useRef<HTMLButtonElement>(null)
 
   const manual = Boolean(data.video) && (data.playMode === 'button' || data.playMode === 'button_effects')
+  // كود الافتتاحية بيشغّل الفيديو بنفسه (مثلاً بعد ٣ دقّات): ماننافسوهوش بتشغيل تلقائي
+  const selfPlay = !manual && ownsVideo(data)
   const [open, setOpen] = useState(false)
   const [awaiting, setAwaiting] = useState(manual)
   const [blocked, setBlocked] = useState(false)
@@ -168,10 +176,12 @@ export function Intro({ data }: { data: IntroData }) {
         cleanup.push(() => playBtn.current?.removeEventListener('click', onPlay))
       } else {
         vid.muted = !wantsSound
-        const tryPlay = vid.play()
-        if (tryPlay && tryPlay.catch) {
-          // iOS في وضع توفير الطاقة بيرفض التشغيل — الغلاف بيفضل ظاهر
-          tryPlay.catch(() => setBlocked(true))
+        if (!selfPlay) {
+          const tryPlay = vid.play()
+          if (tryPlay && tryPlay.catch) {
+            // iOS في وضع توفير الطاقة بيرفض التشغيل — الغلاف بيفضل ظاهر
+            tryPlay.catch(() => setBlocked(true))
+          }
         }
       }
       const onEnded = () => {
@@ -273,7 +283,7 @@ export function Intro({ data }: { data: IntroData }) {
             src={data.video}
             poster={data.poster || undefined}
             style={videoStyle}
-            autoPlay
+            autoPlay={!selfPlay}
             muted={data.audio !== 'sound'}
             playsInline
             preload="auto"

@@ -66,6 +66,37 @@ describe('Intro', () => {
     )
   })
 
+  describe('video started by the intro code', () => {
+    const knock = {
+      css: '',
+      html: '<div class="knock"></div>',
+      js: 'var video = document.querySelector("video"); window.__knock = function () { video.play() }',
+    }
+
+    it('does not autoplay when the code decides when the video starts', () => {
+      const play = vi.fn().mockResolvedValue(undefined)
+      HTMLMediaElement.prototype.play = play
+      HTMLMediaElement.prototype.pause = vi.fn()
+      HTMLMediaElement.prototype.load = vi.fn()
+      const { container } = renderIntro(intro({ video: '/v.mp4', audio: 'sound', code: knock }))
+      const video = container.querySelector('video')!
+      expect(video.hasAttribute('autoplay')).toBe(false)
+      expect(play).not.toHaveBeenCalled()
+      expect(container.querySelector('.lb-intro')!.classList.contains('is-video-blocked')).toBe(false)
+    })
+
+    it('still autoplays when the code never touches the video', () => {
+      const play = vi.fn().mockResolvedValue(undefined)
+      HTMLMediaElement.prototype.play = play
+      HTMLMediaElement.prototype.pause = vi.fn()
+      HTMLMediaElement.prototype.load = vi.fn()
+      const sparkle = { css: '', html: '<i></i>', js: 'window.__pop = function () { new Audio("/pop.wav").play() }' }
+      const { container } = renderIntro(intro({ video: '/v.mp4', code: sparkle }))
+      expect(container.querySelector('video')!.hasAttribute('autoplay')).toBe(true)
+      expect(play).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it('manual video mode waits for the play button and keeps the auto timer paused', () => {
     HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined)
     HTMLMediaElement.prototype.pause = vi.fn()
