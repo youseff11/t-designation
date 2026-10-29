@@ -502,6 +502,23 @@ html[lang="en"] .plan-badge { letter-spacing: .1em; }
   }
 }
 
+/* قالبين جنب بعض على التليفون (اختيار من «إعدادات الموقع»): نفس الكارت بمقاسات أصغر.
+   الغلاف مربع زي الواحد في الصف، والجسم من غير ارتفاع ثابت عشان العرض نص الشاشة. */
+@media (max-width: 600px) {
+  #templates .grid--4[data-per-row="2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    padding-inline: 0;
+  }
+  #templates .grid--4[data-per-row="2"] .tpl-card { padding: 6px; border-radius: 14px; }
+  #templates .grid--4[data-per-row="2"] .tpl-cover { border-radius: 10px; }
+  #templates .grid--4[data-per-row="2"] .tpl-body { padding: 10px 6px 6px; min-height: 0; gap: 4px; }
+  #templates .grid--4[data-per-row="2"] .tpl-body h3 { font-size: 15px; }
+  #templates .grid--4[data-per-row="2"] .tpl-desc { font-size: 11.5px; line-height: 1.5; }
+  #templates .grid--4[data-per-row="2"] .tpl-actions { padding-top: 8px; margin-top: auto; }
+  #templates .grid--4[data-per-row="2"] .tpl-actions .btn { padding: 9px 8px; font-size: 12.5px; }
+}
+
 /* ======== الناف على الشاشات المتوسطة — site.css:1028-1040 ======== */
 /* ------------------------------------------------ الناف على الشاشات المتوسطة */
 /* لوحة التحكم بقى فيها ٧ روابط. بين ٧٨١ و١١٥٠ الشريط كان بيعدّي عرض

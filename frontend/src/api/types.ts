@@ -19,6 +19,8 @@ export interface SiteInfo {
   email: string
   ordersEnabled: boolean
   plansPublic: boolean
+  /** عدد القوالب في الصف بالرئيسية على التليفون (١ أو ٢) */
+  templatesPerRow: 1 | 2
   whatsapp: {
     floatReady: boolean
     url: string

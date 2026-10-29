@@ -91,9 +91,11 @@ export function GalleryTemplateCard({ template }: { template: PublicTemplate }) 
 interface Props {
   templates: PublicTemplate[] | undefined
   error: unknown
+  /** عدد القوالب في الصف على التليفون — من إعدادات الموقع (الافتراضي واحد) */
+  perRow?: 1 | 2
 }
 
-export function TemplatesSection({ templates, error }: Props) {
+export function TemplatesSection({ templates, error, perRow = 1 }: Props) {
   const { t } = useTranslation()
   return (
     <section className="section" id="templates">
@@ -103,7 +105,7 @@ export function TemplatesSection({ templates, error }: Props) {
           <h2>{t('public.templates.title')}</h2>
           <p>{t('public.templates.sub')}</p>
         </div>
-        <div className="grid grid--4">
+        <div className="grid grid--4" data-per-row={perRow}>
           {templates?.map((template) => <HomeTemplateCard key={template.id} template={template} />)}
           {templates?.length === 0 && <p className="empty">{t('public.templates.empty')}</p>}
           {!!error && (

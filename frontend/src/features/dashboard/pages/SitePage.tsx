@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 import { useSaveSiteSettings, useSiteSettings } from '../api'
 import type { SiteValues } from '../types'
-import { CheckField, ErrorList, TextField, useFormErrors } from '../ui/forms'
+import { CheckField, ErrorList, SelectField, TextField, useFormErrors } from '../ui/forms'
 import { PageHead, usePageTitle } from '../ui/page'
 import { QueryState } from '../ui/table'
 import { useToast } from '../ui/Toast'
@@ -26,6 +26,7 @@ export function SitePage() {
     const flag = (key: keyof SiteValues) => values.has(key)
     const body: SiteValues = {
       plansPublic: flag('plansPublic'),
+      homeTemplatesPerRow: str(values, 'homeTemplatesPerRow') === '2' ? 2 : 1,
       ordersEnabled: flag('ordersEnabled'),
       whatsappEnabled: flag('whatsappEnabled'),
       whatsappNumber: str(values, 'whatsappNumber'),
@@ -90,6 +91,17 @@ export function SitePage() {
               <form className="form" key={JSON.stringify(values)} onSubmit={onSubmit}>
                 <ErrorList message={errors.formError} nonField />
                 <CheckField name="plansPublic" label={t('dashboard.site.fields.plansPublic')} defaultChecked={values.plansPublic} />
+                <SelectField
+                  name="homeTemplatesPerRow"
+                  label={t('dashboard.site.fields.homeTemplatesPerRow')}
+                  defaultValue={String(values.homeTemplatesPerRow)}
+                  help={t('dashboard.site.homeTemplatesPerRowHelp')}
+                  helpSmall
+                  error={errors.fields.homeTemplatesPerRow}
+                >
+                  <option value="1">{t('dashboard.site.perRow.one')}</option>
+                  <option value="2">{t('dashboard.site.perRow.two')}</option>
+                </SelectField>
                 <CheckField name="ordersEnabled" label={t('dashboard.site.fields.ordersEnabled')} defaultChecked={values.ordersEnabled} />
                 <CheckField name="whatsappEnabled" label={t('dashboard.site.fields.whatsappEnabled')} defaultChecked={values.whatsappEnabled} />
                 <TextField

@@ -206,6 +206,13 @@
     "meta": "{{blocks}} sections · used {{uses}} times",
     "empty": "Empty",
     "none": "No templates yet.",
+    "noneFiltered": "No templates match this filter.",
+    "filter": {
+      "label": "Show templates",
+      "all": "All ({{n}})",
+      "visible": "Visible ({{n}})",
+      "hidden": "Hidden ({{n}})"
+    },
     "actions": "Actions",
     "edit": "Edit template",
     "editData": "Edit data",
@@ -439,8 +446,14 @@
     "warningBody": "There is no <strong>WhatsApp number</strong> or <strong>Facebook link</strong>, so the bar would be text without a button — and the page hides it entirely. Fill in one of them below and save, and it shows up right away in any template preview.",
     "barTitle": "“Like the template?” bar",
     "barBody": "It appears at the bottom of the <strong>template preview</strong> only — not in a client invitation. The visitor taps WhatsApp and you receive a ready message with <strong>the name of the template they're looking at</strong>, so they don't need to describe anything.",
+    "homeTemplatesPerRowHelp": "Only affects the templates section of the home page on phones — desktop and tablet stay the same.",
+    "perRow": {
+      "one": "One template per row",
+      "two": "Two templates side by side"
+    },
     "fields": {
       "plansPublic": "Show plans and prices on the site",
+      "homeTemplatesPerRow": "Templates per row (phone)",
       "ordersEnabled": "“Order your invitation” form on the site",
       "whatsappEnabled": "Show WhatsApp",
       "whatsappNumber": "WhatsApp number",

@@ -103,9 +103,22 @@ function FileVideo({
       })
     }
 
+    // الفيديو التلقائي مابيقفش بلمسة الضيف: بعض المتصفحات (متصفحات التطبيقات وسامسونج)
+    // بتبدّل التشغيل/الإيقاف بلمسة على أي فيديو — لو وقف وهو على الشاشة نكمّله فوراً.
+    // الإيقاف الوحيد المقصود هو لما القسم يعدّي من الشاشة (visible=false قبل pause)
+    let visible = false
+    const resume = () => {
+      window.setTimeout(() => {
+        if (visible && v.paused && !v.ended) tryPlay()
+      }, 0)
+    }
+
     // مانشغّلش كل فيديوهات الدعوة مع بعض: بيبدأ لما القسم يوصل للشاشة ويقف لما يعدّي
     const watch = () => {
+      v.addEventListener('pause', resume)
+      cleanup.push(() => v.removeEventListener('pause', resume))
       if (typeof IntersectionObserver !== 'function') {
+        visible = true
         setWanted(v, true)
         tryPlay()
         return
@@ -113,6 +126,7 @@ function FileVideo({
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((en) => {
+            visible = en.isIntersecting
             if (en.isIntersecting) {
               setWanted(v, true)
               tryPlay()
@@ -158,15 +172,18 @@ function FileVideo({
     }
 
     // الفيديو من غير شريط تحكم دايماً: اللمسة عليه بتشغّله لو واقف (الفيديو غير التلقائي
-    // ملوش طريقة تانية) — لكن مابتوقّفوش: الضغطة على فيديو شغّال ماتعملش حاجة
+    // ملوش طريقة تانية) — لكن مابتوقّفوش: الضغطة على فيديو شغّال ماتعملش حاجة.
+    // المستمع على الحاوية والعنصر نفسه ‎pointer-events:none‎ (invite.css) عشان اللمسة
+    // مانوصلش للفيديو أصلاً فمتصفح التطبيق ماتبدّلش تشغيله.
     const onClick = () => {
       if (!v.paused) return
       setWanted(v, true)
       tryPlay()
     }
-    v.style.cursor = 'pointer'
-    v.addEventListener('click', onClick)
-    cleanup.push(() => v.removeEventListener('click', onClick))
+    const tap = holderEl ?? v
+    tap.style.cursor = 'pointer'
+    tap.addEventListener('click', onClick)
+    cleanup.push(() => tap.removeEventListener('click', onClick))
 
     return () => {
       cleanup.forEach((fn) => fn())

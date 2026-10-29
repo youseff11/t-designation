@@ -71,6 +71,7 @@ def site_payload(request) -> dict:
         "email": settings.SITE_EMAIL,
         "ordersEnabled": cfg.orders_enabled,
         "plansPublic": cfg.plans_public,
+        "templatesPerRow": cfg.home_templates_per_row,
         "whatsapp": {
             # الزر العائم: رابط جاهز + الأساس والرسالة لنافذة الشات
             "floatReady": cfg.whatsapp_float_ready,

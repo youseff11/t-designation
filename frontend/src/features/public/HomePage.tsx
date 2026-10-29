@@ -55,7 +55,7 @@ export function HomePage() {
     <>
       <FxSky />
       <HeroSection plansPublic={site.plansPublic} hero={site.hero} />
-      <TemplatesSection templates={home.data?.templates} error={home.error} />
+      <TemplatesSection templates={home.data?.templates} error={home.error} perRow={site.templatesPerRow} />
       <FeaturesSection />
       {site.plansPublic && <PlansSection site={site} plans={home.data?.plans} />}
       <StepsSection />

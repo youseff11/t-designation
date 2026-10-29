@@ -768,7 +768,7 @@ class PlanTests(DashboardApiCase):
 class SiteTests(DashboardApiCase):
     def body(self, **extra):
         body = {
-            "plansPublic": True, "ordersEnabled": True,
+            "plansPublic": True, "homeTemplatesPerRow": 1, "ordersEnabled": True,
             "whatsappEnabled": True, "whatsappNumber": "+201000000000",
             "whatsappFloatEnabled": True, "whatsappCtaMessage": "أهلاً",
             "previewCtaEnabled": True, "previewCtaText": "عجبك القالب؟",
@@ -803,6 +803,19 @@ class SiteTests(DashboardApiCase):
         self.send("PUT", f"{BASE}/site/", body)
         cfg = SiteSetting.load()
         self.assertEqual((cfg.plans_public, cfg.orders_enabled), (False, False))
+
+    def test_templates_per_row_is_saved_validated_and_public(self):
+        self.assertEqual(self.get("/api/v1/site/").json()["templatesPerRow"], 1)
+        response = self.send("PUT", f"{BASE}/site/", self.body(homeTemplatesPerRow=2))
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()["values"]["homeTemplatesPerRow"], 2)
+        self.assertEqual(self.get("/api/v1/site/").json()["templatesPerRow"], 2)
+        # قيمة برّه الاختيارات مرفوضة، ومفتاح ناقص بيسيب القيمة الحالية
+        self.assertEqual(self.send("PUT", f"{BASE}/site/", self.body(homeTemplatesPerRow=3)).status_code, 400)
+        body = self.body()
+        del body["homeTemplatesPerRow"]
+        self.assertEqual(self.send("PUT", f"{BASE}/site/", body).status_code, 200)
+        self.assertEqual(SiteSetting.load().home_templates_per_row, 2)
 
     def test_cta_enabled_without_contact_is_not_ready(self):
         response = self.send("PUT", f"{BASE}/site/", self.body(

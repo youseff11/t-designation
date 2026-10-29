@@ -64,7 +64,10 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             if (event.target === event.currentTarget) settle(false)
           }}
         >
-          <div className="dash-dialog" role="alertdialog" aria-modal="true" aria-label={pending.message}>
+          <div className="dash-dialog dash-dialog--confirm" role="alertdialog" aria-modal="true" aria-label={pending.message}>
+            <span className={`dash-dialog-icon${pending.danger ? ' is-danger' : ''}`} aria-hidden="true">
+              {pending.danger ? '!' : '?'}
+            </span>
             <p>{pending.message}</p>
             <div className="dash-dialog-actions">
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => settle(false)}>

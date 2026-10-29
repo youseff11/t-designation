@@ -423,6 +423,21 @@
 .ed-form-stack { display: flex; flex-direction: column; gap: 12px; }
 .ed-modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
+/* ---- حوار التأكيد (بديل window.confirm) */
+.ed-confirm { z-index: 90; }
+.ed-confirm-card { width: min(380px, 100%); text-align: center; padding: 24px 22px 20px; box-shadow: var(--e-shadow-lg); animation: ed-in .18s ease; }
+.ed-confirm-icon {
+  display: grid; place-items: center; width: 46px; height: 46px; margin: 0 auto 14px;
+  border-radius: 50%; font-size: 22px; font-weight: 700; line-height: 1;
+  background: color-mix(in srgb, var(--e-accent) 16%, transparent); color: var(--e-accent);
+}
+.ed-confirm-icon.is-danger { background: color-mix(in srgb, var(--e-danger) 16%, transparent); color: var(--e-danger); }
+.ed-confirm-text { margin: 0 0 6px; font-size: 14.5px; line-height: 1.7; white-space: pre-line; }
+.ed-confirm .ed-modal-actions { justify-content: center; margin-top: 18px; }
+.ed-confirm .ed-btn { min-width: 96px; justify-content: center; }
+.ed-btn--danger-solid, .ed-btn--danger-solid:hover:not(:disabled) { background: var(--e-danger); border-color: var(--e-danger); color: #fff; font-weight: 600; }
+.ed-btn--danger-solid:hover:not(:disabled) { filter: brightness(1.08); }
+
 /* ---- مكتبة الملفات: الرأس والزراير ثابتين، والقايمة هي اللي بتتمرّر
 
    الزراير كانت آخر الكارت والكارت كله بيتمرّر، يعني عشان ترفع ملف

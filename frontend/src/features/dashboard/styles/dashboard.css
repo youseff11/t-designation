@@ -1550,6 +1550,34 @@ html[lang='en'] .dash-root .tpl-meta {
   gap: 10px;
   justify-content: flex-end;
 }
+/* حوار التأكيد: أيقونة فوق الرسالة وزراير في النص — بدل شكل رسالة المتصفح */
+.dash-dialog--confirm {
+  text-align: center;
+  padding: 26px 24px 20px;
+}
+.dash-dialog--confirm .dash-dialog-actions {
+  justify-content: center;
+}
+.dash-dialog--confirm .btn {
+  min-width: 100px;
+  justify-content: center;
+}
+.dash-dialog-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+.dash-dialog-icon.is-danger {
+  color: var(--danger);
+}
 
 /* ---------------------------------------------------------- الحركة المخفّضة */
 @media (prefers-reduced-motion: reduce) {

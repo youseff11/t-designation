@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { appPath } from '@/lib/appPath'
 
 import { useDeleteTemplate, useImportTemplate, useTemplatesList, useToggleTemplate } from '../api'
@@ -112,7 +112,26 @@ export function TemplatesPage() {
   const toast = useToast()
   const { data, isPending, isError } = useTemplatesList()
   const importer = useImportTemplate()
+  const [params, setParams] = useSearchParams()
   usePageTitle(t('dashboard.templates.pageTitle'))
+
+  const results = data?.results ?? []
+  const visibleCount = results.filter((template) => template.isActive).length
+  const hiddenCount = results.length - visibleCount
+  const view = params.get('show') === 'visible' || params.get('show') === 'hidden' ? params.get('show') : 'all'
+  const shown =
+    view === 'visible'
+      ? results.filter((template) => template.isActive)
+      : view === 'hidden'
+        ? results.filter((template) => !template.isActive)
+        : results
+
+  function setView(value: string) {
+    const next = new URLSearchParams(params)
+    if (value === 'all') next.delete('show')
+    else next.set('show', value)
+    setParams(next, { replace: true })
+  }
 
   function onImport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -194,8 +213,21 @@ export function TemplatesPage() {
 
       <QueryState loading={isPending} error={isError} />
       {data && (
+        <div className="toolbar" style={{ marginBottom: 16 }}>
+          <select
+            aria-label={t('dashboard.templates.filter.label')}
+            value={view ?? 'all'}
+            onChange={(event) => setView(event.target.value)}
+          >
+            <option value="all">{t('dashboard.templates.filter.all', { n: results.length })}</option>
+            <option value="visible">{t('dashboard.templates.filter.visible', { n: visibleCount })}</option>
+            <option value="hidden">{t('dashboard.templates.filter.hidden', { n: hiddenCount })}</option>
+          </select>
+        </div>
+      )}
+      {data && (
         <div className="grid grid--4">
-          {data.results.map((template) => (
+          {shown.map((template) => (
             <article className="tpl-card" key={template.id}>
               <div
                 className="tpl-cover"
@@ -218,7 +250,11 @@ export function TemplatesPage() {
               </div>
             </article>
           ))}
-          {data.results.length === 0 && <p className="empty">{t('dashboard.templates.none')}</p>}
+          {shown.length === 0 && (
+            <p className="empty">
+              {t(results.length === 0 ? 'dashboard.templates.none' : 'dashboard.templates.noneFiltered')}
+            </p>
+          )}
         </div>
       )}
     </>

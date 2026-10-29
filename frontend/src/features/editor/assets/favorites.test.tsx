@@ -4,6 +4,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { ApiError } from '@/api/client'
 import { initI18n } from '@/i18n'
 
+import { answerConfirm } from '../confirmTestUtil'
 import { BlocksPanel } from '../panels/BlocksPanel'
 import { InspectorPanel } from '../panels/InspectorPanel'
 import { resetEditor, useEditor } from '../store'
@@ -36,7 +37,6 @@ beforeAll(() => initI18n('ar'))
 beforeEach(() => {
   resetEditor()
   vi.clearAllMocks()
-  vi.spyOn(window, 'confirm').mockReturnValue(true)
   s().load(boot())
 })
 afterEach(() => vi.restoreAllMocks())
@@ -114,6 +114,7 @@ describe('FavoritesDialog', () => {
     mount(<FavoritesDialog schema={schema} onClose={() => {}} />)
     const row = (await screen.findByText('أول')).closest('.ed-favorite-row') as HTMLElement
     fireEvent.click(within(row).getByRole('button', { name: 'حذف' }))
+    await answerConfirm(true)
     await waitFor(() => expect(screen.queryByText('أول')).toBeNull())
     expect(deleteFavorite).toHaveBeenCalledWith(1)
     expect(screen.getByText('تاني')).toBeInTheDocument()
@@ -121,9 +122,9 @@ describe('FavoritesDialog', () => {
 
   it('does not delete when the confirmation is declined', async () => {
     fetchFavorites.mockResolvedValue({ favorites: [favorite(1, 'text', 'أول')] })
-    vi.mocked(window.confirm).mockReturnValue(false)
     mount(<FavoritesDialog schema={schema} onClose={() => {}} />)
     fireEvent.click(within((await screen.findByText('أول')).closest('.ed-favorite-row') as HTMLElement).getByRole('button', { name: 'حذف' }))
+    await answerConfirm(false)
     expect(deleteFavorite).not.toHaveBeenCalled()
   })
 
