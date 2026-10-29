@@ -42,7 +42,9 @@
     "title": "Carefully curated templates",
     "sub": "Elegant designs to begin the story of your special day.",
     "empty": "No templates published yet.",
-    "preview": "Preview template"
+    "preview": "Preview template",
+    "share": "Share this template on WhatsApp",
+    "shareText": "Take a look at the “{{name}}” invitation template:"
   },
   "features": {
     "eyebrow": "Features",
