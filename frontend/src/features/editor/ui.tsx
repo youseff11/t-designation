@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 
 export type ToastKind = 'ok' | 'error' | 'info'
@@ -92,9 +93,9 @@ export function EditorUiProvider({ children }: { children: ReactNode }) {
 
   const ui = useMemo<Ui>(() => ({ toast, confirm }), [toast, confirm])
 
-  return (
-    <UiContext.Provider value={ui}>
-      {children}
+  // متغيّرات --e-* متعرّفة على ‎.ed-root‎ بس: من غيرها الحوار والتنبيهات بيطلعوا من غير ألوان
+  const layer = (
+    <>
       <div className="ed-toasts" aria-live="polite">
         {items.map((item) => (
           <div key={item.id} className={`ed-toast${item.kind === 'info' ? '' : ` ed-toast--${item.kind}`}`} role={item.kind === 'error' ? 'alert' : 'status'}>
@@ -130,6 +131,13 @@ export function EditorUiProvider({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
+    </>
+  )
+
+  return (
+    <UiContext.Provider value={ui}>
+      {children}
+      {createPortal(layer, document.querySelector('.ed-root') ?? document.body)}
     </UiContext.Provider>
   )
 }
