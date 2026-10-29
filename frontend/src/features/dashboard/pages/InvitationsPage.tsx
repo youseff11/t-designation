@@ -1,9 +1,11 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import { appPath } from '@/lib/appPath'
 
 import { useDeleteInvitation, useDuplicateInvitation, useInvitations } from '../api'
 import type { InvitationFilters, InvitationRow } from '../types'
+import { ChangeCustomerDialog } from '../ui/ChangeCustomerDialog'
 import { useConfirm } from '../ui/ConfirmDialog'
 import { useLabels } from '../ui/labels'
 import { PageHead, Pill, usePageTitle } from '../ui/page'
@@ -20,6 +22,7 @@ export function InvitationsPage() {
   const [params, setParams] = useSearchParams()
   const duplicate = useDuplicateInvitation()
   const remove = useDeleteInvitation()
+  const [customerOf, setCustomerOf] = useState<InvitationRow | null>(null)
   usePageTitle(t('dashboard.invitations.pageTitle'))
 
   const filters: InvitationFilters = {
@@ -171,6 +174,9 @@ export function InvitationsPage() {
                     <RowMenuButton icon="⎘" onClick={() => onDuplicate(invitation)}>
                       {t('dashboard.invitations.menu.duplicate')}
                     </RowMenuButton>
+                    <RowMenuButton icon="✎" onClick={() => setCustomerOf(invitation)}>
+                      {t('dashboard.invitations.menu.changeCustomer')}
+                    </RowMenuButton>
                     <RowMenuButton icon="✕" danger onClick={() => void onDelete(invitation)}>
                       {t('dashboard.invitations.menu.delete')}
                     </RowMenuButton>
@@ -181,6 +187,7 @@ export function InvitationsPage() {
           ))}
         </Table>
       )}
+      {customerOf && <ChangeCustomerDialog invitation={customerOf} onClose={() => setCustomerOf(null)} />}
     </>
   )
 }

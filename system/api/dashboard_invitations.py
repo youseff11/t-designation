@@ -33,6 +33,7 @@ def _invitation_row(inv) -> dict:
         "id": inv.pk,
         "title": inv.title,
         "slug": inv.slug,
+        "customerId": inv.customer_id,
         "customerName": inv.customer.name,
         "templateName": inv.template.name,
         "status": inv.status,
@@ -103,6 +104,53 @@ def invitation_duplicate(request, pk):
         pk, Invitation.objects.select_related("customer", "template", "plan"))
     dup = _duplicate_invitation(src)
     return {"id": dup.pk, "title": dup.title, "sourceTitle": src.title}
+
+
+@staff_api("POST")
+def invitation_customer(request, pk):
+    """تغيير عميل دعوة: عميل موجود (‎customerId‎) أو اسم تاني (‎customerName‎).
+
+    الاسم بيعدّل سجل العميل الحالي لو الدعوة دي هي الوحيدة اللي بتستخدمه
+    (من غير طلبات)، وإلا بيتعمل عميل جديد — من غير ما اسم دعوة تانية يتغير.
+    """
+    inv = _get_or_404(pk, Invitation.objects.select_related("customer"))
+    data = json_body(request)
+
+    def text(key: str) -> str:
+        return str(data.get(key) or "").strip()
+
+    customer_id = text("customerId")
+    if customer_id:
+        customer = Customer.objects.filter(pk=customer_id).first() if customer_id.isdigit() else None
+        if customer is None:
+            raise ApiError(400, "validation_error", "العميل غير موجود.",
+                           fields={"customerId": "العميل غير موجود."})
+    else:
+        name = text("customerName")
+        if not name:
+            message = "اكتب اسم العميل أو اختر عميلاً موجوداً."
+            raise ApiError(400, "validation_error", message, fields={"customerName": message})
+        current = inv.customer
+        exclusive = (not Invitation.objects.filter(customer=current).exclude(pk=inv.pk).exists()
+                     and not current.orders.exists())
+        if exclusive:
+            customer = current
+            customer.name = name[:120]
+            if text("customerPhone"):
+                customer.phone = text("customerPhone")[:40]
+            if text("customerEmail"):
+                customer.email = text("customerEmail")[:200]
+            customer.save()
+        else:
+            customer = Customer.objects.create(
+                name=name[:120],
+                phone=text("customerPhone")[:40],
+                email=text("customerEmail")[:200],
+            )
+    if inv.customer_id != customer.pk:
+        inv.customer = customer
+        inv.save(update_fields=["customer", "updated_at"])
+    return {"id": inv.pk, "customerId": customer.pk, "customerName": customer.name}
 
 
 def _get_or_404(pk, queryset=None):
@@ -195,4 +243,6 @@ urlpatterns = [
          name="api_dashboard_invitation"),
     path("dashboard/invitations/<int:pk>/duplicate/", invitation_duplicate,
          name="api_dashboard_invitation_duplicate"),
+    path("dashboard/invitations/<int:pk>/customer/", invitation_customer,
+         name="api_dashboard_invitation_customer"),
 ]

@@ -8,6 +8,7 @@ import type {
   ClipRow,
   FontRow,
   InvitationCreateBody,
+  InvitationCustomerBody,
   InvitationFilters,
   InvitationOptions,
   InvitationsResponse,
@@ -121,6 +122,15 @@ export function useDuplicateInvitation() {
   return useInvalidatingMutation((id: number) =>
     api<{ id: number; title: string; sourceTitle: string }>(`/dashboard/invitations/${id}/duplicate/`, {
       method: 'POST',
+    }),
+  )
+}
+
+export function useChangeInvitationCustomer() {
+  return useInvalidatingMutation((vars: { id: number; body: InvitationCustomerBody }) =>
+    api<{ id: number; customerId: number; customerName: string }>(`/dashboard/invitations/${vars.id}/customer/`, {
+      method: 'POST',
+      body: vars.body,
     }),
   )
 }

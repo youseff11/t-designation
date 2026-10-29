@@ -64,6 +64,7 @@ export interface InvitationRow {
   id: number
   title: string
   slug: string
+  customerId: number
   customerName: string
   templateName: string
   status: string
@@ -109,6 +110,13 @@ export interface InvitationCreateBody {
   nameOne: string
   nameTwo: string
   eventType: string
+}
+
+export interface InvitationCustomerBody {
+  customerId: string
+  customerName: string
+  customerPhone: string
+  customerEmail: string
 }
 
 export interface TemplateRow {

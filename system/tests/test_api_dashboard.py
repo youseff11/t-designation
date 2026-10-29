@@ -34,6 +34,7 @@ def _endpoints(ids):
         ("GET", f"{BASE}/invitations/options/"),
         ("DELETE", f"{BASE}/invitations/{ids['invitation']}/"),
         ("POST", f"{BASE}/invitations/{ids['invitation']}/duplicate/"),
+        ("POST", f"{BASE}/invitations/{ids['invitation']}/customer/"),
         ("GET", f"{BASE}/templates/"),
         ("POST", f"{BASE}/templates/"),
         ("POST", f"{BASE}/templates/import/"),
@@ -269,6 +270,54 @@ class InvitationTests(DashboardApiCase):
         self.assertNotEqual(dup.slug, self.invitation.slug)
         self.assertEqual(response.json()["sourceTitle"], self.invitation.title)
         self.assertTrue(dup.title.endswith("(نسخة)"))
+
+    def test_duplicate_gets_its_own_customer(self):
+        """تغيير اسم عميل النسخة مايغيّرش اسم عميل الأصل."""
+        response = self.post(f"{BASE}/invitations/{self.invitation.pk}/duplicate/")
+        dup = Invitation.objects.get(pk=response.json()["id"])
+        original = self.invitation.customer
+        self.assertNotEqual(dup.customer_id, original.pk)
+        self.assertEqual((dup.customer.name, dup.customer.phone), (original.name, original.phone))
+        dup.customer.name = "اسم جديد"
+        dup.customer.save()
+        original.refresh_from_db()
+        self.assertNotEqual(original.name, "اسم جديد")
+
+    def test_change_customer_renames_exclusive_customer_in_place(self):
+        url = f"{BASE}/invitations/{self.invitation.pk}/customer/"
+        before = self.invitation.customer_id
+        response = self.post(url, {"customerName": "اسم جديد"})
+        self.assertEqual(response.status_code, 200)
+        self.invitation.refresh_from_db()
+        self.assertEqual(self.invitation.customer_id, before)
+        self.assertEqual(self.invitation.customer.name, "اسم جديد")
+
+    def test_change_customer_of_shared_customer_leaves_the_other_invitation(self):
+        dup = Invitation.objects.get(pk=self.post(
+            f"{BASE}/invitations/{self.invitation.pk}/duplicate/").json()["id"])
+        # الدعوتين على نفس العميل (زي ما كانت بتبقى قبل النسخ بعميل مستقل)
+        dup.customer = self.invitation.customer
+        dup.save()
+        original_name = self.invitation.customer.name
+        response = self.post(f"{BASE}/invitations/{dup.pk}/customer/", {"customerName": "عميل النسخة"})
+        self.assertEqual(response.status_code, 200)
+        dup.refresh_from_db()
+        self.invitation.refresh_from_db()
+        self.assertNotEqual(dup.customer_id, self.invitation.customer_id)
+        self.assertEqual(dup.customer.name, "عميل النسخة")
+        self.assertEqual(self.invitation.customer.name, original_name)
+
+    def test_change_customer_to_existing_one(self):
+        other = Customer.objects.create(name="عميل تاني", phone="0111")
+        response = self.post(f"{BASE}/invitations/{self.invitation.pk}/customer/", {"customerId": str(other.pk)})
+        self.assertEqual(response.status_code, 200)
+        self.invitation.refresh_from_db()
+        self.assertEqual(self.invitation.customer_id, other.pk)
+
+    def test_change_customer_validation(self):
+        url = f"{BASE}/invitations/{self.invitation.pk}/customer/"
+        self.assertEqual(self.post(url, {}).status_code, 400)
+        self.assertEqual(self.post(url, {"customerId": "999999"}).status_code, 400)
 
     def test_delete(self):
         response = self.send("DELETE", f"{BASE}/invitations/{self.invitation.pk}/")

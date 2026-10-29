@@ -23,7 +23,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.utils import timezone
 from . import blocks as blocks_engine
-from .models import Asset, CustomFont, FavoriteBlock, Invitation, SiteSetting, Template
+from .models import Asset, CustomFont, Customer, FavoriteBlock, Invitation, SiteSetting, Template
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models.fields.files import FieldFile
@@ -306,8 +306,13 @@ def _rsvp_answers(request, rsvp_props: dict) -> list[dict]:
 def _duplicate_invitation(src):
     """نسخة **دعوة** من دعوة موجودة (مش قالب).
 
-    بتاخد نفس العميل والقالب والباقة وبيانات المناسبة والمستند، وبتبدأ
-    مسودة برابط ورموز جديدة ومن غير ضيوف ولا ردود ولا مشاهدات.
+    بتاخد نفس القالب والباقة وبيانات المناسبة والمستند، وبتبدأ مسودة برابط
+    ورموز جديدة ومن غير ضيوف ولا ردود ولا مشاهدات.
+
+    العميل بيتنسخ **سجل جديد** بنفس البيانات (مش نفس السجل): لو النسخة
+    شاورت على نفس العميل، تغيير اسمه كان بيغيّره في الدعوة الأصلية كمان
+    ومحدش يقدر يفصل اسم النسخة عن الأصل. حساب الدخول (‎user‎) مابيتنسخش
+    لأنه ‎OneToOne‎.
 
     مكتبة الصور/الفيديو بتاعة الدعوة (‎Asset.invitation‎) بتتنسخ صفوف
     جديدة بتشاور على **نفس الملفات** — من غيرها النسخة كانت هتعرض
@@ -318,8 +323,12 @@ def _duplicate_invitation(src):
     import copy
 
     with transaction.atomic():
+        customer = Customer.objects.create(
+            name=src.customer.name, email=src.customer.email,
+            phone=src.customer.phone, notes=src.customer.notes,
+        )
         dup = Invitation.objects.create(
-            customer=src.customer, template=src.template, plan=src.plan,
+            customer=customer, template=src.template, plan=src.plan,
             title=f"{src.title} (نسخة)"[:180],
             status="draft",
             event_type=src.event_type, name_one=src.name_one, name_two=src.name_two,

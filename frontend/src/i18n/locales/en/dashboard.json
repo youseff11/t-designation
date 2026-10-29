@@ -146,7 +146,16 @@
       "copyVenue": "Copy venue link",
       "itself": "The invitation itself",
       "duplicate": "Duplicate invitation",
+      "changeCustomer": "Change customer",
       "delete": "Delete invitation"
+    },
+    "changeCustomer": {
+      "title": "Change the customer of “{{title}}”",
+      "existing": "Pick an existing customer",
+      "keepEditing": "— or edit the customer here —",
+      "hint": "If you pick an existing customer the name below is ignored. Editing the name never changes other invitations of the same customer.",
+      "save": "Save",
+      "saved": "Changed the customer of “{{title}}” to “{{name}}”."
     },
     "copied": "✓ Copied",
     "copyPrompt": "Copy the link:",
