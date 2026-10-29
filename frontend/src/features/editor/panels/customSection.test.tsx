@@ -222,6 +222,19 @@ describe('overlay selection', () => {
     expect(s().doc.blocks[0].props.text_overlays).toHaveLength(2)
   })
 
+  it('duplicateOverlay copies the selected overlay below the original, selects the copy, in one undo step', () => {
+    s().setProp('a', 'text_overlays', [{ kind: 'text', text: 'ا', color: '#f00', y: 10 }, { kind: 'text', text: 'ب' }])
+    s().selectOverlay('a', 0)
+    s().duplicateOverlay()
+    const list = s().doc.blocks[0].props.text_overlays as Array<Record<string, unknown>>
+    expect(list.map((o) => o.text)).toEqual(['ا', 'ا', 'ب'])
+    expect(list[1]).toMatchObject({ color: '#f00', y: 14 })
+    expect(list[0].y).toBe(10)
+    expect(s().selOverlay).toEqual({ blockId: 'a', index: 1 })
+    s().undo()
+    expect(s().doc.blocks[0].props.text_overlays).toHaveLength(2)
+  })
+
   it('drops the selection when undo makes its index disappear', () => {
     s().setProp('a', 'text_overlays', [])
     s().selectOverlay('a', 0)

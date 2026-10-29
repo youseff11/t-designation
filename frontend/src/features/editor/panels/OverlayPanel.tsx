@@ -17,6 +17,7 @@ export function OverlayPanel({ block, spec }: { block: DocBlock; spec: FieldSpec
   const sel = useEditor((s) => (s.selOverlay?.blockId === block.id ? s.selOverlay : null))
   const setProp = useEditor((s) => s.setProp)
   const removeOverlay = useEditor((s) => s.removeOverlay)
+  const duplicateOverlay = useEditor((s) => s.duplicateOverlay)
   const selectOverlay = useEditor((s) => s.selectOverlay)
   const styleIndex = useMemo(() => buildStyleIndex(spec.fields ?? []), [spec.fields])
 
@@ -49,6 +50,9 @@ export function OverlayPanel({ block, spec }: { block: DocBlock; spec: FieldSpec
         <div className="ed-ctrl-line">
           <button type="button" className="ed-btn ed-btn--sm" onClick={() => selectOverlay(block.id, null)}>
             {t('editorInline.overlays.done')}
+          </button>
+          <button type="button" className="ed-btn ed-btn--sm" title="Ctrl+D" onClick={duplicateOverlay}>
+            ⧉ {t('editorInline.overlays.duplicate')}
           </button>
           <button type="button" className="ed-btn ed-btn--sm ed-btn--danger" title="Delete" onClick={removeOverlay}>
             {t('editorInline.overlays.remove')}

@@ -27,6 +27,8 @@ import type {
 export const HISTORY_MAX = 60
 /** تعديلات متتالية على نفس الحقل خلال المدة دي = خطوة تراجع واحدة */
 export const COALESCE_MS = 900
+/** إزاحة نسخة العنصر فوق القسم عن الأصل (٪ رأسياً) */
+export const DUPLICATE_OFFSET = 4
 
 export type Tab = 'blocks' | 'inspector' | 'theme' | 'data' | 'i18n' | 'settings'
 export type SaveStatus = 'saved' | 'dirty' | 'saving' | 'error'
@@ -104,6 +106,8 @@ interface Actions {
   selectOverlay: (blockId: string, index: number | null) => void
   /** يمسح العنصر فوق القسم المحدَّد (خطوة تراجع واحدة) */
   removeOverlay: () => void
+  /** ينسخ العنصر فوق القسم المحدَّد بنفس تنسيقه، مزحزَح شوية عشان يبان، ويحدّد النسخة (خطوة تراجع واحدة) */
+  duplicateOverlay: () => void
   toggleBounds: (id: string) => void
   /** ‎props.html‎ لقسم مستورد من المعاينة: ‎silent‎ للترقيم التلقائي (من غير خطوة تراجع) */
   setHtml: (id: string, html: string, silent?: boolean) => void
@@ -360,6 +364,20 @@ export const useEditor = create<EditorState>()((set, get) => ({
       ),
     )
     set({ selOverlay: null })
+  },
+
+  duplicateOverlay: () => {
+    const sel = get().selOverlay
+    if (!sel) return
+    const list = findBlock(get().doc, sel.blockId)?.props.text_overlays
+    if (!Array.isArray(list) || !list[sel.index]) return
+    const source = list[sel.index] as Record<string, unknown>
+    // النسخة بتنزل تحت الأصل بشوية، وإلا هتقعد فوقه بالظبط والمستخدم مايحسّش إنها اتعملت
+    const copy = { ...JSON.parse(JSON.stringify(source)), y: (Number(source.y) || 0) + DUPLICATE_OFFSET }
+    const next = list.slice()
+    next.splice(sel.index + 1, 0, copy)
+    get().commit((d) => ops.setBlockProp(d, sel.blockId, 'text_overlays', next))
+    set({ selOverlay: { blockId: sel.blockId, index: sel.index + 1 } })
   },
 
   setHtml: (id, html, silent = false) => {

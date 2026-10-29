@@ -2,6 +2,7 @@ import type { TFunction } from 'i18next'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { DUPLICATE_OFFSET } from '../store'
 import type { AddVariant, FieldSpec, Props } from '../types'
 import { FieldRenderer, type FieldProps } from './registry'
 import { gearFor } from './textStyle'
@@ -90,7 +91,10 @@ export function ListBody({ spec, value, onChange }: FieldProps) {
               title={t('editor.fields.duplicate')}
               onClick={() => {
                 const next = items.slice()
-                next.splice(index + 1, 0, clone(item))
+                const copy = clone(item)
+                // عنصر فوق القسم: النسخة تنزل شوية عن الأصل وإلا هتقعد فوقه بالظبط
+                if (spec.key === 'text_overlays') copy.y = (Number(copy.y) || 0) + DUPLICATE_OFFSET
+                next.splice(index + 1, 0, copy)
                 replace(next)
               }}
             >

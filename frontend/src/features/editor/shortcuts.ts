@@ -54,6 +54,7 @@ export function useEditorShortcuts() {
         else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'c') element.copy()
         else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'v') element.paste(false)
         else if (state.selEl && !shiftKey && !isTyping(target) && lower === 'd') element.duplicate()
+        else if (state.selOverlay && !shiftKey && !isTyping(target) && lower === 'd') state.duplicateOverlay()
         else return false
         return true
       }

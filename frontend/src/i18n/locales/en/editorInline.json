@@ -205,6 +205,7 @@
     "unsupported": "This section does not accept elements on top of it.",
     "selected": "Element on the section",
     "done": "Done",
+    "duplicate": "Duplicate element",
     "remove": "Delete element",
     "hint": "Drag it anywhere with the mouse; the two handles on its sides change its width. Delete removes it.",
     "layers": {
