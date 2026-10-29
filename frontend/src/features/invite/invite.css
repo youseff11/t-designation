@@ -1591,8 +1591,10 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
   object-fit: cover; z-index: 0;
   background: center / cover no-repeat;
 }
-/* الافتتاحية كلها بتتلمس (ضغطة في أي مكان + دقّات الكود): تظليل اللمس الأزرق
-   الافتراضي في أندرويد كان بيومض فوق الشاشة كلها مع كل ضغطة */
+/* تظليل اللمس الأزرق الافتراضي في أندرويد كان بيومض فوق الشاشة كلها مع كل
+   ضغطة: في الافتتاحية (ضغطة في أي مكان + دقّات الكود) وفي الفيديو اللي بعدها */
+.lb-doc,
+.lb-doc *,
 .lb-intro,
 .lb-intro * { -webkit-tap-highlight-color: transparent; }
 .lb-intro-poster {
