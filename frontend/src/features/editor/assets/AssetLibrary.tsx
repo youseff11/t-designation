@@ -34,16 +34,42 @@ interface Upload {
   error: string
 }
 
-// ---------------------------------------------------------------- مكتبة مشتركة (موسيقى / افتتاحيات)
+// ---------------------------------------------------------------- مكتبة مشتركة (موسيقى / فيديوهات / افتتاحيات)
 type LibraryItem = (MusicRow | IntroRow) & { poster?: string; seconds?: number }
 
-function LibraryRow({ item, kind, onPick }: { item: LibraryItem; kind: 'audio' | 'video'; onPick: PickHandler }) {
+function AudioRow({ item, onPick }: { item: LibraryItem; onPick: PickHandler }) {
+  return (
+    <div className="ed-track">
+      <button type="button" className="ed-track-pick" title={item.note || item.name} onClick={() => onPick(item.url, {})}>
+        {item.name}
+      </button>
+      <audio src={item.url} controls preload="none" />
+    </div>
+  )
+}
+
+function SharedAudio({ onPick }: { onPick: PickHandler }) {
+  const { t } = useTranslation()
+  const items = useEditor((s) => s.lib.music) as LibraryItem[]
+  if (!items.length) return null
+  return (
+    <div className="ed-lib">
+      <p className="ed-lib-label">{t('editorAssets.audio.shared')}</p>
+      {items.map((item) => (
+        <AudioRow key={item.id} item={item} onPick={onPick} />
+      ))}
+      <p className="ed-lib-label">{t('editorAssets.ownOnly')}</p>
+    </div>
+  )
+}
+
+/** فيديو من مكتبة مشتركة: معاينة أول فريم (أو الغلاف) واسم. */
+function VideoCard({ item, onPick }: { item: IntroRow; onPick: PickHandler }) {
   const video = useRef<HTMLVideoElement>(null)
   const [busy, setBusy] = useState(false)
 
   const choose = async () => {
-    if (kind === 'audio') return onPick(item.url, {})
-    // لو الافتتاحية مالهاش غلاف محفوظ: نخلّي أول فريم هو الغلاف (بيتعرض ملء الشاشة)
+    // لو الفيديو مالوش غلاف محفوظ: نخلّي أول فريم هو الغلاف (بيتعرض ملء الشاشة)
     setBusy(true)
     const poster = item.poster || (video.current ? await waitForFrame(video.current) : '')
     setBusy(false)
@@ -51,40 +77,71 @@ function LibraryRow({ item, kind, onPick }: { item: LibraryItem; kind: 'audio' |
   }
 
   return (
-    <div className="ed-track">
-      <button type="button" className="ed-track-pick" title={item.note || item.name} disabled={busy} onClick={() => void choose()}>
-        {item.name}
-        {item.seconds ? ` · ${Math.round(item.seconds)}s` : ''}
-      </button>
-      {kind === 'audio' ? (
-        <audio src={item.url} controls preload="none" />
-      ) : (
+    <div className="ed-asset-wrap">
+      <button
+        type="button"
+        className="ed-asset ed-asset--file ed-asset--video-preview"
+        title={item.note || item.name}
+        disabled={busy}
+        onClick={() => void choose()}
+      >
         <video
           ref={video}
-          src={item.url}
+          src={`${item.url}#t=0.01`}
           poster={item.poster || undefined}
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           aria-hidden="true"
           disablePictureInPicture
         />
-      )}
+        <span className="ed-asset-name">
+          {item.name}
+          {item.seconds ? ` · ${Math.round(item.seconds)}s` : ''}
+        </span>
+      </button>
     </div>
   )
 }
 
-function SharedLibrary({ kind, onPick }: { kind: 'audio' | 'video'; onPick: PickHandler }) {
+type VideoSource = 'videos' | 'intros' | 'mine'
+
+/** أول شاشة في مكتبة الفيديو: «تجيب الفيديو منين؟» */
+function SourceChooser({ onChoose }: { onChoose: (source: VideoSource) => void }) {
   const { t } = useTranslation()
-  const items = useEditor((s) => (kind === 'audio' ? s.lib.music : s.lib.intros)) as LibraryItem[]
-  if (!items.length) return null
+  const videos = useEditor((s) => s.lib.videos)
+  const intros = useEditor((s) => s.lib.intros)
+  const options: { source: VideoSource; count?: number }[] = [
+    { source: 'videos', count: videos.length },
+    { source: 'intros', count: intros.length },
+    { source: 'mine' },
+  ]
   return (
-    <div className="ed-lib">
-      <p className="ed-lib-label">{t(`editorAssets.${kind}.shared`)}</p>
+    <div className="ed-source" role="group" aria-label={t('editorAssets.source.ask')}>
+      <p className="ed-source-ask">{t('editorAssets.source.ask')}</p>
+      <div className="ed-source-grid">
+        {options.map(({ source, count }) => (
+          <button key={source} type="button" className="ed-source-card" onClick={() => onChoose(source)}>
+            <strong>{t(`editorAssets.source.${source}`)}</strong>
+            <small>{t(`editorAssets.source.${source}Hint`)}</small>
+            {count !== undefined && <span className="ed-source-count">{count}</span>}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** معاينات فيديوهات مكتبة مشتركة (الفيديوهات أو الافتتاحيات). */
+function SharedVideos({ source, onPick }: { source: 'videos' | 'intros'; onPick: PickHandler }) {
+  const { t } = useTranslation()
+  const items = useEditor((s) => s.lib[source])
+  if (!items.length) return <p className="ed-empty">{t(`editorAssets.source.${source}Empty`)}</p>
+  return (
+    <div className="ed-assets ed-assets--roomy">
       {items.map((item) => (
-        <LibraryRow key={item.id} item={item} kind={kind} onPick={onPick} />
+        <VideoCard key={item.id} item={item} onPick={onPick} />
       ))}
-      <p className="ed-lib-label">{t('editorAssets.ownOnly')}</p>
     </div>
   )
 }
@@ -176,7 +233,7 @@ interface Props {
   onClose: () => void
 }
 
-/** مكتبة الأصول: شبكة بفلتر الاستخدام، رفع بتقدّم، اختيار متعدد وحذف جماعي، ومكتبات الموسيقى/الافتتاحيات المشتركة. */
+/** مكتبة الأصول: شبكة بفلتر الاستخدام، رفع بتقدّم، اختيار متعدد وحذف جماعي، ومكتبات الموسيقى/الفيديوهات/الافتتاحيات المشتركة. */
 export function AssetLibrary({ kind, onPick, onClose }: Props) {
   const { t } = useTranslation()
   const ui = useEditorUi()
@@ -192,6 +249,8 @@ export function AssetLibrary({ kind, onPick, onClose }: Props) {
   const [uploads, setUploads] = useState<Upload[]>([])
   const [busy, setBusy] = useState(false)
   const [deleting, setDeleting] = useState<number | null>(null)
+  // الفيديو بيسأل الأول «من مكتبة الفيديوهات ولا الافتتاحيات ولا ملفاتي؟»
+  const [source, setSource] = useState<VideoSource | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const counter = useRef(0)
 
@@ -291,21 +350,31 @@ export function AssetLibrary({ kind, onPick, onClose }: Props) {
   }
 
   const title = t(`editorAssets.${kind}.title`)
+  const choosing = kind === 'video' && source === null
+  const shared = kind === 'video' && (source === 'videos' || source === 'intros') ? source : null
+  const own = kind !== 'video' || source === 'mine'
   return (
     <Modal library label={title} onClose={onClose}>
       <h3>{title}</h3>
-      <p>{t(`editorAssets.${kind}.hint`)}</p>
+      {own && <p>{t(`editorAssets.${kind}.hint`)}</p>}
       <div className="ed-modal-actions ed-modal-actions--top">
-        <button type="button" className="ed-btn ed-btn--primary" onClick={() => input.current?.click()}>
-          {t('editorAssets.upload')}
-        </button>
+        {own && (
+          <button type="button" className="ed-btn ed-btn--primary" onClick={() => input.current?.click()}>
+            {t('editorAssets.upload')}
+          </button>
+        )}
+        {kind === 'video' && source !== null && (
+          <button type="button" className="ed-btn" onClick={() => setSource(null)}>
+            {t('editorAssets.source.back')}
+          </button>
+        )}
         <button type="button" className="ed-btn" onClick={onClose}>
           {t('editorAssets.close')}
         </button>
       </div>
       <input ref={input} type="file" accept={ACCEPT[kind]} multiple hidden data-testid="asset-file-input" onChange={(e) => onFiles(e.target.files)} />
 
-      {uploads.length > 0 && (
+      {own && uploads.length > 0 && (
         <ul className="ed-uploads" aria-live="polite">
           {uploads.map((upload) => (
             <li key={upload.key} className={upload.error ? 'is-error' : undefined}>
@@ -330,57 +399,61 @@ export function AssetLibrary({ kind, onPick, onClose }: Props) {
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault()
-          onFiles(e.dataTransfer.files)
+          if (own) onFiles(e.dataTransfer.files)
         }}
       >
-        {(kind === 'audio' || kind === 'video') && <SharedLibrary kind={kind} onPick={finish} />}
-        <div className="ed-assets">
-          {kind === 'image' && (
-            <select
-              className="ed-asset-filter"
-              aria-label={t('editorAssets.filter.label')}
-              value={usage}
-              onChange={(e) => {
-                setUsage(e.target.value as UsageFilter)
-                setSelected(new Set())
-              }}
-            >
-              <option value="all">{t('editorAssets.filter.all')}</option>
-              <option value="used">{t('editorAssets.filter.used')}</option>
-              <option value="unused">{t('editorAssets.filter.unused')}</option>
-            </select>
-          )}
-          {canDelete && (
-            <div className="ed-asset-bulk">
-              <span className="ed-asset-bulk-count">
-                {selected.size ? t(`editorAssets.${kind}.selected`, { count: selected.size }) : t('editorAssets.noneSelected')}
-              </span>
-              {showSelectAll && (
-                <button type="button" className="ed-btn ed-btn--sm" onClick={toggleAll}>
-                  {allSelected ? t('editorAssets.deselectAll') : t('editorAssets.selectAll')}
+        {choosing && <SourceChooser onChoose={setSource} />}
+        {shared && <SharedVideos source={shared} onPick={finish} />}
+        {kind === 'audio' && <SharedAudio onPick={finish} />}
+        {own && (
+          <div className="ed-assets">
+            {kind === 'image' && (
+              <select
+                className="ed-asset-filter"
+                aria-label={t('editorAssets.filter.label')}
+                value={usage}
+                onChange={(e) => {
+                  setUsage(e.target.value as UsageFilter)
+                  setSelected(new Set())
+                }}
+              >
+                <option value="all">{t('editorAssets.filter.all')}</option>
+                <option value="used">{t('editorAssets.filter.used')}</option>
+                <option value="unused">{t('editorAssets.filter.unused')}</option>
+              </select>
+            )}
+            {canDelete && (
+              <div className="ed-asset-bulk">
+                <span className="ed-asset-bulk-count">
+                  {selected.size ? t(`editorAssets.${kind}.selected`, { count: selected.size }) : t('editorAssets.noneSelected')}
+                </span>
+                {showSelectAll && (
+                  <button type="button" className="ed-btn ed-btn--sm" onClick={toggleAll}>
+                    {allSelected ? t('editorAssets.deselectAll') : t('editorAssets.selectAll')}
+                  </button>
+                )}
+                <button type="button" className="ed-btn ed-btn--sm ed-btn--danger" disabled={!selected.size || busy} onClick={() => void deleteSelected()}>
+                  {t('editorAssets.deleteSelected')}
                 </button>
-              )}
-              <button type="button" className="ed-btn ed-btn--sm ed-btn--danger" disabled={!selected.size || busy} onClick={() => void deleteSelected()}>
-                {t('editorAssets.deleteSelected')}
-              </button>
-            </div>
-          )}
-          {rows.length === 0 ? (
-            <p className="ed-empty">{t(`editorAssets.${kind}.empty`)}</p>
-          ) : (
-            rows.map((asset) => (
-              <AssetTile
-                key={asset.id}
-                asset={asset}
-                checked={selected.has(asset.id)}
-                deleting={deleting === asset.id}
-                onToggle={toggle}
-                onPick={(a) => finish(a.url, { poster: realThumb(a), thumb: realThumb(a) })}
-                onDelete={(a) => void deleteOne(a)}
-              />
-            ))
-          )}
-        </div>
+              </div>
+            )}
+            {rows.length === 0 ? (
+              <p className="ed-empty">{t(`editorAssets.${kind}.empty`)}</p>
+            ) : (
+              rows.map((asset) => (
+                <AssetTile
+                  key={asset.id}
+                  asset={asset}
+                  checked={selected.has(asset.id)}
+                  deleting={deleting === asset.id}
+                  onToggle={toggle}
+                  onPick={(a) => finish(a.url, { poster: realThumb(a), thumb: realThumb(a) })}
+                  onDelete={(a) => void deleteOne(a)}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
     </Modal>
   )

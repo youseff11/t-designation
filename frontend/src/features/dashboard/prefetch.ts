@@ -13,7 +13,7 @@ interface Target {
   data?: (client: QueryClient) => Promise<unknown>
 }
 
-const library = (kind: 'fonts' | 'music' | 'intros', chunk: () => Promise<unknown>): Target => ({
+const library = (kind: 'fonts' | 'music' | 'intros' | 'videos', chunk: () => Promise<unknown>): Target => ({
   chunk,
   data: (client) => client.prefetchQuery(dashQueries.library(kind)),
 })
@@ -32,6 +32,7 @@ const TARGETS: Record<string, Target> = {
   '/dashboard/fonts': library('fonts', () => import('./pages/FontsPage')),
   '/dashboard/music': library('music', () => import('./pages/MusicPage')),
   '/dashboard/intros': library('intros', () => import('./pages/IntrosPage')),
+  '/dashboard/videos': library('videos', () => import('./pages/VideosPage')),
   '/dashboard/data': { chunk: () => import('../dataadmin/DataHomePage'), data: (c) => c.prefetchQuery(catalogQuery()) },
 }
 

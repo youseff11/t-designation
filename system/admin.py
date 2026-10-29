@@ -197,6 +197,7 @@ class FavoriteBlockAdmin(admin.ModelAdmin):
 @admin.register(IntroVideo)
 class IntroVideoAdmin(admin.ModelAdmin):
 
-    list_display = ("name", "seconds", "is_active", "order", "created_at")
+    list_display = ("name", "library", "seconds", "is_active", "order", "created_at")
     list_editable = ("is_active", "order")
+    list_filter = ("library",)
     search_fields = ("name", "note")

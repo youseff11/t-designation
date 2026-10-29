@@ -46,9 +46,9 @@ describe('dashboard locales', () => {
       ...['builtin', 'editor', 'import'].map((v) => `sources.${v}`),
       ...['normal', 'italic'].map((v) => `fontStyles.${v}`),
       ...['زفاف', 'خطوبة', 'كتب كتاب', 'حنة', 'عيد ميلاد', 'تخرّج', 'عقيقة'].map((v) => `eventTypes.${v}`),
-      ...['home', 'invitations', 'templates', 'fonts', 'music', 'intros', 'orders', 'plans', 'analytics'].map((v) => `nav.${v}`),
+      ...['home', 'invitations', 'templates', 'fonts', 'music', 'videos', 'intros', 'orders', 'plans', 'analytics'].map((v) => `nav.${v}`),
       ...['invitations', 'published', 'ordersNew', 'customers', 'templates', 'guests', 'attending', 'views'].map((v) => `home.stats.${v}`),
-      ...['fonts', 'music', 'intros'].flatMap((kind) => ['confirmDelete', 'deleted', 'shownDone', 'hiddenDone'].map((v) => `${kind}.${v}`)),
+      ...['fonts', 'music', 'videos', 'intros'].flatMap((kind) => ['confirmDelete', 'deleted', 'shownDone', 'hiddenDone'].map((v) => `${kind}.${v}`)),
       ...['name', 'category', 'collection', 'slug', 'description', 'coverImage', 'coverUrl'].map((v) => `templateNew.fields.${v}`),
       ...['templates.shown', 'templates.hiddenDone', 'plans.addonSaved', 'plans.addonAdded', 'plans.enabled', 'plans.disabled'],
     ]

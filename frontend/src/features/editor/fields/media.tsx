@@ -34,6 +34,7 @@ export function MediaField({ spec, value, onChange, id }: FieldProps) {
   const [cropping, setCropping] = useState(false)
   const assets = useEditor((s) => s.lib.assets)
   const intros = useEditor((s) => s.lib.intros)
+  const videos = useEditor((s) => s.lib.videos)
   const isIntro = kind === 'video' && spec.key === INTRO_VIDEO_KEY
   const introPoster = useEditor((s) => (isIntro ? str(s.doc.settings.intro_poster) : ''))
 
@@ -41,7 +42,7 @@ export function MediaField({ spec, value, onChange, id }: FieldProps) {
   const asset = url ? assets.find((a) => a.url === url) : undefined
   let preview = ''
   if (kind === 'image') preview = url
-  else if (kind === 'video' && url) preview = introPoster || intros.find((i) => i.url === url)?.poster || realThumb(asset)
+  else if (kind === 'video' && url) preview = introPoster || [...intros, ...videos].find((i) => i.url === url)?.poster || realThumb(asset)
 
   const type = kind === 'image' ? 'image' : kind
   const pick: PickHandler = (picked, meta) => {

@@ -589,6 +589,11 @@ class IntroVideo(TimeStampedModel):
     ملفات مرفوعة لدعوة واحدة.
     """
 
+    LIBRARY_CHOICES = [("intros", "افتتاحيات"), ("videos", "فيديوهات")]
+
+    # نفس الجدول بيخدم المكتبتين: «النقل للافتتاحيات» مجرد تغيير الحقل ده.
+    library = models.CharField("المكتبة", max_length=10, choices=LIBRARY_CHOICES,
+                               default="intros", db_index=True)
     name = models.CharField("الاسم", max_length=120)
     file = models.FileField("الفيديو", upload_to="intro_videos/%Y/%m/", blank=True)
     poster = models.ImageField("صورة الغلاف", upload_to="intro_videos/%Y/%m/",

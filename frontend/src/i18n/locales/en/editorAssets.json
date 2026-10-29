@@ -13,6 +13,18 @@
   "selectAll": "Select all",
   "deselectAll": "Clear selection",
   "deleteSelected": "Delete selected",
+  "source": {
+    "ask": "Where do you want the video from?",
+    "videos": "Video library",
+    "videosHint": "Regular videos uploaded from the dashboard",
+    "videosEmpty": "The video library is empty — upload from Dashboard ← Library ← Videos.",
+    "intros": "Intro library",
+    "introsHint": "Ready-made intro videos",
+    "introsEmpty": "The intro library is empty — upload from Dashboard ← Library ← Intros.",
+    "mine": "Upload from your device",
+    "mineHint": "Files for this invitation only",
+    "back": "Back"
+  },
   "ownOnly": "Or upload a file for this invitation only",
   "image": {
     "title": "Image library",

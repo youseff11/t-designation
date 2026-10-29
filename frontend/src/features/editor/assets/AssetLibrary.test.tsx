@@ -29,6 +29,7 @@ const bulkDelete = vi.mocked(api.bulkDeleteAssets)
 const fetchAssets = vi.mocked(api.fetchAssets)
 
 const library = () => useEditor.getState().lib.assets
+const source = (name: string) => fireEvent.click(screen.getByRole('button', { name: new RegExp(name) }))
 const tiles = () => [...document.querySelectorAll<HTMLElement>('.ed-asset-wrap')].map((t) => Number(t.dataset.assetId))
 
 beforeAll(() => initI18n('ar'))
@@ -48,6 +49,9 @@ beforeEach(() => {
       music: [{ id: 1, name: 'نغمة الفرح', url: '/media/music/farah.mp3', note: '' }],
       intros: [
         { id: 1, name: 'افتتاحية ذهبية', url: '/media/intros/gold.mp4', poster: '/media/intros/gold.jpg', seconds: 4.4, note: '' },
+      ],
+      videos: [
+        { id: 7, name: 'فيديو الحنة', url: '/media/videos/henna.mp4', poster: '', seconds: 12, note: '' },
       ],
     }),
   )
@@ -88,6 +92,7 @@ describe('AssetLibrary — grid', () => {
   it('renders video tiles from the saved frame, or from the file when there is no thumbnail', () => {
     mount(<AssetLibrary kind="video" onClose={() => {}} />)
     expect(screen.getByRole('dialog', { name: 'مكتبة الفيديو' })).toBeInTheDocument()
+    source('رفع من جهازك')
     const withThumb = document.querySelector('[data-asset-id="4"] .ed-asset') as HTMLElement
     expect(withThumb.className).toContain('ed-asset--video-thumb')
     expect(withThumb.style.backgroundImage).toContain('poster.jpg')
@@ -100,6 +105,7 @@ describe('AssetLibrary — grid', () => {
     const onPick = vi.fn()
     const onClose = vi.fn()
     mount(<AssetLibrary kind="video" onPick={onPick} onClose={onClose} />)
+    source('رفع من جهازك')
     fireEvent.click(document.querySelector('[data-asset-id="4"] .ed-asset') as HTMLElement)
     expect(onPick).toHaveBeenCalledWith('/media/assets/2026/01/000000000004/v.mp4', {
       poster: '/media/assets/2026/01/000000000004/poster.jpg',
@@ -290,9 +296,51 @@ describe('AssetLibrary — shared libraries', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
-  it('video: lists the intro gallery and hands back its saved poster', async () => {
+  it('video: asks which library first, with the counts', () => {
+    mount(<AssetLibrary kind="video" onClose={() => {}} />)
+    expect(screen.getByText('تجيب الفيديو منين؟')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /مكتبة الفيديوهات/ })).toHaveTextContent('1')
+    expect(screen.getByRole('button', { name: /مكتبة الافتتاحيات/ })).toHaveTextContent('1')
+    // قبل الاختيار: مفيش شبكة ملفات ولا زر رفع
+    expect(document.querySelector('.ed-asset-wrap')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'رفع ملفات' })).not.toBeInTheDocument()
+  })
+
+  it('video: the video library shows previews and hands back the video (frame as poster)', async () => {
+    const onPick = vi.fn()
+    const onClose = vi.fn()
+    mount(<AssetLibrary kind="video" onPick={onPick} onClose={onClose} />)
+    source('مكتبة الفيديوهات')
+    const tile = screen.getByRole('button', { name: /فيديو الحنة · 12s/ })
+    expect(tile.querySelector('video')).not.toBeNull()
+    // الافتتاحيات مش ظاهرة هنا
+    expect(screen.queryByRole('button', { name: /افتتاحية ذهبية/ })).not.toBeInTheDocument()
+    fireEvent.click(tile)
+    // من غير غلاف محفوظ بنستنى أول فريم (حد أقصى ١.٨ ثانية في jsdom لأنه مابيحمّلش فيديو)
+    await waitFor(() => expect(onPick).toHaveBeenCalledWith('/media/videos/henna.mp4', expect.any(Object)), { timeout: 3000 })
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('video: can go back and choose another library', () => {
+    mount(<AssetLibrary kind="video" onClose={() => {}} />)
+    source('مكتبة الفيديوهات')
+    fireEvent.click(screen.getByRole('button', { name: 'رجوع' }))
+    source('مكتبة الافتتاحيات')
+    expect(screen.getByRole('button', { name: /افتتاحية ذهبية/ })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /فيديو الحنة/ })).not.toBeInTheDocument()
+  })
+
+  it('video: says so when a library is empty', () => {
+    useEditor.getState().load(boot({ videos: [] }))
+    mount(<AssetLibrary kind="video" onClose={() => {}} />)
+    source('مكتبة الفيديوهات')
+    expect(screen.getByText(/مكتبة الفيديوهات فاضية/)).toBeInTheDocument()
+  })
+
+  it('video: the intro library hands back its saved poster', async () => {
     const onPick = vi.fn()
     mount(<AssetLibrary kind="video" onPick={onPick} onClose={() => {}} />)
+    source('مكتبة الافتتاحيات')
     fireEvent.click(screen.getByRole('button', { name: /افتتاحية ذهبية · 4s/ }))
     await waitFor(() =>
       expect(onPick).toHaveBeenCalledWith('/media/intros/gold.mp4', { poster: '/media/intros/gold.jpg', thumb: '/media/intros/gold.jpg' }),

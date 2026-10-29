@@ -239,6 +239,8 @@ export interface Bootstrap {
   assets: AssetRow[]
   fonts: FontRow[]
   intros: IntroRow[]
+  /** مكتبة الفيديوهات العادية (غير الافتتاحيات) */
+  videos?: IntroRow[]
   music: MusicRow[]
   categories: { value: string; label: string }[]
   /** خيارات حالة الدعوة (من ‎Invitation.STATUS_CHOICES‎) — محرر الدعوة بس */

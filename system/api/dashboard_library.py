@@ -26,7 +26,7 @@ from .dashboard_common import (
     to_snake,
 )
 from .dashboard_music_dedupe import duplicate_extra
-from .http import ApiError
+from .http import ApiError, json_body
 
 AUDIO_EXTENSIONS = {".mp3", ".m4a", ".mp4", ".aac", ".ogg", ".oga", ".opus", ".wav", ".webm", ".flac"}
 VIDEO_EXTENSIONS = {".mp4", ".m4v", ".mov", ".webm"}
@@ -162,8 +162,7 @@ def _clip_row(clip) -> dict:
     }
 
 
-@staff_api("GET", "POST")
-def intros(request):
+def _clip_list(request, library: str):
     if request.method == "POST":
         data, files = _form_input(request, "file", "poster")
         check_upload(files["poster"], label="صورة الغلاف", limit=MAX_UPLOAD_BYTES)
@@ -173,6 +172,7 @@ def intros(request):
         if not form.is_valid():
             raise_invalid(form)
         clip = form.save(commit=False)
+        clip.library = library
         upload = form.cleaned_data.get("file")
         if upload:
             # نفس ضغط فيديو الافتتاحية بتاع الرفع من المحرر
@@ -192,20 +192,79 @@ def intros(request):
                 pass
         clip.save()
         return _clip_row(clip)
-    return {"results": [_clip_row(clip) for clip in IntroVideo.objects.all()]}
+    return {"results": [_clip_row(clip) for clip in IntroVideo.objects.filter(library=library)]}
 
 
-@staff_api("DELETE")
-def clip_detail(request, pk):
-    clip = _get_or_404(IntroVideo, pk)
+def _clip_detail(request, pk, library: str):
+    try:
+        clip = IntroVideo.objects.get(pk=pk, library=library)
+    except IntroVideo.DoesNotExist:
+        raise Http404("غير موجود.")
+    if request.method == "PATCH":
+        name = str(json_body(request).get("name") or "").strip()
+        limit = IntroVideo._meta.get_field("name").max_length
+        if not name or len(name) > limit:
+            message = "اكتب اسم للفيديو (حتى ١٢٠ حرف)."
+            raise ApiError(400, "validation_error", message, fields={"name": message})
+        clip.name = name
+        clip.save(update_fields=["name", "updated_at"])
+        return _clip_row(clip)
     name = clip.name
     clip.delete()
     return {"deleted": True, "name": name}
 
 
+def _clip_toggle(pk, library: str):
+    try:
+        clip = IntroVideo.objects.get(pk=pk, library=library)
+    except IntroVideo.DoesNotExist:
+        raise Http404("غير موجود.")
+    clip.is_active = not clip.is_active
+    clip.save(update_fields=["is_active", "updated_at"])
+    return _clip_row(clip)
+
+
+@staff_api("GET", "POST")
+def intros(request):
+    return _clip_list(request, "intros")
+
+
+@staff_api("PATCH", "DELETE")
+def clip_detail(request, pk):
+    return _clip_detail(request, pk, "intros")
+
+
 @staff_api("POST")
 def clip_toggle(request, pk):
-    return _clip_row(_toggle(IntroVideo, pk))
+    return _clip_toggle(pk, "intros")
+
+
+# ---------------------------------------------------------------- الفيديوهات العادية
+@staff_api("GET", "POST")
+def videos(request):
+    return _clip_list(request, "videos")
+
+
+@staff_api("PATCH", "DELETE")
+def video_detail(request, pk):
+    return _clip_detail(request, pk, "videos")
+
+
+@staff_api("POST")
+def video_toggle(request, pk):
+    return _clip_toggle(pk, "videos")
+
+
+@staff_api("POST")
+def video_move_to_intros(request, pk):
+    """ينقل الفيديو لمكتبة الافتتاحيات — بيختفي من الفيديوهات ويفضل في الافتتاحيات بس."""
+    try:
+        clip = IntroVideo.objects.get(pk=pk, library="videos")
+    except IntroVideo.DoesNotExist:
+        raise Http404("غير موجود.")
+    clip.library = "intros"
+    clip.save(update_fields=["library", "updated_at"])
+    return _clip_row(clip)
 
 
 urlpatterns = [
@@ -218,4 +277,8 @@ urlpatterns = [
     path("dashboard/intros/", intros, name="api_dashboard_intros"),
     path("dashboard/intros/<int:pk>/", clip_detail, name="api_dashboard_clip"),
     path("dashboard/intros/<int:pk>/toggle/", clip_toggle, name="api_dashboard_clip_toggle"),
+    path("dashboard/videos/", videos, name="api_dashboard_videos"),
+    path("dashboard/videos/<int:pk>/", video_detail, name="api_dashboard_video"),
+    path("dashboard/videos/<int:pk>/toggle/", video_toggle, name="api_dashboard_video_toggle"),
+    path("dashboard/videos/<int:pk>/move/", video_move_to_intros, name="api_dashboard_video_move"),
 ]

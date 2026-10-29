@@ -31,6 +31,7 @@
     "library": "Library",
     "fonts": "Fonts",
     "music": "Music",
+    "videos": "Videos",
     "intros": "Intros",
     "orders": "Orders",
     "plans": "Plans",
@@ -328,6 +329,31 @@
       "doneDocs": "{{docs}} documents were switched to the kept copy.",
       "doneFreed": "Freed {{size}} MB of disk space."
     }
+  },
+  "videos": {
+    "pageTitle": "Video library",
+    "title": "Video library",
+    "how": "Upload any video here once and you'll find it in the editor when you pick a video and choose <strong>From the video library</strong>. If a video works as an intro, press <strong>Move to intros</strong> and it disappears from here and stays only in the intro library.",
+    "howNote": "The video is compressed automatically on upload (720p) and the audio is kept.",
+    "listTitle": "Videos ({{n}})",
+    "none": "The library is empty — upload the first video from the side.",
+    "addTitle": "Add a video",
+    "added": "Added “{{name}}” to the video library.",
+    "confirmDelete": "Remove “{{name}}” from the library?",
+    "deleted": "Removed “{{name}}” from the library.",
+    "shownDone": "Showed “{{name}}” again.",
+    "hiddenDone": "Hid “{{name}}”.",
+    "moveToIntros": "Move to intros",
+    "confirmMove": "Move “{{name}}” to the intro library? It will disappear from the videos.",
+    "moved": "Moved “{{name}}” to the intro library."
+  },
+  "clips": {
+    "rename": "Rename",
+    "save": "Save",
+    "cancel": "Cancel",
+    "renamed": "Renamed to “{{name}}”.",
+    "nameLabel": "Video name",
+    "noPreview": "No preview"
   },
   "intros": {
     "pageTitle": "Intro library",

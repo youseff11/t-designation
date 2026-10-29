@@ -122,8 +122,16 @@ class BootstrapTests(EditorApiCase):
         self.assertEqual(data["meta"]["slug"], self.inv.slug)
         self.assertIn(self.inv.slug, data["meta"]["publicUrl"])
         self.assertEqual(data["meta"]["planName"], "أساسية")
-        for key in ("assets", "fonts", "intros", "music", "categories"):
+        for key in ("assets", "fonts", "intros", "videos", "music", "categories"):
             self.assertIsInstance(data[key], list, key)
+
+    def test_video_and_intro_libraries_are_split(self):
+        from system.models import IntroVideo
+        IntroVideo.objects.create(name="افتتاحية", library="intros", external_url="https://x.test/i.mp4")
+        IntroVideo.objects.create(name="فيديو", library="videos", external_url="https://x.test/v.mp4")
+        data = self.client.get(f"{BASE}/invitations/{self.inv.pk}/").json()
+        self.assertEqual([v["name"] for v in data["intros"]], ["افتتاحية"])
+        self.assertEqual([v["name"] for v in data["videos"]], ["فيديو"])
 
     def test_empty_invitation_document_falls_back_to_template(self):
         self.assertFalse(self.inv.get_document()["blocks"])

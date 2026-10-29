@@ -1082,3 +1082,24 @@
   justify-content: center; padding: 6px; border-style: dashed; background: transparent;
   color: var(--e-muted); font-size: 11.5px; letter-spacing: .02em;
 }
+
+/* ------------------------------------- اختيار مصدر الفيديو (فيديوهات / افتتاحيات / رفع) */
+.ed-source { display: grid; gap: 12px; }
+.ed-source-ask { margin: 0; font-size: 13.5px; font-weight: 600; }
+.ed-source-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.ed-source-card {
+  position: relative; display: grid; gap: 4px; align-content: start;
+  padding: 14px 12px; text-align: start; font: inherit; color: var(--e-text);
+  border: 1px solid var(--e-line); border-radius: 10px; background: var(--e-panel-2); cursor: pointer;
+}
+.ed-source-card:hover { border-color: var(--e-accent); }
+.ed-source-card strong { font-size: 13.5px; font-weight: 600; }
+.ed-source-card small { color: var(--e-muted); font-size: 11.5px; line-height: 1.45; }
+.ed-source-count {
+  position: absolute; inset-block-start: 10px; inset-inline-end: 10px;
+  min-width: 22px; padding: 1px 7px; border-radius: 999px; text-align: center;
+  background: var(--e-accent-dim); color: var(--e-accent); font-size: 11.5px; font-weight: 600;
+}
+/* معاينات المكتبة المشتركة: أكبر من مربعات الأصول وبنسبة عمودية */
+.ed-assets--roomy { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+.ed-assets--roomy .ed-asset { aspect-ratio: 4 / 5; }

@@ -178,12 +178,13 @@ export function useImportTemplate() {
 }
 
 // ---------------------------------------------------------------- المكتبات (خطوط / موسيقى / افتتاحيات)
-export type LibraryKind = 'fonts' | 'music' | 'intros'
+export type LibraryKind = 'fonts' | 'music' | 'intros' | 'videos'
 
 interface LibraryRows {
   fonts: FontRow
   music: TrackRow
   intros: ClipRow
+  videos: ClipRow
 }
 
 export function useLibrary<K extends LibraryKind>(kind: K) {
@@ -197,7 +198,14 @@ export function useLibrary<K extends LibraryKind>(kind: K) {
   const remove = useInvalidatingMutation((id: number) =>
     api<{ deleted: boolean; name: string }>(`${path}${id}/`, { method: 'DELETE' }),
   )
-  return { list, create, toggle, remove }
+  // إعادة التسمية (الافتتاحيات والفيديوهات) والنقل من الفيديوهات للافتتاحيات
+  const rename = useInvalidatingMutation(({ id, name }: { id: number; name: string }) =>
+    api<Row>(`${path}${id}/`, { method: 'PATCH', body: { name } }),
+  )
+  const moveToIntros = useInvalidatingMutation((id: number) =>
+    api<Row>(`${path}${id}/move/`, { method: 'POST' }),
+  )
+  return { list, create, toggle, remove, rename, moveToIntros }
 }
 
 /** مسح المقطوعات المكررة: ‎dryRun=true‎ بيرجّع الخطة من غير تغيير، وبعده التنفيذ الفعلي. */

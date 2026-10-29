@@ -71,6 +71,7 @@ export const boot = (extra: Partial<Bootstrap> = {}): Bootstrap => ({
   assets: [],
   fonts: [],
   intros: [],
+  videos: [],
   music: [],
   categories: [],
   meta: { slug: 's', status: 'draft', planName: '', templateName: '', publicUrl: '', clientFollowupUrl: '', backUrl: '' },

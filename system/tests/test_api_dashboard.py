@@ -666,6 +666,62 @@ class IntroTests(DashboardApiCase):
         self.assertEqual(IntroVideo.objects.count(), 0)
 
 
+class VideoLibraryTests(DashboardApiCase):
+    def setUp(self):
+        super().setUp()
+        self.video = IntroVideo.objects.create(
+            name="عادي", library="videos", external_url="https://example.com/a.mp4")
+
+    def test_libraries_are_separate(self):
+        videos = self.get(f"{BASE}/videos/").json()["results"]
+        intros = self.get(f"{BASE}/intros/").json()["results"]
+        self.assertEqual([r["name"] for r in videos], ["عادي"])
+        self.assertEqual([r["name"] for r in intros], ["افتتاحية"])
+
+    def test_upload_lands_in_the_videos_library(self):
+        response = self.upload(f"{BASE}/videos/", {
+            "name": "جديد", "externalUrl": "https://x.test/v.mp4", "note": "",
+            "isActive": "true", "order": "0"})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(IntroVideo.objects.get(pk=response.json()["id"]).library, "videos")
+
+    def test_move_to_intros_removes_it_from_videos(self):
+        response = self.post(f"{BASE}/videos/{self.video.pk}/move/")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(IntroVideo.objects.get(pk=self.video.pk).library, "intros")
+        self.assertEqual(self.get(f"{BASE}/videos/").json()["results"], [])
+        names = [r["name"] for r in self.get(f"{BASE}/intros/").json()["results"]]
+        self.assertIn("عادي", names)
+        # مرة تانية: مبقاش في الفيديوهات
+        self.assertEqual(self.post(f"{BASE}/videos/{self.video.pk}/move/").status_code, 404)
+
+    def test_rename_in_both_libraries(self):
+        for kind, pk in (("videos", self.video.pk), ("intros", self.clip.pk)):
+            response = self.send("PATCH", f"{BASE}/{kind}/{pk}/", {"name": "  اسم جديد "})
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(response.json()["name"], "اسم جديد")
+        self.assertEqual(IntroVideo.objects.get(pk=self.clip.pk).name, "اسم جديد")
+
+    def test_rename_rejects_blank_and_long(self):
+        for name in ("   ", "x" * 121):
+            response = self.send("PATCH", f"{BASE}/videos/{self.video.pk}/", {"name": name})
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("name", response.json()["error"]["fields"])
+
+    def test_cannot_touch_the_other_library(self):
+        self.assertEqual(self.send("PATCH", f"{BASE}/intros/{self.video.pk}/", {"name": "x"}).status_code, 404)
+        self.assertEqual(self.send("DELETE", f"{BASE}/videos/{self.clip.pk}/").status_code, 404)
+        self.assertEqual(self.post(f"{BASE}/videos/{self.clip.pk}/toggle/").status_code, 404)
+
+    def test_toggle_and_delete(self):
+        self.assertFalse(self.post(f"{BASE}/videos/{self.video.pk}/toggle/").json()["isActive"])
+        self.assertEqual(self.send("DELETE", f"{BASE}/videos/{self.video.pk}/").status_code, 200)
+
+    def test_needs_staff(self):
+        self.client.logout()
+        self.assertIn(self.client.get(f"{BASE}/videos/").status_code, (401, 403))
+
+
 # ---------------------------------------------------------------- الباقات
 class PlanTests(DashboardApiCase):
     def addon_body(self, **extra):

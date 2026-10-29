@@ -86,14 +86,19 @@ def _assets(invitation: Invitation | None) -> list[dict]:
     ]
 
 
+def _clip_library(library: str) -> list[dict]:
+    return [
+        {"id": v.pk, "name": v.name, "url": v.url, "poster": v.poster_url,
+         "seconds": v.seconds, "note": v.note}
+        for v in IntroVideo.objects.filter(is_active=True, library=library) if v.url
+    ]
+
+
 def _libraries() -> dict:
     return {
         "fonts": services._font_library_json(),  # noqa: SLF001
-        "intros": [
-            {"id": v.pk, "name": v.name, "url": v.url, "poster": v.poster_url,
-             "seconds": v.seconds, "note": v.note}
-            for v in IntroVideo.objects.filter(is_active=True) if v.url
-        ],
+        "intros": _clip_library("intros"),
+        "videos": _clip_library("videos"),
         "music": [
             {"id": m.pk, "name": m.name, "url": m.url, "note": m.note}
             for m in MusicTrack.objects.filter(is_active=True) if m.url

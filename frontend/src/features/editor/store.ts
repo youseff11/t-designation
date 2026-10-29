@@ -41,6 +41,7 @@ export interface Libraries {
   assets: AssetRow[]
   fonts: FontRow[]
   intros: IntroRow[]
+  videos: IntroRow[]
   music: MusicRow[]
   categories: { value: string; label: string }[]
 }
@@ -186,7 +187,7 @@ const initial = (): Data => ({
   title: '',
   meta: null,
   features: [],
-  lib: { assets: [], fonts: [], intros: [], music: [], categories: [] },
+  lib: { assets: [], fonts: [], intros: [], videos: [], music: [], categories: [] },
   statusChoices: [],
   doc: emptyDoc(),
   fields: null,
@@ -303,6 +304,7 @@ export const useEditor = create<EditorState>()((set, get) => ({
         assets: boot.assets,
         fonts: boot.fonts,
         intros: boot.intros,
+        videos: boot.videos ?? [],
         music: boot.music,
         categories: boot.categories,
       },
