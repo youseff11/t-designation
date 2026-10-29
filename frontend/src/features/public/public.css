@@ -1199,27 +1199,6 @@ html.js [data-reveal].is-in { opacity: 1; transform: none; }
 }
 .tpl-card:hover .tpl-cover::after { opacity: 1; }
 
-/* زرار مشاركة القالب على واتساب: دايرة على ركن الغلاف، ظاهرة دايماً (التليفون مفيهوش hover) */
-.tpl-share {
-  position: absolute; top: 10px; inset-inline-end: 10px; z-index: 2;
-  display: grid; place-items: center; width: 38px; height: 38px; padding: 0;
-  border: 1px solid rgba(255, 255, 255, .55); border-radius: 50%;
-  background: rgba(20, 20, 20, .5); color: #fff; cursor: pointer;
-  backdrop-filter: blur(4px); -webkit-tap-highlight-color: transparent;
-  transition: background .2s ease, transform .2s ease;
-}
-.tpl-share svg {
-  width: 18px; height: 18px; fill: none; stroke: currentColor;
-  stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-}
-.tpl-share svg circle { fill: currentColor; stroke: none; }
-.tpl-share:hover, .tpl-share:focus-visible { background: #25d366; transform: scale(1.08); }
-.tpl-share:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-@media (max-width: 600px) {
-  #templates .grid--4[data-per-row="2"] .tpl-share { width: 32px; height: 32px; top: 6px; inset-inline-end: 6px; }
-  #templates .grid--4[data-per-row="2"] .tpl-share svg { width: 15px; height: 15px; }
-}
-
 .feature-card {
   /* من غير ‎backdrop-filter‎: بيجبر المتصفح يقرا ويموّه اللي ورا كل كارت
      من تاني مع كل فريم سكرول، ومكانش بيبان منه حاجة أصلاً فوق خلفية سادة. */

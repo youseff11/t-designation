@@ -71,6 +71,11 @@
     "unavailable": "This invitation isn't available.",
     "retry": "Try again"
   },
+  "templateShare": {
+    "label": "Share this template on WhatsApp",
+    "text": "Take a look at the “{name}” invitation template:",
+    "textPlain": "Take a look at this invitation template:"
+  },
   "cta": {
     "whatsapp": "Request this template on WhatsApp",
     "facebook": "Our Facebook page"

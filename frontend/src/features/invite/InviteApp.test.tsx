@@ -48,6 +48,26 @@ describe('InviteApp', () => {
     await waitFor(() => expect(watched.has(document.querySelector('section#video-1')!)).toBe(true))
   })
 
+  it('template preview has a WhatsApp share button; a real invitation does not', () => {
+    const open = vi.spyOn(window, 'open').mockReturnValue(null)
+    window.history.replaceState({}, '', '/templates/golden-night/preview/')
+    const cta = { text: 'عجبك القالب؟', template_name: 'ليلة ذهبية', whatsapp: '', facebook: '' }
+    const { unmount } = render(
+      <InviteApp boot={{ mode: 'view', ...payload({ kind: 'template', cta, blocks: [hero('ليلى')] }) }} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'مشاركة القالب على واتساب' }))
+    const url = new URL(String(open.mock.calls[0][0]))
+    expect(url.origin + url.pathname).toBe('https://wa.me/')
+    const text = url.searchParams.get('text') ?? ''
+    expect(text).toContain('ليلة ذهبية')
+    expect(text).toContain(`${window.location.origin}/templates/golden-night/preview/`)
+    unmount()
+
+    render(<InviteApp boot={{ mode: 'view', ...payload({ blocks: [hero('ليلى')] }) }} />)
+    expect(document.querySelector('[data-template-share]')).toBeNull()
+    open.mockRestore()
+  })
+
   it('skips unknown block types instead of crashing', () => {
     render(<InviteApp boot={{ mode: 'view', ...payload({ blocks: [block('from-the-future'), hero('ليلى')] }) }} />)
     expect(document.querySelectorAll('[data-block]').length).toBe(1)

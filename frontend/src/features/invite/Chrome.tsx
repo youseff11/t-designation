@@ -35,6 +35,29 @@ export function LangToggle({
   )
 }
 
+/** زرار مشاركة معاينة القالب على واتساب — ركن علوي، بيظهر في معاينة القالب بس. */
+export function PreviewShare({ name }: { name: string }) {
+  const { t } = useInvite()
+  const label = t('templateShare.label')
+  const share = () => {
+    // الرابط من غير ‎#‎ عشان اللي بيفتحه يبدأ من أول الصفحة
+    const url = `${location.origin}${location.pathname}${location.search}`
+    const text = name ? t('templateShare.text', { name }) : t('templateShare.textPlain')
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${text}
+${url}`)}`, '_blank', 'noopener')
+  }
+  return (
+    <button type="button" className="lb-share-fab" data-template-share aria-label={label} title={label} onClick={share}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="18" cy="5" r="2.6" />
+        <circle cx="6" cy="12" r="2.6" />
+        <circle cx="18" cy="19" r="2.6" />
+        <path d="m8.3 10.8 7.4-4.3M8.3 13.2l7.4 4.3" />
+      </svg>
+    </button>
+  )
+}
+
 /** شريط «عجبك القالب؟» — بيظهر في معاينة القالب بس. */
 export function PreviewCtaBar({ cta }: { cta: PreviewCta }) {
   const { t } = useInvite()

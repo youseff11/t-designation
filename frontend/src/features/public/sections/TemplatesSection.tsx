@@ -5,32 +5,6 @@ import { ApiError } from '@/api/client'
 import { firstChar, pick, truncateChars, useLang } from '../text'
 import type { PublicTemplate } from '../types'
 
-/** رابط واتساب جاهز: نص قصير + رابط معاينة القالب (wa.me بيفتح التطبيق على الموبايل وواتساب ويب على الكمبيوتر). */
-function whatsappShareUrl(text: string, url: string) {
-  return `https://wa.me/?text=${encodeURIComponent(`${text}
-${url}`)}`
-}
-
-/** زرار مشاركة على ركن الغلاف — مش جوّه رابط فالضغطة عليه ماتفتحش المعاينة. */
-function ShareButton({ template, name }: { template: PublicTemplate; name: string }) {
-  const { t } = useTranslation()
-  const label = t('public.templates.share')
-  const onShare = () => {
-    const url = `${window.location.origin}${previewPath(template)}`
-    window.open(whatsappShareUrl(t('public.templates.shareText', { name }), url), '_blank', 'noopener')
-  }
-  return (
-    <button type="button" className="tpl-share" aria-label={label} title={label} onClick={onShare}>
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <circle cx="18" cy="5" r="2.6" />
-        <circle cx="6" cy="12" r="2.6" />
-        <circle cx="18" cy="19" r="2.6" />
-        <path d="m8.3 10.8 7.4-4.3M8.3 13.2l7.4 4.3" />
-      </svg>
-    </button>
-  )
-}
-
 /** الغلاف: صورة لو فيه، وإلا أول حرف من الاسم. ‎JSON.stringify‎ بيهرّب أي علامة اقتباس في الرابط. */
 function Cover({ template, name }: { template: PublicTemplate; name: string }) {
   return (
@@ -39,7 +13,6 @@ function Cover({ template, name }: { template: PublicTemplate; name: string }) {
       style={template.cover ? { backgroundImage: `url(${JSON.stringify(template.cover)})` } : undefined}
     >
       {!template.cover && firstChar(name)}
-      <ShareButton template={template} name={name} />
     </div>
   )
 }

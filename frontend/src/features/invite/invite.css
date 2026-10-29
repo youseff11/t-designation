@@ -1856,6 +1856,28 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
    لازم يلاقي التبديل من أول شاشة، مش بعد ما يفتح الدعوة.
    مستمع «اضغط في أي حتة» متربط على ‎.lb-intro‎ نفسها، والزرار أخوها
    مش ابنها — فالضغط عليه مابيفتحش الدعوة بالغلط. */
+/* زرار مشاركة معاينة القالب: الركن المقابل لزرار اللغة، فوق الافتتاحية كمان */
+.lb-share-fab {
+  position: fixed; z-index: 95;
+  inset-block-start: 16px; inset-inline-end: 16px;
+  inline-size: 42px; block-size: 42px; padding: 0;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 8px 22px -12px rgba(0, 0, 0, .45);
+  transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+.lb-share-fab svg { inline-size: 19px; block-size: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lb-share-fab svg circle { fill: currentColor; stroke: none; }
+.lb-share-fab:hover { transform: translateY(-1px); background: #25d366; color: #fff; border-color: #25d366; }
+.lb-share-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 480px) {
+  .lb-share-fab { inset-block-start: 12px; inset-inline-end: 12px; inline-size: 38px; block-size: 38px; }
+}
+@media print { .lb-share-fab { display: none !important; } }
+
 .lb-intro:not(.is-open) ~ .lb-lang {
   /* خلفية الافتتاحية ممكن تكون صورة أو فيديو — نضبّب اللي ورا الزرار
      عشان يفضل مقروء فوق أي حاجة. */
