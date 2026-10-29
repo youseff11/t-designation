@@ -59,6 +59,8 @@ export function Intro({ data }: { data: IntroData }) {
   const [awaiting, setAwaiting] = useState(manual)
   const [blocked, setBlocked] = useState(false)
   const [gone, setGone] = useState(false)
+  // الغلاف صورة لوحدها تحت الفيديو، والفيديو مخفي لحد أول فريم بيتشغّل فعلاً
+  const [live, setLive] = useState(false)
 
   useEffect(() => {
     const intro = root.current
@@ -105,7 +107,17 @@ export function Intro({ data }: { data: IntroData }) {
 
     let startManual: (() => void) | null = null
     if (vid) {
-      if (!data.poster) {
+      if (data.poster) {
+        const show = () => setLive(true)
+        const onPlaying = () => {
+          // ‎playing‎ بيجي قبل ما أول فريم يترسم؛ نستنى الفريم عشان الغلاف مايتشالش على فراغ
+          if ('requestVideoFrameCallback' in vid) vid.requestVideoFrameCallback(show)
+          else window.setTimeout(show, 120)
+        }
+        vid.addEventListener('playing', onPlaying, { once: true })
+        cleanup.push(() => vid.removeEventListener('playing', onPlaying))
+        if (!vid.paused) onPlaying()
+      } else {
         // مفيش صورة غلاف: نلتقط أول فريم من الفيديو ونستخدمه كغلاف
         vid.preload = 'auto'
         const capture = () => {
@@ -248,9 +260,11 @@ export function Intro({ data }: { data: IntroData }) {
   if (awaiting) cls.push('is-awaiting-play')
   if (blocked) cls.push('is-video-blocked')
   const items = data.itemStyles
-  // أول ما play() يتنادى المتصفح بيشيل الغلاف قبل ما أول فريم يترسم، فبتظهر
-  // ومضة بلون الصفحة. الغلاف نفسه كخلفية للفيديو بيسد الفجوة دي.
-  const videoStyle = data.poster ? { backgroundImage: `url(${JSON.stringify(data.poster)})` } : undefined
+  // الغلاف ‎<img>‎ عادية تحت الفيديو، مش خاصية ‎poster‎ ولا خلفية: لما الاتنين كانوا
+  // مع بعض المتصفح كان بيبدّل بينهم مع كل ضغطة (حركة الدقّة بترفع الطبقة) فبتظهر
+  // وميض بين لونين. دلوقتي مصدر واحد ثابت، والفيديو بيظهر بعد أول فريم بيتشغّل.
+  const poster = data.poster ? <img className="lb-intro-poster" src={data.poster} alt="" aria-hidden="true" /> : null
+  const videoLive = data.poster ? (live ? '1' : '0') : undefined
 
   return (
     <div
@@ -259,6 +273,7 @@ export function Intro({ data }: { data: IntroData }) {
       data-intro-auto={data.seconds ? String(data.seconds) : undefined}
       style={parseStyle(data.style)}
     >
+      {data.video && poster}
       {data.video &&
         (manual ? (
           <video
@@ -267,9 +282,8 @@ export function Intro({ data }: { data: IntroData }) {
             data-intro-video
             data-intro-manual
             data-intro-audio={data.audio}
+            data-live={videoLive}
             src={data.video}
-            poster={data.poster || undefined}
-            style={videoStyle}
             muted={data.audio !== 'sound'}
             playsInline
             preload="auto"
@@ -280,9 +294,8 @@ export function Intro({ data }: { data: IntroData }) {
             className="lb-intro-video"
             data-intro-video
             data-intro-audio={data.audio}
+            data-live={videoLive}
             src={data.video}
-            poster={data.poster || undefined}
-            style={videoStyle}
             autoPlay={!selfPlay}
             muted={data.audio !== 'sound'}
             playsInline

@@ -97,6 +97,24 @@ describe('Intro', () => {
     })
   })
 
+  it('shows the cover as one plain image and reveals the video only once it plays', () => {
+    HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined)
+    HTMLMediaElement.prototype.pause = vi.fn()
+    HTMLMediaElement.prototype.load = vi.fn()
+    const { container } = renderIntro(intro({ video: '/v.mp4', poster: '/p.png', playMode: 'button' }))
+    const video = container.querySelector('video')!
+    // مصدر واحد للغلاف: مفيش poster ولا خلفية على الفيديو يتبدّلوا مع الضغط
+    expect(container.querySelector('img.lb-intro-poster')!.getAttribute('src')).toBe('/p.png')
+    expect(video.hasAttribute('poster')).toBe(false)
+    expect(video.style.backgroundImage).toBe('')
+    expect(video.getAttribute('data-live')).toBe('0')
+    act(() => {
+      fireEvent(video, new Event('playing'))
+      vi.advanceTimersByTime(200)
+    })
+    expect(video.getAttribute('data-live')).toBe('1')
+  })
+
   it('manual video mode waits for the play button and keeps the auto timer paused', () => {
     HTMLMediaElement.prototype.play = vi.fn().mockResolvedValue(undefined)
     HTMLMediaElement.prototype.pause = vi.fn()
