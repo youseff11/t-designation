@@ -60,7 +60,7 @@ _PROP_KEYS: dict[str, tuple[str, ...]] = {
                  "map_height", "directions_label", "notes"),
     "gallery": ("heading", "images", "layout", "columns", "gap",
                 "image_radius", "aspect", "lightbox"),
-    "image": ("src", "caption", "frame", "max_width"),
+    "image": ("src", "caption", "frame", "max_width", "opacity"),
     "video": ("url", "poster", "heading", "aspect", "autoplay", "sound", "loop"),
     "rsvp": ("heading", "eyebrow", "intro", "name_label", "phone_label",
              "companions_label", "message_label", "status_label",

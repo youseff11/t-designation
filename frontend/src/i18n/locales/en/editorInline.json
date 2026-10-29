@@ -112,6 +112,7 @@
       "image": "Image",
       "imageWidth": "Image width",
       "imageRadius": "Corner radius",
+      "imageOpacity": "Opacity",
       "imageHint": "This is an image — font and text tools do not affect it, so they are hidden.",
       "weights": {
         "inherit": "As is",

@@ -476,6 +476,11 @@ def video_text_style(item):
     if kind == "image":
         radius = _ovl_num(item, "radius", 0.0, 200.0)
         style += f";--ovl-radius:{radius:g}px"
+        # عنصر قديم مالوش المفتاح = معتم كامل (مش ٥٪ — الحد الأدنى بيطبّق على القيمة المحفوظة بس)
+        if item.get("opacity") not in (None, ""):
+            opacity = _ovl_num(item, "opacity", 5.0, 100.0, 100.0)
+            if opacity < 100:
+                style += f";--ovl-opacity:{opacity / 100:g}"
     elif kind == "button":
         btn_size = _ovl_num(item, "btn_size", 0.0, 120.0)
         style += (

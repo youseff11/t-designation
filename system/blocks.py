@@ -400,6 +400,8 @@ SECTION_TEXT_OVERLAY_FIELD = field(
         _only(field("src", "الصورة", "image", ""), "image"),
         _only(field("radius", "استدارة الحواف", "range", 0,
                     minimum=0, maximum=200, step=2, unit="px"), "image"),
+        _only(field("opacity", "الشفافية", "range", 100,
+                    minimum=5, maximum=100, step=5, unit="%"), "image"),
 
         # ---- زرار
         _only(field("label", "نص الزرار", "text", ""), "button"),
@@ -957,6 +959,7 @@ register(
             opt("gold", "إطار ذهبي"),
         ]),
         field("max_width", "أقصى عرض", "range", 520, minimum=160, maximum=1200, step=20, unit="px"),
+        field("opacity", "الشفافية", "range", 100, minimum=5, maximum=100, step=5, unit="%"),
     ],
 )
 

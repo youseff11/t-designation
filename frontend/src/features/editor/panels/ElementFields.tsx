@@ -59,6 +59,8 @@ function styleFields(t: (key: string) => string, kind: NodeInfo['kind']): StyleF
       color('background-color', k('background')),
       range('width', k('imageWidth'), 10, 100, 1, '%'),
       range('border-radius', k('imageRadius'), 0, 200, 2, 'px'),
+      // بتتعرض ٪ وبتتكتب كسر (‎opacity:.6‎) — الاتنين في number()/write() تحت
+      range('opacity', k('imageOpacity'), 5, 100, 5, '%'),
     ]
   }
   if (kind === 'video') return [color('background-color', k('background'))]
@@ -171,6 +173,10 @@ export function ElementFields({ blockId, slot, info }: Props) {
 
   const computed = (prop: string) => computedValue(blockId, slot, prop)
   const number = (prop: StyleProp): number => {
+    if (prop === 'opacity') {
+      const fraction = parseFloat(info.styles.opacity)
+      return Number.isFinite(fraction) ? Math.round(fraction * 100) : 100
+    }
     const inline = cssNumber(info.styles[prop])
     if (inline !== null) return inline
     const size = cssNumber(computed('font-size')) ?? 16
@@ -206,6 +212,11 @@ export function ElementFields({ blockId, slot, info }: Props) {
   }
 
   const write = (item: StyleField, next: unknown) => {
+    if (item.prop === 'opacity') {
+      const percent = Number(next)
+      const css = !Number.isFinite(percent) || percent >= 100 ? '' : String(Math.max(5, percent) / 100)
+      return actions.edit({ kind: 'style', prop: 'opacity', value: css }, `el-style:${slot}:opacity`)
+    }
     const css = next === '' || next == null ? '' : `${next}${item.spec.type === 'range' ? item.unit : ''}`
     actions.edit({ kind: 'style', prop: item.prop, value: css }, `el-style:${slot}:${item.prop}`)
   }

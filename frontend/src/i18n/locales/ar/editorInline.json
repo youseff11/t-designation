@@ -112,6 +112,7 @@
       "image": "الصورة",
       "imageWidth": "عرض الصورة",
       "imageRadius": "استدارة الحواف",
+      "imageOpacity": "الشفافية",
       "imageHint": "دي صورة — أدوات الخط والنص مش بتأثر عليها فمخفية.",
       "weights": {
         "inherit": "زي ما هو",

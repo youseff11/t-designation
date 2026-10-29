@@ -395,11 +395,15 @@ interface ImageProps {
   caption?: string
   frame?: string
   max_width?: number
+  /** ٥–١٠٠ (٪) — الناقص أو ١٠٠ = معتمة */
+  opacity?: number
 }
 
 export function ImageBlock({ block }: { block: BlockData }) {
   const { t } = useInvite()
   const p = props<ImageProps>(block)
+  const opacity = Number(p.opacity)
+  const faded = opacity >= 5 && opacity < 100 ? { opacity: opacity / 100 } : undefined
   return (
     <Frame block={block}>
       {on(p.src) ? (
@@ -408,7 +412,7 @@ export function ImageBlock({ block }: { block: BlockData }) {
           className={`lb-figure lb-figure--${text(p.frame)}`}
           style={{ maxWidth: `${text(p.max_width)}px` }}
         >
-          <img src={p.src} alt={p.caption || ''} loading="lazy" />
+          <img src={p.src} alt={p.caption || ''} loading="lazy" style={faded} />
           {on(p.caption) && <figcaption data-ts="caption">{p.caption}</figcaption>}
         </figure>
       ) : (

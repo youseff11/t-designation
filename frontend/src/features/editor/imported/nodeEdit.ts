@@ -136,7 +136,7 @@ export function applyNodeEdit(root: Element, slot: string, edit: NodeEdit): bool
 /** خصائص التنسيق اللي اللوحة بتقراها من العقدة. */
 export const STYLE_PROPS = [
   'font-family', 'font-size', 'font-weight', 'text-align', 'color', 'background-color',
-  'letter-spacing', 'line-height', 'width', 'border-radius',
+  'letter-spacing', 'line-height', 'width', 'border-radius', 'opacity',
 ] as const
 export type StyleProp = (typeof STYLE_PROPS)[number]
 

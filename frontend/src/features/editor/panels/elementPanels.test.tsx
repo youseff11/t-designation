@@ -203,6 +203,15 @@ describe('ElementPanel content and style (S4a)', () => {
     fireEvent.change(field(container, 'width').querySelector('input[type="number"]')!, { target: { value: '60' } })
     expect(html()).toContain('width: 60%')
 
+    // الشفافية: بتتعرض ٪ وبتتكتب كسر، و١٠٠ = شيل الخاصية
+    const opacity = () => field(container, 'opacity').querySelector('input[type="number"]') as HTMLInputElement
+    expect(opacity().value).toBe('100')
+    fireEvent.change(opacity(), { target: { value: '60' } })
+    expect(html()).toContain('opacity: 0.6')
+    expect(opacity().value).toBe('60')
+    fireEvent.change(opacity(), { target: { value: '100' } })
+    expect(html()).not.toContain('opacity')
+
     const src = field(container, 'src').querySelector('input[type="text"]') as HTMLInputElement
     expect(src.value).toBe('/m/a.png')
     fireEvent.change(src, { target: { value: '/m/b.png' } })

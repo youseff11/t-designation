@@ -2722,6 +2722,13 @@ class SectionOverlayElementsTests(TestCase):
         self.assertIn('src="/media/x.jpg"', html)
         self.assertIn("--ovl-radius:24px", html)
 
+    def test_an_image_element_opacity_is_a_percentage_and_old_items_stay_opaque(self):
+        faded = self._render({"kind": "image", "src": "/media/x.jpg", "opacity": 60})
+        self.assertIn("--ovl-opacity:0.6", faded)
+        # عنصر قديم مالوش المفتاح، أو ١٠٠ = مفيش تغيير (مش ٥٪)
+        self.assertNotIn("--ovl-opacity", self._render({"kind": "image", "src": "/media/x.jpg"}))
+        self.assertNotIn("--ovl-opacity", self._render({"kind": "image", "src": "/media/x.jpg", "opacity": 100}))
+
     def test_a_button_element_renders_a_real_link(self):
         html = self._render({"kind": "button", "label": "احجز مكانك",
                              "href": "https://example.com", "btn_bg": "#123456"})
