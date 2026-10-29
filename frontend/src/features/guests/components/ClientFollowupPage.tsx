@@ -161,7 +161,7 @@ export function ClientFollowupPage() {
               <span className="client-followup-count">{t('guests.client.repliesCount', { n: stats.rsvpTotal })}</span>
             </div>
             <div className="client-followup-table-wrap">
-              <table className="client-followup-table">
+              <table className="client-followup-table client-followup-table--rsvp">
                 <thead>
                   <tr>
                     <th>{t('guests.rsvp.name')}</th>
@@ -183,7 +183,7 @@ export function ClientFollowupPage() {
                           {rsvpLabel(t, row.status)}
                         </span>
                       </td>
-                      <td>{row.companions}</td>
+                      <td data-label={t('guests.client.companions')}>{row.companions}</td>
                       <td className="client-followup-message">{row.message || '—'}</td>
                       {hasAnswers && (
                         <td className="client-followup-answers">
@@ -197,7 +197,7 @@ export function ClientFollowupPage() {
                             : '—'}
                         </td>
                       )}
-                      <td>{row.createdAt}</td>
+                      <td className="client-followup-date">{row.createdAt}</td>
                     </tr>
                   ))}
                   {rsvpRows.length === 0 && (

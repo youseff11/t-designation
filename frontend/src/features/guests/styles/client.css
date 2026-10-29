@@ -179,6 +179,34 @@
 
 .client-followup-qr { background: #fff; padding: 4px; border-radius: 6px; object-fit: contain; }
 
+/* كشف الردود على الموبايل: كل رد كارت (الاسم + الحالة فوق، الرسالة تحتهم)
+   بدل جدول عرضه 650px بيتحرّك أفقياً والنصوص الطويلة بتتداخل مع التاريخ. */
+@media (max-width: 680px) {
+  .client-followup-table--rsvp { min-width: 0; }
+  .client-followup-table--rsvp thead {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);
+  }
+  .client-followup-table--rsvp tbody { display: block; }
+  .client-followup .client-followup-table--rsvp tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center; gap: 8px 12px; padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .client-followup .client-followup-table--rsvp tbody tr:last-child { border-bottom: 0; }
+  .client-followup .client-followup-table--rsvp td {
+    display: block; min-width: 0; padding: 0; border: 0;
+    white-space: normal; overflow-wrap: anywhere;
+  }
+  .client-followup-table--rsvp td:first-child { min-width: 0; }
+  .client-followup-table--rsvp td:nth-child(n + 3) { grid-column: 1 / -1; }
+  .client-followup-table--rsvp .client-followup-message { max-width: none; }
+  .client-followup-table--rsvp .client-followup-answers { max-width: none; }
+  .client-followup-table--rsvp td[data-label]::before {
+    content: attr(data-label) ': '; color: var(--muted); font-size: 12px;
+  }
+  .client-followup-table--rsvp .client-followup-date { color: var(--muted); font-size: 12px; }
+}
+
 /* إجابات الأسئلة الإضافية تحت رسالة الضيف في لوحة التحكم */
 .rsvp-answer { display: block; margin-top: 7px; font-size: 12.5px; }
 .rsvp-answer b {
