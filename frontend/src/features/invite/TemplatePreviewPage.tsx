@@ -19,6 +19,8 @@ import './previewCritical.css'
  * (رجوع/تقدّم في المتصفح) بيعمل reload للصفحة الجديدة عشان تبدأ نضيفة.
  */
 let reloadOnLeaveArmed = false
+/** بيرجّع ستايل الموقع والـ‎<html>‎/‎<body>‎ زي ما كانوا — بيتنفّذ قبل الـreload (شوف ‎useInviteDocument‎). */
+let undoInviteDocument: (() => void) | null = null
 
 function useHardReloadOnLeave() {
   useEffect(() => {
@@ -29,7 +31,11 @@ function useHardReloadOnLeave() {
     const here = window.location.pathname
     window.addEventListener('popstate', () => {
       // تنقّل جوّه نفس الصفحة (anchor/hash) مش خروج
-      if (window.location.pathname !== here) window.location.reload()
+      if (window.location.pathname === here) return
+      // الـRouter بيرسم الصفحة الجديدة فوراً والـreload ممكن ياخد ثواني على النت البطيء —
+      // من غير الرجوع ده الزائر بيشوف الموقع من غير CSS لحد ما التحميل يخلص.
+      undoInviteDocument?.()
+      window.location.reload()
     })
   }, [])
 }
@@ -45,27 +51,51 @@ const isInviteSheet = (owner: Element) =>
 /**
  * الصفحة بتتعامل زي صفحة الدعوة المستقلة: ‎lb-doc‎ على ‎body‎، بدون ثيم الموقع، وبدون
  * ستايل الموقع العام (‎base.css‎ بيلوّن الروابط والعناوين، وقاعدة «تقليل الحركة» فيه بتوقف
- * حركات الدعوة). الخروج منها بـ reload (‎useHardReloadOnLeave‎) فمفيش داعي نرجّعهم.
+ * حركات الدعوة). الخروج منها بـ reload (‎useHardReloadOnLeave‎) بس بعد ما نرجّع الستايل مؤقتاً.
  */
 function useInviteDocument() {
   useLayoutEffect(() => {
     const body = document.body
+    const root = document.documentElement
+    const saved = {
+      theme: root.getAttribute('data-theme'),
+      lang: root.getAttribute('lang'),
+      dir: root.getAttribute('dir'),
+      bodyClass: body.getAttribute('class'),
+      bodyStyle: body.getAttribute('style'),
+    }
+    const restoreAttr = (el: Element, name: string, value: string | null) =>
+      value === null ? el.removeAttribute(name) : el.setAttribute(name, value)
+
     body.classList.add('lb-doc')
     body.setAttribute('data-invite-root', '')
     body.setAttribute('data-ready', '1')
-    document.documentElement.removeAttribute('data-theme')
+    root.removeAttribute('data-theme')
 
+    const disabled: CSSStyleSheet[] = []
     for (const sheet of Array.from(document.styleSheets)) {
       const owner = sheet.ownerNode
       if (!(owner instanceof Element) || isInviteSheet(owner)) continue
       if (sheet.href && new URL(sheet.href, location.href).origin !== location.origin) continue // الخطوط
       sheet.disabled = true
+      disabled.push(sheet)
     }
 
     const fonts = document.createElement('link')
     fonts.rel = 'stylesheet'
     fonts.href = FONTS_HREF
     document.head.appendChild(fonts)
+
+    undoInviteDocument = () => {
+      disabled.forEach((sheet) => (sheet.disabled = false))
+      restoreAttr(root, 'data-theme', saved.theme)
+      restoreAttr(root, 'lang', saved.lang)
+      restoreAttr(root, 'dir', saved.dir)
+      restoreAttr(body, 'class', saved.bodyClass)
+      restoreAttr(body, 'style', saved.bodyStyle)
+      body.removeAttribute('data-invite-root')
+      body.removeAttribute('data-ready')
+    }
   }, [])
 }
 
