@@ -77,19 +77,40 @@ export function FrameApp() {
   // إطار حدود القسم المطلوب (الأم هي اللي بتحدّده) — بيتعاد بعد كل رسمة لأن القسم ممكن يتركّب من جديد
   const bounds = useRef<Bounds | null>(null)
 
-  // كود الافتتاحية اتعدّل من اللوحة وعقدته الحية اتحدّثت بالفعل (‎lb-editor:node‎): رد السيرفر اللي بيأكّد نفس التعديل
-  // ماينفعش يعيد تركيب الافتتاحية ولا يعيد حقن الكود (سكربتاته وحركاته كانت بتبدأ من الأول مع كل حرف) —
-  // بنفضل نعرضها بالبيانات اللي اترسمت بيها، وآخر نسخة صحيحة بتتعرض أول ما يتغيّر حاجة تانية
-  const introPatchedAt = useRef(0)
+  // كود (قسم أو افتتاحية) اتعدّل من اللوحة وعقدته الحية اتحدّثت بالفعل (‎lb-editor:node‎): رد السيرفر اللي بيأكّد نفس
+  // التعديل ماينفعش يعيد حقن الكود (سكربتاته وحركاته كانت بتبدأ من الأول مع كل حرف) ولا يعيد تركيب الافتتاحية —
+  // بنفضل نعرض الكود بالنص اللي اترسم بيه، وآخر نسخة صحيحة بتتعرض أول ما يتغيّر حاجة تانية
+  // الـDOM الحي بيبقى مختلف عن اللي React فاكره (‎divergent‎) لحد أول رسمة مش مؤكِّدة (تراجع/إعادة أو رد متأخر):
+  // وقتها بنعيد تركيب الكود فعلاً، وإلا نص التراجع (= اللي React فاكره) مايكتبش حاجة والمعدّل يفضل ظاهر.
+  const patchedAt = useRef<Record<string, number>>({})
+  const divergent = useRef(new Set<string>())
+  const recentlyPatched = (id: string) => Date.now() - (patchedAt.current[id] ?? 0) < 5000
   const introShape = useRef('')
   const [introHeld, setIntroHeld] = useState<PreviewPayload['intro'] | null>(null)
 
   function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
-    const next = message.payload as PreviewPayload
+    let next = message.payload as PreviewPayload
+    const before = payloadRef.current
+    const bare = (block: PreviewPayload['blocks'][number]) => JSON.stringify({ ...block, code: '' })
+    let held = false
+    const fresh: string[] = []
+    const blocks = next.blocks.map((block) => {
+      const prev = before?.blocks.find((p) => p.id === block.id)
+      if (prev && !message.force && recentlyPatched(block.id) && bare(prev) === bare(block)) {
+        if (prev.code === block.code) return block
+        held = true
+        return { ...block, code: prev.code }
+      }
+      if (divergent.current.delete(block.id)) fresh.push(block.id)
+      return block
+    })
+    if (held) next = { ...next, blocks }
+    if (fresh.length) setRemount((r) => ({ ...r, ...Object.fromEntries(fresh.map((id) => [id, (r[id] ?? 0) + 1])) }))
     const shape = next.intro ? JSON.stringify({ ...next.intro, code: next.intro.code && { ...next.intro.code, html: '' } }) : ''
-    const confirming = !message.force && Date.now() - introPatchedAt.current < 5000 && shape === introShape.current
+    const confirming = !message.force && recentlyPatched(INTRO_ID) && shape === introShape.current
+    if (!confirming && divergent.current.delete(INTRO_ID)) setIntroRun((n) => n + 1)
     introShape.current = shape
-    setIntroHeld((held) => (confirming ? (held ?? payloadRef.current?.intro ?? null) : null))
+    setIntroHeld((current) => (confirming ? (current ?? payloadRef.current?.intro ?? null) : null))
     introSignature.current = next.intro ? JSON.stringify(next.intro) : ''
     // اتقفلت من الإعدادات: المرة الجاية اللي تتفعّل فيها لازم تظهر من جديد
     if (!next.intro) setIntroClosedAt(null)
@@ -129,7 +150,8 @@ export function FrameApp() {
         bounds.current = message.bounds
         showBounds(bounds.current, sendToParent)
       } else if (message.type === 'lb-editor:node') {
-        if (message.id === INTRO_ID) introPatchedAt.current = Date.now()
+        patchedAt.current[message.id] = Date.now()
+        divergent.current.add(message.id)
         patchNode(message.id, message.slot, message.edit)
       } else if (message.type === 'lb-editor:patch') {
         patchText(message.id, message.key, message.value)
