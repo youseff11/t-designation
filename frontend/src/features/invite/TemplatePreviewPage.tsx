@@ -73,9 +73,14 @@ function useInviteDocument() {
     root.removeAttribute('data-theme')
 
     const disabled: CSSStyleSheet[] = []
+    const inviteSheets: CSSStyleSheet[] = []
     for (const sheet of Array.from(document.styleSheets)) {
       const owner = sheet.ownerNode
-      if (!(owner instanceof Element) || isInviteSheet(owner)) continue
+      if (!(owner instanceof Element)) continue
+      if (isInviteSheet(owner)) {
+        inviteSheets.push(sheet)
+        continue
+      }
       if (sheet.href && new URL(sheet.href, location.href).origin !== location.origin) continue // الخطوط
       sheet.disabled = true
       disabled.push(sheet)
@@ -87,6 +92,12 @@ function useInviteDocument() {
     document.head.appendChild(fonts)
 
     undoInviteDocument = () => {
+      // ستايل الدعوة بيعرّف ‎:root{--bg,--text,…}‎ وبيغلب ثيم الموقع (الداكن) لو فضل شغّال
+      inviteSheets.forEach((sheet) => (sheet.disabled = true))
+      document.head
+        .querySelectorAll('style[data-font-faces], style[data-lb-layout-css], style[data-imported-css], style[data-zero-block-css]')
+        .forEach((node) => node.remove())
+      fonts.remove()
       disabled.forEach((sheet) => (sheet.disabled = false))
       restoreAttr(root, 'data-theme', saved.theme)
       restoreAttr(root, 'lang', saved.lang)
