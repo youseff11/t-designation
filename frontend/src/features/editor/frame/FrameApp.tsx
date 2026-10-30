@@ -7,6 +7,7 @@ import { syncHeadStyles } from '@/features/invite/head'
 import { Intro } from '@/features/invite/Intro'
 import { makeT } from '@/features/invite/strings'
 
+import { INTRO_ID } from '../doc'
 import type { PreviewPayload, ToFrame } from '../types'
 import { parseMessage, sendToParent, shortcutKey } from './bridge'
 import { installImported, markPicked, patchNode, prepareImported, revealPicked } from '../imported/frame'
@@ -76,8 +77,19 @@ export function FrameApp() {
   // إطار حدود القسم المطلوب (الأم هي اللي بتحدّده) — بيتعاد بعد كل رسمة لأن القسم ممكن يتركّب من جديد
   const bounds = useRef<Bounds | null>(null)
 
+  // كود الافتتاحية اتعدّل من اللوحة وعقدته الحية اتحدّثت بالفعل (‎lb-editor:node‎): رد السيرفر اللي بيأكّد نفس التعديل
+  // ماينفعش يعيد تركيب الافتتاحية ولا يعيد حقن الكود (سكربتاته وحركاته كانت بتبدأ من الأول مع كل حرف) —
+  // بنفضل نعرضها بالبيانات اللي اترسمت بيها، وآخر نسخة صحيحة بتتعرض أول ما يتغيّر حاجة تانية
+  const introPatchedAt = useRef(0)
+  const introShape = useRef('')
+  const [introHeld, setIntroHeld] = useState<PreviewPayload['intro'] | null>(null)
+
   function applyRender(message: Extract<ToFrame, { type: 'lb-editor:render' }>) {
     const next = message.payload as PreviewPayload
+    const shape = next.intro ? JSON.stringify({ ...next.intro, code: next.intro.code && { ...next.intro.code, html: '' } }) : ''
+    const confirming = !message.force && Date.now() - introPatchedAt.current < 5000 && shape === introShape.current
+    introShape.current = shape
+    setIntroHeld((held) => (confirming ? (held ?? payloadRef.current?.intro ?? null) : null))
     introSignature.current = next.intro ? JSON.stringify(next.intro) : ''
     // اتقفلت من الإعدادات: المرة الجاية اللي تتفعّل فيها لازم تظهر من جديد
     if (!next.intro) setIntroClosedAt(null)
@@ -117,6 +129,7 @@ export function FrameApp() {
         bounds.current = message.bounds
         showBounds(bounds.current, sendToParent)
       } else if (message.type === 'lb-editor:node') {
+        if (message.id === INTRO_ID) introPatchedAt.current = Date.now()
         patchNode(message.id, message.slot, message.edit)
       } else if (message.type === 'lb-editor:patch') {
         patchText(message.id, message.key, message.value)
@@ -213,7 +226,8 @@ export function FrameApp() {
   }, [])
 
   const payload = state?.payload
-  const introJson = useMemo(() => (payload?.intro ? JSON.stringify(payload.intro) : ''), [payload])
+  const shownIntro = introHeld ?? payload?.intro
+  const introJson = useMemo(() => (shownIntro ? JSON.stringify(shownIntro) : ''), [shownIntro])
 
   // الافتتاحية اتفتحت (لمسة، زرار، عدّاد، نهاية الفيديو): نفتكر محتواها عشان مانركّبهاش تاني
   useEffect(() => {
@@ -284,7 +298,7 @@ export function FrameApp() {
 
   return (
     <InviteContext.Provider value={ctx}>
-      {payload.intro && <Intro key={`${introRun}:${introClosedAt ?? introJson}`} data={payload.intro} />}
+      {payload.intro && shownIntro && <Intro key={`${introRun}:${introClosedAt ?? introJson}`} data={shownIntro} />}
       <div className={stageClass}>
         {payload.blocks.map((block) => (
           <BlockView key={`${block.id}:${remount[block.id] ?? 0}`} block={block} />
