@@ -17,55 +17,66 @@ function heroImagesCss(images: HeroInfo['images'] | undefined): string {
   ].join('')
 }
 
-/** نجمة ثمانية (خاتم سليمان) بحلقات متداخلة — شكل زخرفي إسلامي بخطوط رفيعة بلون الموقع */
-function DecoStar({ className }: { className: string }) {
-  const ticks = Array.from({ length: 24 }, (_, i) => {
-    const angle = (i / 24) * Math.PI * 2
-    return <circle key={i} cx={200 + Math.cos(angle) * 186} cy={200 + Math.sin(angle) * 186} r={i % 3 === 0 ? 2.6 : 1.4} />
-  })
+/** أقواس متداخلة (شباك الدعوة / قوس القاعة) بخطوط رفيعة وشمس صغيرة جوّاها */
+function DecoArches({ className }: { className: string }) {
   return (
-    <svg className={'hero-deco-star ' + className} viewBox="0 0 400 400" focusable="false">
-      <circle cx="200" cy="200" r="172" strokeDasharray="2 7" />
-      <circle cx="200" cy="200" r="150" />
-      <rect x="94" y="94" width="212" height="212" />
-      <rect x="94" y="94" width="212" height="212" transform="rotate(45 200 200)" />
-      <rect x="136" y="136" width="128" height="128" />
-      <rect x="136" y="136" width="128" height="128" transform="rotate(45 200 200)" />
-      <circle cx="200" cy="200" r="34" />
-      <circle className="hero-deco-fill" cx="200" cy="200" r="7" />
-      <g className="hero-deco-fill">{ticks}</g>
+    <svg className={'hero-deco-arch ' + className} viewBox="0 0 300 400" focusable="false">
+      <path d="M20 400V150a130 130 0 0 1 260 0v250" />
+      <path d="M60 400V152a90 90 0 0 1 180 0v248" />
+      <path d="M100 400V154a50 50 0 0 1 100 0v246" />
+      <circle className="hero-deco-fill" cx="150" cy="154" r="9" />
     </svg>
   )
 }
 
-/** نجمة رباعية الأشعة بتلمع */
-function Sparkle({ className }: { className: string }) {
+/** حلقتين متقاطعتين (خاتمين) */
+function DecoRings({ className }: { className: string }) {
   return (
-    <svg className={'hero-deco-sparkle ' + className} viewBox="0 0 24 24" focusable="false">
-      <path d="M12 0c.8 7 5 11.2 12 12-7 .8-11.2 5-12 12-.8-7-5-11.2-12-12C7 11.2 11.2 7 12 0Z" />
+    <svg className={'hero-deco-rings ' + className} viewBox="0 0 200 120" focusable="false">
+      <circle cx="72" cy="60" r="50" />
+      <circle cx="128" cy="60" r="50" />
+      <circle className="hero-deco-fill" cx="100" cy="60" r="4" />
     </svg>
   )
 }
 
-/** زخارف المساحة الفاضية في الهيرو: نجمتين، مدارات، نقط، ولمعات — كلها SVG/CSS بلا صور. */
+/** خطين متموّجين */
+function DecoWave({ className }: { className: string }) {
+  return (
+    <svg className={'hero-deco-wave ' + className} viewBox="0 0 160 40" focusable="false">
+      <path d="M0 12q10-12 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0" />
+      <path d="M0 30q10-12 20 0t20 0 20 0 20 0 20 0 20 0 20 0 20 0" />
+    </svg>
+  )
+}
+
+/** علامات صغيرة متناثرة بتطفو: زائد، حلقة، مربع مائل، نقطة */
+function DecoMark({ kind, className }: { kind: 'plus' | 'ring' | 'diamond' | 'dot'; className: string }) {
+  return (
+    <svg className={`hero-deco-mark hero-deco-mark--${kind} ${className}`} viewBox="0 0 24 24" focusable="false">
+      {kind === 'plus' && <path d="M12 4v16M4 12h16" />}
+      {kind === 'ring' && <circle cx="12" cy="12" r="8" />}
+      {kind === 'diamond' && <rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)" />}
+      {kind === 'dot' && <circle className="hero-deco-fill" cx="12" cy="12" r="6" />}
+    </svg>
+  )
+}
+
+/** زخارف المساحة الفاضية في الهيرو: أقواس، خاتمين، موجة، نقط وعلامات صغيرة — كلها SVG/CSS بلا صور. */
 function HeroDeco() {
   return (
     <div className="hero-deco">
-      <svg className="hero-deco-orbit" viewBox="0 0 100 100" focusable="false">
-        <circle cx="50" cy="50" r="49" strokeDasharray="1 2.4" />
-        <circle cx="50" cy="50" r="41" />
-        <circle cx="50" cy="50" r="33" strokeDasharray="5 3" />
-      </svg>
-      <DecoStar className="hero-deco-star--a" />
-      <DecoStar className="hero-deco-star--b" />
+      <DecoArches className="hero-deco-arch--a" />
+      <DecoRings className="hero-deco-rings--a" />
+      <DecoWave className="hero-deco-wave--a" />
       <i className="hero-deco-dots hero-deco-dots--a" />
       <i className="hero-deco-dots hero-deco-dots--b" />
-      <Sparkle className="hero-deco-sparkle--1" />
-      <Sparkle className="hero-deco-sparkle--2" />
-      <Sparkle className="hero-deco-sparkle--3" />
-      <Sparkle className="hero-deco-sparkle--4" />
-      <Sparkle className="hero-deco-sparkle--5" />
-      <Sparkle className="hero-deco-sparkle--6" />
+      <DecoMark kind="plus" className="hero-deco-mark--1" />
+      <DecoMark kind="ring" className="hero-deco-mark--2" />
+      <DecoMark kind="diamond" className="hero-deco-mark--3" />
+      <DecoMark kind="plus" className="hero-deco-mark--4" />
+      <DecoMark kind="dot" className="hero-deco-mark--5" />
+      <DecoMark kind="ring" className="hero-deco-mark--6" />
     </div>
   )
 }

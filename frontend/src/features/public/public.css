@@ -1532,59 +1532,95 @@ main { display: block; }
 .btn--shine::after { display: none; }
 .plan:hover .btn--gold { filter: none; box-shadow: none; }
 
-/* ---- الترويسة: ثلاث مناطق (الروابط | الشعار في النص | الأدوات) بخط رفيع وحركة هادية ----
-   الارتفاع ثابت (--nav-space) حتى عند النزول: تغيير ارتفاع شريط sticky بيرعّش الصفحة. */
+/* ---- الترويسة: ثلاث كبسولات عايمة (الشعار | الروابط في كبسولة غامقة | الأدوات والطلب) ----
+   الشريط نفسه شفاف وبيطفو فوق الصفحة. الارتفاع ثابت (--nav-space) حتى عند النزول:
+   تغيير ارتفاع شريط sticky بيرعّش الصفحة. */
 .nav {
-  height: var(--nav-space); padding: 0; pointer-events: auto;
-  background: var(--bg); border-bottom: 1px solid var(--line);
+  height: var(--nav-space); padding: 0; pointer-events: none;
+  background: none; border: 0; box-shadow: none;
   backdrop-filter: none; -webkit-backdrop-filter: none;
-  transition: box-shadow .3s ease, background-color .3s ease;
 }
-.nav.is-stuck { box-shadow: 0 18px 32px -28px rgba(0, 0, 0, .45); }
+.nav.is-stuck { box-shadow: none; }
 .nav-shell,
 .nav.is-stuck .nav-shell {
-  width: var(--wrap); height: var(--nav-space); padding-inline: 0; gap: 20px;
-  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center;
+  width: var(--wrap); height: var(--nav-space); padding-inline: 0; gap: 14px;
+  display: flex; align-items: center; justify-content: space-between;
   border: 0; border-radius: 0; background: none; box-shadow: none;
   backdrop-filter: none; -webkit-backdrop-filter: none; transform: none;
 }
-.brand { grid-column: 2; grid-row: 1; margin: 0; height: 46px; transition: transform .3s ease, opacity .18s ease; }
-.nav.is-stuck .brand { height: 46px; transform: scale(.9); }
-.nav-links { grid-column: 1; grid-row: 1; margin: 0; justify-self: start; gap: 34px; }
-.nav-tools { grid-column: 3; grid-row: 1; margin: 0; justify-self: end; gap: 4px; }
 
-/* الروابط: نص صغير متباعد، والخط بيطلع من النص عند المرور وللقسم الحالي */
+/* الكبسولات التلاتة: نفس الشكل (كبسولة بظل خفيف) ويزيد الظل عند النزول */
+.brand, .nav-links, .nav-tools {
+  pointer-events: auto; margin: 0; grid-column: auto; grid-row: auto;
+  border-radius: 999px; box-shadow: 0 8px 20px -14px rgba(0, 0, 0, .35);
+  transition: box-shadow .3s ease, transform .3s ease, opacity .18s ease;
+}
+.nav.is-stuck .brand, .nav.is-stuck .nav-links, .nav.is-stuck .nav-tools { box-shadow: 0 14px 28px -14px rgba(0, 0, 0, .5); }
+
+/* الشعار: كبسولة فاتحة، والصورة جواها بهامش (padding) بدل ما تلزق في الحافة */
+.brand {
+  box-sizing: content-box; height: 40px; padding: 7px 22px;
+  background-color: color-mix(in srgb, var(--surface) 90%, transparent);
+  background-origin: content-box; background-clip: padding-box;
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+.nav.is-stuck .brand { height: 40px; transform: none; }
+
+/* الروابط: كبسولة غامقة (بلون النص) والقسم الحالي بيتملّي بلون الخلفية */
+.nav-links { display: flex; align-items: center; gap: 2px; padding: 5px; background: var(--text); }
 .nav-links a {
-  position: relative; padding: 8px 0; border: 0; border-radius: 0; background: none;
-  color: var(--text); font-size: 14px; letter-spacing: .02em; font-weight: 400;
+  position: relative; padding: 9px 17px; border: 0; border-radius: 999px; background: none;
+  color: color-mix(in srgb, var(--bg) 72%, transparent); font-size: 14px; font-weight: 500; letter-spacing: 0;
+  transition: background-color .22s ease, color .22s ease;
 }
-html[lang="en"] .nav-links a { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
-.nav-links a::after {
-  content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 1px; background: var(--text);
-  transform: scaleX(0); transition: transform .32s cubic-bezier(.22, .8, .3, 1);
-}
-.nav-links a:hover { color: var(--text); }
-.nav-links a:hover::after, .nav-links a.is-active::after { transform: scaleX(1); }
-.nav-links a.is-active { background: none; color: var(--text); font-weight: 500; }
+html[lang="en"] .nav-links a { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.nav-links a::after { content: none; }
+.nav-links a:hover { color: var(--bg); background: color-mix(in srgb, var(--bg) 16%, transparent); }
+.nav-links a.is-active { background: var(--bg); color: var(--text); font-weight: 600; }
 
-/* أدوات من غير إطارات: اللغة والمظهر أيقونات هادية */
+/* الأدوات: كبسولة فاتحة فيها أيقونات هادية وزر «اطلب دعوتك» الغامق */
+.nav-tools {
+  gap: 2px; padding: 5px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3); -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
 .lang-btn, .icon-btn {
-  height: 40px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text);
+  height: 40px; border: 0; border-radius: 999px; background: none; color: var(--text);
 }
 .icon-btn { width: 40px; }
 .lang-btn:hover, .icon-btn:hover { color: var(--accent); border: 0; transform: none; background: var(--accent-soft); }
 .lang-btn span { letter-spacing: .1em; }
 
-/* «اطلب دعوتك»: إطار رفيع وحروف متباعدة، بيتملي عند المرور */
 .nav-tools .nav-cta {
-  margin-inline-start: 12px; padding: 11px 24px; min-height: 0; border-radius: 2px;
-  background: none; color: var(--text); border: 1px solid var(--text); box-shadow: none;
-  font-size: 13px; font-weight: 500; letter-spacing: .06em;
+  display: inline-flex; align-items: center; gap: 9px;
+  margin-inline-start: 6px; padding: 0 22px; height: 40px; min-height: 0; border-radius: 999px;
+  background: var(--text); color: var(--bg); border: 0; box-shadow: none;
+  font-size: 13.5px; font-weight: 600; letter-spacing: 0; white-space: nowrap;
   transition: background-color .25s ease, color .25s ease;
 }
-html[lang="en"] .nav-tools .nav-cta { letter-spacing: .14em; text-transform: uppercase; font-size: 11.5px; }
-.nav-tools .nav-cta:hover { background: var(--text); color: var(--bg); opacity: 1; transform: none; box-shadow: none; }
-.nav-burger { border-radius: var(--radius-sm); border: 0; }
+.nav-tools .nav-cta::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--accent);
+}
+html[lang="en"] .nav-tools .nav-cta { letter-spacing: .1em; text-transform: uppercase; font-size: 11.5px; }
+.nav-tools .nav-cta:hover { background: var(--accent); color: #fff; opacity: 1; transform: none; box-shadow: none; }
+.nav-tools .nav-cta:hover::before { background: #fff; }
+.nav-burger { border-radius: 999px; border: 0; }
+
+/* الشاشات المتوسطة: الكبسولات التلاتة لازم تتحشر في صف واحد من غير ما تخفي روابط */
+@media (min-width: 781px) and (max-width: 1150px) {
+  .nav-shell, .nav.is-stuck .nav-shell { gap: 8px; }
+  .brand { padding-inline: 14px; }
+  .nav-links a { padding: 8px 11px; font-size: 13px; }
+  html[lang="en"] .nav-links a { font-size: 11px; letter-spacing: .05em; }
+  .nav-tools .nav-cta { padding: 0 15px; font-size: 12.5px; margin-inline-start: 2px; }
+  .nav-tools .nav-cta::before { display: none; }
+}
+@media (min-width: 781px) and (max-width: 980px) {
+  .brand { height: 26px; padding-block: 6px; }
+  .nav.is-stuck .brand { height: 26px; }
+  .nav-links a { padding: 8px 7px; font-size: 12px; }
+}
 
 /* ---- عناوين الأقسام: محاذاة للبداية بدل المنتصف، من غير زخرفة ---- */
 .section { padding: 96px 0; border-top: 1px solid var(--line); }
@@ -1779,16 +1815,19 @@ html[lang="en"] .eyebrow { letter-spacing: .12em; text-transform: uppercase; }
   .hero-chip--date { animation: hero-float 5s ease-in-out -3.5s infinite alternate; }
 }
 
-/* زخارف المساحة الفاضية في الهيرو (شمال الشاشة جنب الكلام): نجوم هندسية، مدارات، نقط ولمعات.
+/* زخارف المساحة الفاضية في الهيرو (شمال الشاشة جنب الكلام): أقواس، خاتمين، موجة، نقط وعلامات صغيرة.
    كلها فوق الخلفية وتحت التليفون والنص، وخافتة عشان ما تزاحمش القراءة. بوحدات ‎cqw‎ (٪ من عرض الهيرو). */
 .hero-deco { position: absolute; inset: 0; pointer-events: none; }
-.hero-deco svg { position: absolute; overflow: visible; fill: none; stroke: var(--accent); stroke-width: 1; stroke-linejoin: round; }
+.hero-deco svg { position: absolute; overflow: visible; fill: none; stroke: var(--accent); stroke-width: 1.2px; stroke-linejoin: round; stroke-linecap: round; }
+.hero-deco svg * { vector-effect: non-scaling-stroke; }
 .hero-deco .hero-deco-fill { fill: var(--accent); stroke: none; }
 
-.hero-deco .hero-deco-orbit { left: -39cqw; top: 50%; width: 78cqw; aspect-ratio: 1; translate: 0 -50%; opacity: .3; stroke-width: .14; }
-.hero-deco-star { opacity: .2; }
-.hero-deco-star--a { left: -9cqw; top: 50%; width: 34cqw; aspect-ratio: 1; translate: 0 -50%; }
-.hero-deco-star--b { left: 42cqw; top: 8%; width: 11cqw; aspect-ratio: 1; opacity: .3; }
+.hero-deco-arch { opacity: .26; }
+.hero-deco-arch--a { left: 1cqw; bottom: 0; width: 17cqw; aspect-ratio: 3 / 4; }
+.hero-deco-rings { opacity: .3; }
+.hero-deco-rings--a { left: 24cqw; top: 9%; width: 10cqw; aspect-ratio: 5 / 3; }
+.hero-deco-wave { opacity: .34; }
+.hero-deco-wave--a { left: 3cqw; top: 15%; width: 9cqw; aspect-ratio: 4 / 1; }
 
 .hero-deco-dots {
   position: absolute; display: block; aspect-ratio: 1;
@@ -1800,35 +1839,34 @@ html[lang="en"] .eyebrow { letter-spacing: .12em; text-transform: uppercase; }
           mask-image: radial-gradient(circle at 0 100%, #000, transparent 72%);
 }
 .hero-deco-dots--b {
-  left: 29cqw; top: 5%; width: 11cqw;
+  left: 38cqw; top: 5%; width: 11cqw;
   -webkit-mask-image: radial-gradient(circle, #000, transparent 75%);
           mask-image: radial-gradient(circle, #000, transparent 75%);
 }
 
-.hero-deco-sparkle { fill: var(--accent); stroke: none; aspect-ratio: 1; opacity: .55; }
-.hero-deco-sparkle--1 { left: 9%;  top: 19%; width: 2.2cqw; }
-.hero-deco-sparkle--2 { left: 33%; top: 12%; width: 1.4cqw; }
-.hero-deco-sparkle--3 { left: 3%;  top: 64%; width: 1.7cqw; }
-.hero-deco-sparkle--4 { left: 48%; top: 82%; width: 2cqw; }
-.hero-deco-sparkle--5 { left: 51%; top: 24%; width: 1.2cqw; }
-.hero-deco-sparkle--6 { left: 22%; top: 90%; width: 1.3cqw; }
+.hero-deco-mark { aspect-ratio: 1; opacity: .5; }
+.hero-deco-mark--1 { left: 20%; top: 20%; width: 1.7cqw; }
+.hero-deco-mark--2 { left: 12%; top: 38%; width: 1.5cqw; }
+.hero-deco-mark--3 { left: 38%; top: 27%; width: 1.4cqw; }
+.hero-deco-mark--4 { left: 5%;  top: 55%; width: 1.3cqw; }
+.hero-deco-mark--5 { left: 47%; top: 78%; width: 1.1cqw; }
+.hero-deco-mark--6 { left: 25%; top: 88%; width: 1.5cqw; }
 
-@keyframes hero-spin { to { rotate: 360deg; } }
-@keyframes hero-twinkle {
-  0%, 100% { opacity: .15; scale: .6; }
-  50%      { opacity: .9;  scale: 1.15; }
-}
+@keyframes hero-sway { to { rotate: 8deg; } }
+@keyframes hero-bob { to { translate: 0 -.9cqw; } }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-deco-star--a { animation: hero-spin 160s linear infinite; }
-  .hero-deco-star--b { animation: hero-spin 70s linear infinite reverse; }
-  .hero-deco-sparkle { animation: hero-twinkle 4.2s ease-in-out infinite; }
-  .hero-deco-sparkle--2 { animation-delay: -.8s; animation-duration: 3.6s; }
-  .hero-deco-sparkle--3 { animation-delay: -1.7s; }
-  .hero-deco-sparkle--4 { animation-delay: -2.4s; animation-duration: 5s; }
-  .hero-deco-sparkle--5 { animation-delay: -3.1s; animation-duration: 3.2s; }
-  .hero-deco-sparkle--6 { animation-delay: -1.1s; animation-duration: 4.8s; }
+  .hero-deco-rings--a { animation: hero-sway 9s ease-in-out -3s infinite alternate; }
+  .hero-deco-wave--a { animation: hero-bob 6s ease-in-out -1s infinite alternate; }
+  .hero-deco-arch--a { animation: hero-bob 11s ease-in-out -4s infinite alternate; }
+  .hero-deco-mark { animation: hero-bob 5s ease-in-out infinite alternate; }
+  .hero-deco-mark--2 { animation-delay: -.8s; animation-duration: 4.2s; }
+  .hero-deco-mark--3 { animation: hero-sway 7s ease-in-out -1.7s infinite alternate; }
+  .hero-deco-mark--4 { animation-delay: -2.4s; animation-duration: 6s; }
+  .hero-deco-mark--5 { animation-delay: -3.1s; animation-duration: 4.6s; }
+  .hero-deco-mark--6 { animation-delay: -1.1s; animation-duration: 5.4s; }
 }
-[data-theme="dark"] .hero-deco-star { opacity: .3; }
+[data-theme="dark"] .hero-deco-arch { opacity: .36; }
+[data-theme="dark"] .hero-deco-rings, [data-theme="dark"] .hero-deco-wave { opacity: .42; }
 
 /* ---- كروت القوالب: صورة بحواف كبيرة وتحتها الاسم، من غير صندوق ---- */
 .tpl-card { background: none; border: 0; box-shadow: none; border-radius: 0; }
@@ -1918,18 +1956,25 @@ html[lang="en"] .eyebrow { letter-spacing: .12em; text-transform: uppercase; }
   .nav-shell, .nav.is-stuck .nav-shell { height: var(--nav-space); transform: none; display: flex; gap: 8px; }
   .brand, .nav.is-stuck .brand { grid-column: auto; margin-inline-start: 0; transform: none; }
   .nav-tools { margin-inline-start: auto; gap: 2px; }
+  /* قايمة الموبايل: كارت غامق بنفس لغة كبسولة الروابط */
   .nav-links {
-    top: 100%; inset-inline: -18px; gap: 0; padding: 8px 18px 14px; justify-self: auto;
-    border-radius: 0 0 var(--radius) var(--radius); border-width: 0 0 1px; background: var(--bg);
+    top: calc(100% - 4px); inset-inline: 0; gap: 2px; padding: 10px;
+    flex-direction: column; align-items: stretch;
+    border-radius: 24px; background: var(--text);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s;
   }
-  .nav-links a { padding: 15px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
-  .nav-links a::after { display: none; }
-  .nav-links a.is-active { color: var(--accent); }
+  .nav-links a { padding: 14px 18px; font-size: 16px; }
   .nav-links .nav-cta-inline {
-    margin-top: 18px; padding: 13px; border: 1px solid var(--text); border-radius: 2px;
-    background: none; color: var(--text); font-size: 15px; box-shadow: none;
+    margin-top: 8px; padding: 14px; justify-content: center; border: 0; border-radius: 999px;
+    background: var(--bg); color: var(--text); font-size: 15px; font-weight: 600; box-shadow: none;
   }
-  .brand { height: 34px; }
+  .nav-links .nav-cta-inline:hover { background: var(--bg); color: var(--text); opacity: .86; }
+  .brand { height: 26px; padding: 6px 16px; }
+  .nav.is-stuck .brand { height: 26px; }
+  .nav-tools { padding: 3px; }
+  .nav-tools .nav-cta { display: none; }
+  .nav-tools .lang-btn, .nav-tools .icon-btn { height: 34px; }
+  .nav-tools .icon-btn { width: 34px; }
   /* على التليفون الصورة كاملة فوق والكلام تحتها (النص مايبقاش فوق الورد) */
   .hero { display: block; }
   .hero-grid { display: block; min-height: 0; padding-block: 28px 8px; pointer-events: auto; }
@@ -1940,11 +1985,11 @@ html[lang="en"] .eyebrow { letter-spacing: .12em; text-transform: uppercase; }
   }
   .hero-stage { right: 7cqw; width: 86cqw; }
   /* على التليفون الزخارف بتتحرك لأطراف الكادر وتكبر شوية (الكادر ضيّق) */
-  .hero-deco-orbit, .hero-deco-star--b, .hero-deco-dots--b { display: none; }
-  .hero-deco-star--a { left: auto; right: -22cqw; top: -4cqw; width: 58cqw; translate: none; }
+  .hero-deco-rings--a, .hero-deco-wave--a, .hero-deco-dots--b { display: none; }
+  .hero-deco-arch--a { left: auto; right: -4cqw; bottom: auto; top: 2cqw; width: 34cqw; }
   .hero-deco-dots--a { width: 40cqw; }
-  .hero-deco-sparkle--1 { width: 4cqw; }
-  .hero-deco-sparkle--2, .hero-deco-sparkle--3, .hero-deco-sparkle--4, .hero-deco-sparkle--5, .hero-deco-sparkle--6 { width: 3cqw; }
+  .hero-deco-mark--1 { width: 3.4cqw; }
+  .hero-deco-mark--2, .hero-deco-mark--3, .hero-deco-mark--4, .hero-deco-mark--5, .hero-deco-mark--6 { width: 3cqw; }
   .hero-copy { width: auto; margin: 0; }
   .hero-copy-in { width: auto; margin: 0; text-align: start; }
   .hero-copy h1 { font-size: inherit; }
