@@ -17,6 +17,59 @@ function heroImagesCss(images: HeroInfo['images'] | undefined): string {
   ].join('')
 }
 
+/** نجمة ثمانية (خاتم سليمان) بحلقات متداخلة — شكل زخرفي إسلامي بخطوط رفيعة بلون الموقع */
+function DecoStar({ className }: { className: string }) {
+  const ticks = Array.from({ length: 24 }, (_, i) => {
+    const angle = (i / 24) * Math.PI * 2
+    return <circle key={i} cx={200 + Math.cos(angle) * 186} cy={200 + Math.sin(angle) * 186} r={i % 3 === 0 ? 2.6 : 1.4} />
+  })
+  return (
+    <svg className={'hero-deco-star ' + className} viewBox="0 0 400 400" focusable="false">
+      <circle cx="200" cy="200" r="172" strokeDasharray="2 7" />
+      <circle cx="200" cy="200" r="150" />
+      <rect x="94" y="94" width="212" height="212" />
+      <rect x="94" y="94" width="212" height="212" transform="rotate(45 200 200)" />
+      <rect x="136" y="136" width="128" height="128" />
+      <rect x="136" y="136" width="128" height="128" transform="rotate(45 200 200)" />
+      <circle cx="200" cy="200" r="34" />
+      <circle className="hero-deco-fill" cx="200" cy="200" r="7" />
+      <g className="hero-deco-fill">{ticks}</g>
+    </svg>
+  )
+}
+
+/** نجمة رباعية الأشعة بتلمع */
+function Sparkle({ className }: { className: string }) {
+  return (
+    <svg className={'hero-deco-sparkle ' + className} viewBox="0 0 24 24" focusable="false">
+      <path d="M12 0c.8 7 5 11.2 12 12-7 .8-11.2 5-12 12-.8-7-5-11.2-12-12C7 11.2 11.2 7 12 0Z" />
+    </svg>
+  )
+}
+
+/** زخارف المساحة الفاضية في الهيرو: نجمتين، مدارات، نقط، ولمعات — كلها SVG/CSS بلا صور. */
+function HeroDeco() {
+  return (
+    <div className="hero-deco">
+      <svg className="hero-deco-orbit" viewBox="0 0 100 100" focusable="false">
+        <circle cx="50" cy="50" r="49" strokeDasharray="1 2.4" />
+        <circle cx="50" cy="50" r="41" />
+        <circle cx="50" cy="50" r="33" strokeDasharray="5 3" />
+      </svg>
+      <DecoStar className="hero-deco-star--a" />
+      <DecoStar className="hero-deco-star--b" />
+      <i className="hero-deco-dots hero-deco-dots--a" />
+      <i className="hero-deco-dots hero-deco-dots--b" />
+      <Sparkle className="hero-deco-sparkle--1" />
+      <Sparkle className="hero-deco-sparkle--2" />
+      <Sparkle className="hero-deco-sparkle--3" />
+      <Sparkle className="hero-deco-sparkle--4" />
+      <Sparkle className="hero-deco-sparkle--5" />
+      <Sparkle className="hero-deco-sparkle--6" />
+    </div>
+  )
+}
+
 export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?: HeroInfo }) {
   const { t } = useTranslation()
   const lang = useLang()
@@ -34,6 +87,7 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
       {imagesCss && <style>{imagesCss}</style>}
       {/* رسمة بالـCSS بس: موبايل عليه دعوة وحواليه كروت (تأكيد حضور، ضيوف، تاريخ) */}
       <div className="hero-art" aria-hidden="true">
+        <HeroDeco />
         <div className="hero-stage">
           <span className="hero-ring hero-ring--outer" />
           <span className="hero-ring hero-ring--inner" />

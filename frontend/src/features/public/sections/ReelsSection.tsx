@@ -185,13 +185,31 @@ function ReelViewer({
   )
 }
 
-/** الريلز — صف كروت رأسية (9:16) بتشتغل بالـhover وبتتفتح ملء الشاشة. القسم مش بيظهر لو مفيش ريلز. */
+/**
+ * الريلز — صف كروت رأسية (9:16) بتشتغل بالـhover وبتتفتح ملء الشاشة.
+ * اللينك في الترويسة ظاهر دايماً، فلو مفيش ريلز لسه بنعرض رسالة «قريباً» بدل قسم مخفي
+ * (ومنعرضش حاجة قبل ما البيانات توصل عشان مايحصلش وميض).
+ */
 export function ReelsSection({ reels }: { reels: PublicReel[] | undefined }) {
   const { t } = useTranslation()
   const lang = useLang()
   const [open, setOpen] = useState<number | null>(null)
   const close = useCallback(() => setOpen(null), [])
-  if (!reels?.length) return null
+  if (!reels) return null
+
+  if (!reels.length) {
+    return (
+      <section className="section section--reels" id="reels">
+        <div className="wrap">
+          <div className="section-head" data-reveal>
+            <p className="eyebrow">{t('public.reels.eyebrow')}</p>
+            <h2>{t('public.reels.title')}</h2>
+            <p>{t('public.reels.empty')}</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="section section--reels" id="reels">

@@ -96,11 +96,10 @@ export function Header() {
 
   const ordersEnabled = !!site?.ordersEnabled
   const plansPublic = !!site?.plansPublic
-  const hasReels = !!site?.hasReels
   const whatsappUrl = site?.whatsapp.url ?? ''
   const siteName = site ? pick(lang, site.name.ar, site.name.en) : ''
 
-  const spyIds = ['templates', ...(hasReels ? ['reels'] : []), 'how', ...(plansPublic ? ['plans'] : []), 'faq']
+  const spyIds = ['templates', 'reels', 'how', ...(plansPublic ? ['plans'] : []), 'faq']
   const active = useScrollSpy(spyIds, pathname === '/')
 
   useEffect(() => {
@@ -170,11 +169,9 @@ export function Header() {
             <Link to={home('#templates')} className={spyClass('templates')}>
               {t('public.nav.templates')}
             </Link>
-            {hasReels && (
-              <Link to={home('#reels')} className={spyClass('reels')}>
-                {t('public.nav.reels')}
-              </Link>
-            )}
+            <Link to={home('#reels')} className={spyClass('reels')}>
+              {t('public.nav.reels')}
+            </Link>
             <Link to={home('#how')} className={spyClass('how')}>
               {t('public.nav.how')}
             </Link>
