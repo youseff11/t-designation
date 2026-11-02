@@ -11,6 +11,7 @@ import { FeaturesSection } from './sections/FeaturesSection'
 import { HeroSection } from './sections/HeroSection'
 import { OrderSection } from './sections/OrderSection'
 import { PlansSection } from './sections/PlansSection'
+import { ReelsSection } from './sections/ReelsSection'
 import { HomeFooter } from './sections/SiteFooter'
 import { StepsSection } from './sections/StepsSection'
 import { TemplatesSection } from './sections/TemplatesSection'
@@ -54,6 +55,7 @@ export function HomePage() {
     <>
       <HeroSection plansPublic={site.plansPublic} hero={site.hero} />
       <TemplatesSection templates={home.data?.templates} error={home.error} perRow={site.templatesPerRow} />
+      <ReelsSection reels={home.data?.reels} />
       <FeaturesSection />
       {site.plansPublic && <PlansSection site={site} plans={home.data?.plans} />}
       <StepsSection />

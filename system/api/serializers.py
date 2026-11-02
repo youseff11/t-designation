@@ -6,7 +6,7 @@ from django.conf import settings
 from django.db import DatabaseError
 from django.utils.translation import get_language
 
-from ..models import HomeHero, SiteSetting, Template
+from ..models import HomeHero, Reel, SiteSetting, Template
 
 
 def user_payload(user) -> dict | None:
@@ -72,6 +72,8 @@ def site_payload(request) -> dict:
         "ordersEnabled": cfg.orders_enabled,
         "plansPublic": cfg.plans_public,
         "templatesPerRow": cfg.home_templates_per_row,
+        # رابط «ريلز» في الشريط بيظهر بس لو فيه ريل ظاهر
+        "hasReels": Reel.objects.filter(is_active=True).exclude(video="").exists(),
         "whatsapp": {
             # الزر العائم: رابط جاهز + الأساس والرسالة لنافذة الشات
             "floatReady": cfg.whatsapp_float_ready,

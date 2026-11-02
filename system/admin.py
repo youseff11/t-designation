@@ -3,7 +3,7 @@ from django.utils.html import format_html
 
 from .models import (
         Asset, CustomFont, Customer, FavoriteBlock, Guest, Invitation, IntroVideo, MusicTrack, Order,
-    HomeHero, OrderAddon, Plan, PlanAddon, RSVPResponse, SiteSetting, Template, FAQ,
+    HomeHero, OrderAddon, Plan, PlanAddon, Reel, RSVPResponse, SiteSetting, Template, FAQ,
 
 )
 
@@ -128,6 +128,14 @@ class FAQAdmin(admin.ModelAdmin):
     list_editable = ("is_active", "order")
     list_filter = ("is_active",)
     search_fields = ("question_ar", "answer_ar", "question_en", "answer_en")
+
+
+@admin.register(Reel)
+class ReelAdmin(admin.ModelAdmin):
+    list_display = ("__str__", "is_active", "order", "created_at")
+    list_editable = ("is_active", "order")
+    list_filter = ("is_active",)
+    search_fields = ("title_ar", "title_en")
 
 
 @admin.register(SiteSetting)

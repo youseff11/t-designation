@@ -46,11 +46,21 @@ export interface PublicFaq {
   answerEn: string
 }
 
+export interface PublicReel {
+  id: number
+  title: string
+  titleEn: string
+  video: string
+  /** فاضي = الصفحة بتعرض أول فريم من الفيديو نفسه */
+  poster: string
+}
+
 export interface HomeData {
   site: SiteInfo
   templates: PublicTemplate[]
   plans: PublicPlan[]
   faqs: PublicFaq[]
+  reels: PublicReel[]
 }
 
 export interface GalleryData {

@@ -18,7 +18,7 @@ from django.urls import path
 from django.utils.datastructures import MultiValueDict
 
 from ..forms import OrderForm
-from ..models import FAQ, Plan, PlanAddon, SiteSetting, Template
+from ..models import FAQ, Plan, PlanAddon, Reel, SiteSetting, Template
 from .http import ApiError, api_view, client_hash, json_body, json_response
 from .serializers import site_payload, template_card
 
@@ -102,6 +102,16 @@ def _faq_payload(faq: FAQ) -> dict:
     }
 
 
+def _reel_payload(reel: Reel) -> dict:
+    return {
+        "id": reel.pk,
+        "title": reel.title_ar,
+        "titleEn": reel.title_en,
+        "video": reel.video.url,
+        "poster": reel.poster.url if reel.poster else "",
+    }
+
+
 # ---------------------------------------------------------------- القراءة
 @api_view("GET")
 def home(request):
@@ -115,6 +125,7 @@ def home(request):
         "templates": [_gallery_card(t) for t in templates],
         "plans": [_plan_payload(p, addons) for p in plans],
         "faqs": [_faq_payload(f) for f in FAQ.objects.filter(is_active=True)],
+        "reels": [_reel_payload(r) for r in Reel.objects.filter(is_active=True).exclude(video="")],
     }
 
 

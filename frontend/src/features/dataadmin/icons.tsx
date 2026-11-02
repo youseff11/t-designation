@@ -46,6 +46,12 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M3 6h18M16 10a4 4 0 0 1-8 0" />
     </>
   ),
+  reel: (
+    <>
+      <rect x="5" y="2" width="14" height="20" rx="3" />
+      <path d="m10 9 5 3-5 3z" />
+    </>
+  ),
   planaddon: (
     <>
       <rect x="3" y="3" width="18" height="18" rx="2" />

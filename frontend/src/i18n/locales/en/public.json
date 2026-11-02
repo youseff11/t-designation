@@ -19,7 +19,8 @@
     "closeMenu": "Close menu",
     "switchLanguage": "التبديل إلى العربية",
     "switchLanguageShort": "ع",
-    "faq": "FAQ"
+    "faq": "FAQ",
+    "reels": "Reels"
   },
   "hero": {
     "alt": "An elegant digital invitation on a phone surrounded by flowers",
@@ -102,6 +103,15 @@
   "faq": {
     "eyebrow": "Questions",
     "title": "Got a question?"
+  },
+  "reels": {
+    "eyebrow": "Reels",
+    "title": "See our work in motion",
+    "sub": "Short clips of our invitations in action.",
+    "close": "Close",
+    "prev": "Previous",
+    "next": "Next",
+    "play": "Play"
   },
   "cta": {
     "eyebrow": "Ready",

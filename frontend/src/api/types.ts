@@ -21,6 +21,8 @@ export interface SiteInfo {
   plansPublic: boolean
   /** عدد القوالب في الصف بالرئيسية على التليفون (١ أو ٢) */
   templatesPerRow: 1 | 2
+  /** فيه ريلز ظاهرة → رابط «ريلز» في الشريط */
+  hasReels: boolean
   whatsapp: {
     floatReady: boolean
     url: string

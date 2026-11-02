@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-C3cWAN_r.js";import{t}from"./ClipLibraryPage-CCABHK2Z.js";var n=e();function r(){return(0,n.jsx)(t,{kind:`intros`})}export{r as IntrosPage};

@@ -8,7 +8,8 @@ from decimal import Decimal
 from urllib.parse import quote
 
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator, MinValueValidator
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
@@ -17,6 +18,7 @@ from django.utils.translation import get_language
 
 from . import blocks as blocks_engine
 from . import images
+from . import video as video_tools
 
 
 def _pick(ar: str, en: str) -> str:
@@ -1083,4 +1085,65 @@ class HomeHero(models.Model):
                 field.name = field.file.name
             if replaced:
                 old.storage.delete(old.name)               # الصورة القديمة مالهاش لازمة
+        super().save(*args, **kwargs)
+
+
+# --------------------------------------------------------------------------
+REEL_MAX_BYTES = 80 * 1024 * 1024
+
+
+def _reel_path(instance, filename: str) -> str:
+    return f"reels/{uuid.uuid4().hex[:12]}/{filename}"
+
+
+def _reel_size_ok(file) -> None:
+    if file.size > REEL_MAX_BYTES:
+        raise ValidationError("حجم الفيديو أكبر من ٨٠ ميجا.")
+
+
+class Reel(TimeStampedModel):
+    """ريل يتعرض في الصفحة الرئيسية — بيترفع من إدارة البيانات.
+
+    الفيديو بيتخزن من غير إعادة ترميز (الجودة زي ما هي) بس الفهرس بيتنقل لأول الملف
+    فيبدأ العرض فوراً. الغلاف اختياري: لو فاضي وffmpeg موجود بيتولّد من أول فريم،
+    ولو مش موجود الصفحة بتعرض أول فريم من الفيديو نفسه.
+    """
+
+    title_ar = models.CharField("العنوان بالعربية", max_length=120, blank=True)
+    title_en = models.CharField("العنوان بالإنجليزية", max_length=120, blank=True)
+    video = models.FileField(
+        "الفيديو", upload_to=_reel_path,
+        validators=[FileExtensionValidator(["mp4", "mov", "m4v", "webm"]), _reel_size_ok],
+        help_text="رأسي (9:16) أحسن شكل. mp4 أو mov أو webm — لحد ٨٠ ميجا.")
+    poster = models.ImageField("صورة الغلاف", upload_to=_reel_path, blank=True,
+                               help_text="اختياري — لو سبته فاضي بياخد أول فريم.")
+    is_active = models.BooleanField("ظاهر", default=True)
+    order = models.PositiveIntegerField("الترتيب", default=0)
+
+    class Meta:
+        ordering = ["order", "-id"]
+        verbose_name = "ريل"
+        verbose_name_plural = "الريلز"
+
+    def __str__(self) -> str:
+        return self.title_ar or self.title_en or f"ريل {self.pk or ''}".strip()
+
+    def save(self, *args, **kwargs):
+        previous = type(self).objects.filter(pk=self.pk).first() if self.pk else None
+        for name in ("video", "poster"):
+            old = getattr(previous, name) if previous else None
+            field = getattr(self, name)
+            if old and (not field or field.name != old.name):
+                old.storage.delete(old.name)               # الملف القديم مالوش لازمة
+        if self.video and not self.video._committed:       # فيديو جديد لسه ماتخزّنش
+            original = self.video.file
+            if not self.poster:
+                thumb = video_tools.make_thumbnail(original)
+                if thumb:
+                    self.poster, _, _, _ = images.compress(thumb, "image/png")
+            streamable, _ = video_tools.prepare_for_stream(original)
+            self.video.file = streamable
+            self.video.name = streamable.name
+        if self.poster and not self.poster._committed:
+            self.poster = images.compress_hero(self.poster.file)
         super().save(*args, **kwargs)

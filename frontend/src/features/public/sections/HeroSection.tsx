@@ -32,7 +32,56 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
   return (
     <section className="hero">
       {imagesCss && <style>{imagesCss}</style>}
-      <div className="hero-art" role="img" aria-label={t('public.hero.alt')} />
+      {/* رسمة بالـCSS بس: موبايل عليه دعوة وحواليه كروت (تأكيد حضور، ضيوف، تاريخ) */}
+      <div className="hero-art" aria-hidden="true">
+        <div className="hero-stage">
+          <span className="hero-ring hero-ring--outer" />
+          <span className="hero-ring hero-ring--inner" />
+          <div className="hero-phone">
+            <div className="hero-screen">
+              <i className="hs-bar hs-bar--eyebrow" />
+              <span className="hs-mono">&amp;</span>
+              <i className="hs-bar hs-bar--name" />
+              <i className="hs-bar hs-bar--name2" />
+              <i className="hs-rule" />
+              <span className="hs-date">
+                <i />
+                <i />
+                <i />
+              </span>
+              <i className="hs-bar hs-bar--place" />
+              <i className="hs-bar hs-bar--place2" />
+              <i className="hs-btn" />
+            </div>
+          </div>
+          <div className="hero-chip hero-chip--guests">
+            <span className="hero-avatars">
+              <i />
+              <i />
+              <i />
+              <i />
+            </span>
+            <span className="hero-chip-lines">
+              <i />
+              <i />
+            </span>
+          </div>
+          <div className="hero-chip hero-chip--rsvp">
+            <span className="hero-chip-ic">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="m5 12.5 4.2 4.2L19 7" />
+              </svg>
+            </span>
+            <span className="hero-chip-lines">
+              <i />
+              <i />
+            </span>
+          </div>
+          <div className="hero-chip hero-chip--date">
+            <b />
+          </div>
+        </div>
+      </div>
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <div className="hero-copy-in" data-reveal>

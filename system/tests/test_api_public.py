@@ -1,14 +1,17 @@
 """اختبارات واجهة الموقع العام (‎/api/v1/public/‎ و‎/api/v1/orders/‎)."""
 
 import json
+import shutil
+import tempfile
 from decimal import Decimal
 
 from django.core.cache import cache
-from django.test import Client, TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client, TestCase, override_settings
 
 from system.api import public
 from system.models import (
-    FAQ, Customer, Order, OrderAddon, Plan, PlanAddon, SiteSetting, Template,
+    FAQ, Customer, Order, OrderAddon, Plan, PlanAddon, Reel, SiteSetting, Template,
 )
 
 
@@ -38,7 +41,7 @@ class HomeApiTests(PublicApiTestCase):
 
         data = self.client.get("/api/v1/public/home/").json()
 
-        self.assertEqual(set(data), {"site", "templates", "plans", "faqs"})
+        self.assertEqual(set(data), {"site", "templates", "plans", "faqs", "reels"})
         self.assertIn("ordersEnabled", data["site"])
         card = data["templates"][0]
         self.assertEqual((card["name"], card["nameEn"]), ("ذهبي", "Golden"))
@@ -56,6 +59,25 @@ class HomeApiTests(PublicApiTestCase):
         names = [t["name"] for t in self.client.get("/api/v1/public/home/").json()["templates"]]
         self.assertEqual(len(names), public.HOME_TEMPLATES)
         self.assertNotIn("مخفي", names)
+
+    def test_home_reels_active_only_in_order(self):
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, True)
+        with override_settings(MEDIA_ROOT=media):
+            clip = lambda: SimpleUploadedFile("a.mp4", b"not-really-a-video", content_type="video/mp4")
+            second = Reel.objects.create(title_ar="تاني", video=clip(), order=2)
+            first = Reel.objects.create(title_ar="أول", title_en="First", video=clip(), order=1)
+            Reel.objects.create(title_ar="مخفي", video=clip(), is_active=False)
+            home = self.client.get("/api/v1/public/home/").json()
+            reels = home["reels"]
+        self.assertEqual([r["id"] for r in reels], [first.pk, second.pk])
+        self.assertEqual(reels[0]["titleEn"], "First")
+        self.assertTrue(reels[0]["video"].startswith("/media/reels/"))
+        self.assertEqual(reels[0]["poster"], "")
+        self.assertTrue(home["site"]["hasReels"])
+
+    def test_site_has_no_reels_by_default(self):
+        self.assertFalse(self.client.get("/api/v1/public/home/").json()["site"]["hasReels"])
 
     def test_home_hides_inactive_plans_and_faqs(self):
         Plan.objects.create(name="مخفية", slug="hidden", is_active=False)
