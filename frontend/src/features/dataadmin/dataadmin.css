@@ -189,11 +189,11 @@ details > summary { cursor: pointer; padding: 8px 12px; border: 1px dashed var(-
 
 /* المسرح: نفس نسبة صورة الهيرو، والمقاسات بـcqw عشان تكبر وتصغر مع العرض (مع تكبير بسيط عشان الكلام يتقري) */
 .hp-stage {
-  --hp-bg: #fff; --hp-text: #17130f; --hp-muted: #6d675f; --hp-accent: #b8914f;
+  --hp-bg: #fff; --hp-text: #141414; --hp-muted: #6b6b68; --hp-accent: #2f62b3;
   position: relative; aspect-ratio: 1672 / 941; container-type: inline-size; overflow: hidden;
   border: 1px solid var(--line); border-radius: 14px; background: var(--hp-bg); color: var(--hp-text);
 }
-.hp-stage[data-theme="dark"] { --hp-bg: #000; --hp-text: #eeeae4; --hp-muted: #99938b; --hp-accent: #d4ab63; }
+.hp-stage[data-theme="dark"] { --hp-bg: #000; --hp-text: #ededeb; --hp-muted: #9a9a96; --hp-accent: #7ba6e8; }
 .hp-stage.is-active { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hp-art { position: absolute; inset: 0; background: center / cover no-repeat; }
 .hp-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, var(--hp-bg) 0%, color-mix(in srgb, var(--hp-bg) 70%, transparent) 26%, transparent 55%); }

@@ -24,19 +24,19 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: 'Amiri', Georgia, serif;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-weight: 700;
   line-height: 1.3;
   margin: 0 0 0.5em;
 }
-/* الإنجليزي بخط لاتيني كلاسيكي — Amiri مصمّم للعربي والنسخة اللاتينية منه ضعيفة */
+/* الإنجليزي بخط لاتيني بسيريف عريض — El Messiri نسخته اللاتينية أخف من اللازم للعناوين */
 html[lang='en'] h1,
 html[lang='en'] h2,
 html[lang='en'] h3,
 html[lang='en'] h4 {
-  font-family: 'Cormorant Garamond', 'Amiri', Georgia, serif;
+  font-family: var(--font-display-en);
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 p {
   margin: 0 0 1em;
@@ -70,7 +70,7 @@ html[lang='en'] .eyebrow {
   justify-content: center;
   gap: 8px;
   padding: 11px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: none;
   color: inherit;
@@ -97,7 +97,7 @@ html[lang='en'] .eyebrow {
 }
 .btn--gold {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .btn--gold:hover {
   filter: brightness(1.07);
@@ -135,7 +135,7 @@ html[lang='en'] .eyebrow {
   top: 0;
   z-index: 100;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   padding: 10px 20px;
   border-radius: 0 0 12px 12px;
   text-decoration: none;

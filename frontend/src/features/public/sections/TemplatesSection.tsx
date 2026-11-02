@@ -100,10 +100,15 @@ export function TemplatesSection({ templates, error, perRow = 1 }: Props) {
   return (
     <section className="section" id="templates">
       <div className="wrap">
-        <div className="section-head" data-reveal>
-          <p className="eyebrow">{t('public.templates.eyebrow')}</p>
-          <h2>{t('public.templates.title')}</h2>
-          <p>{t('public.templates.sub')}</p>
+        <div className="section-head section-head--split" data-reveal>
+          <div>
+            <p className="eyebrow">{t('public.templates.eyebrow')}</p>
+            <h2>{t('public.templates.title')}</h2>
+            <p>{t('public.templates.sub')}</p>
+          </div>
+          <Link className="section-link" to="/templates">
+            {t('public.templates.all')}
+          </Link>
         </div>
         <div className="grid grid--4" data-per-row={perRow}>
           {templates?.map((template) => <HomeTemplateCard key={template.id} template={template} />)}

@@ -23,44 +23,45 @@
   },
   "hero": {
     "alt": "An elegant digital invitation on a phone surrounded by flowers",
-    "top": "Wedding invitations",
-    "main": "that tell your love story",
-    "sub": "Refined, made-to-order designs for a day worth remembering",
-    "start": "Start designing",
-    "plans": "View plans",
+    "top": "Digital invitations for weddings and events",
+    "main": "Your invitation, your way",
+    "sub": "Pick a template, add your details and send one link to every guest. No printing, no waiting.",
+    "start": "Pick a template",
+    "plans": "Pricing",
     "trust": {
       "templatesValue": "50+",
-      "templatesLabel": "ready-made templates",
+      "templatesLabel": "templates",
       "deliveryValue": "24 hours",
-      "deliveryLabel": "average delivery",
+      "deliveryLabel": "to deliver",
       "editableValue": "100%",
       "editableLabel": "editable"
     }
   },
   "templates": {
-    "eyebrow": "Gallery",
-    "title": "Carefully curated templates",
-    "sub": "Elegant designs to begin the story of your special day.",
+    "eyebrow": "Templates",
+    "title": "Start from a design you like",
+    "sub": "Pick a template and try it live before you order.",
+    "all": "All templates",
     "empty": "No templates published yet.",
-    "preview": "Preview template"
+    "preview": "Try it"
   },
   "features": {
-    "eyebrow": "Features",
-    "title": "Features That Make Your Invitation Unique",
-    "sub": "Everything your guests need in one elegant invitation.",
-    "countdown": { "title": "Countdown Timer", "text": "Every moment until your wedding day" },
-    "gallery": { "title": "Photo Gallery", "text": "Share your most beautiful memories" },
-    "rsvp": { "title": "RSVP Confirmation", "text": "Easy guest list management" },
-    "whatsapp": { "title": "WhatsApp Sharing", "text": "Send your invitation in one tap" },
-    "music": { "title": "Background Music", "text": "Add a romantic touch to your invitation" },
-    "maps": { "title": "Google Maps", "text": "Make your venue easy to find" },
-    "qr": { "title": "Invitation QR Code", "text": "Quick and direct access to your invitation" },
-    "calendar": { "title": "Add to Calendar", "text": "Keep the wedding date on every calendar" },
-    "venueQr": { "title": "Venue Entry QR", "text": "Faster and more organized guest entry" }
+    "eyebrow": "What you get",
+    "title": "Everything your invitation needs",
+    "sub": "Small details that make it easier for your guests.",
+    "countdown": { "title": "Countdown", "text": "Counts the days to your date" },
+    "gallery": { "title": "Photo gallery", "text": "Show your moments inside the invitation" },
+    "rsvp": { "title": "RSVP", "text": "A guest list that updates live" },
+    "whatsapp": { "title": "WhatsApp sharing", "text": "One link, ready to send" },
+    "music": { "title": "Music", "text": "Choose the track that sounds like you" },
+    "maps": { "title": "Venue on the map", "text": "Guests arrive without asking" },
+    "qr": { "title": "Invitation QR", "text": "Opens with a single scan" },
+    "calendar": { "title": "Add to calendar", "text": "Guests remember the date by themselves" },
+    "venueQr": { "title": "Venue entry QR", "text": "Quick check-in at the door" }
   },
   "plans": {
     "eyebrow": "Pricing",
-    "title": "Clear packages, no surprises",
+    "title": "Clear pricing from the start",
     "popular": "Most popular",
     "choose": "Choose {{plan}}",
     "addonsTitle": "Optional add-ons",
@@ -69,12 +70,12 @@
     "noAddons": "No add-ons available"
   },
   "steps": {
-    "eyebrow": "How it works",
-    "title": "Just four steps",
-    "pick": { "title": "Pick a template", "text": "Browse the gallery and choose what suits your occasion." },
-    "send": { "title": "Send your details", "text": "Names, date, venue and anything else you'd like." },
-    "design": { "title": "We design it", "text": "We fine-tune everything and send you a preview before publishing." },
-    "link": { "title": "Get your link", "text": "A private link, ready to send to every guest." }
+    "eyebrow": "The process",
+    "title": "From idea to link in four steps",
+    "pick": { "title": "Pick", "text": "Browse the templates and try what you like." },
+    "send": { "title": "Share the details", "text": "Names, date, venue and any extras." },
+    "design": { "title": "We design, you review", "text": "You get a preview before anything goes live." },
+    "link": { "title": "Share the link", "text": "One link to send to every guest." }
   },
   "order": {
     "eyebrow": "Order now",
@@ -100,14 +101,14 @@
     "networkError": "Couldn't send your request. Please try again."
   },
   "faq": {
-    "eyebrow": "Help",
-    "title": "Frequently asked questions"
+    "eyebrow": "Questions",
+    "title": "Got a question?"
   },
   "cta": {
-    "eyebrow": "Your next step",
-    "title": "Ready to design your invitation?",
-    "sub": "Get in touch and let's start an invitation worthy of your occasion.",
-    "button": "Get in touch"
+    "eyebrow": "Ready",
+    "title": "Let's start your invitation",
+    "sub": "Message us on WhatsApp and we'll reply with details and pricing.",
+    "button": "Start the chat"
   },
   "footer": {
     "social": "Social links"

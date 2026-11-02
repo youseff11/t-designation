@@ -1,35 +1,42 @@
 /* ================================================================
-   متغيّرات التصميم — منقولة حرفياً من static/css/site.css.
-   اللايت أبيض والدارك أسود. النص مش أسود/أبيض خالص عن قصد:
-   #000 على #fff (والعكس) بيعمل إجهاد للعين وهالة حوالين الحروف العربية الرفيعة.
+   متغيّرات التصميم — الهوية «أبيض وأسود».
+   اللايت أبيض والدارك أسود، واللون المميّز أزرق هادي بيظهر في تفاصيل صغيرة بس.
+   النص مش أسود/أبيض خالص عن قصد: #000 على #fff (والعكس) بيعمل إجهاد للعين
+   وهالة حوالين الحروف العربية الرفيعة.
    ================================================================ */
 :root {
   --bg: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f6f5f3;
-  --text: #17130f;
-  --muted: #6d675f;
-  --accent: #b8914f;
-  --accent-soft: rgba(184, 145, 79, 0.1);
-  --line: #e9e6e1;
-  --ok: #3f8a55;
-  --danger: #c1544d;
-  --radius: 14px;
-  --shadow: 0 20px 50px -34px rgba(23, 19, 15, 0.45);
-  --shadow-nav: 0 14px 34px -20px rgba(23, 19, 15, 0.35);
-  --nav-space: 94px; /* 16 + 62 + 16 — الهيرو بيتسحب تحتها */
+  --surface-2: #f5f5f4;
+  --text: #141414;
+  --muted: #6b6b68;
+  --accent: #2f62b3;
+  --accent-soft: rgba(47, 98, 179, 0.1);
+  --on-accent: #ffffff; /* لون النص فوق خلفية اللون المميّز */
+  --line: #e7e7e5;
+  --ok: #2f8f57;
+  --danger: #c2473f;
+  --radius: 18px;
+  --radius-sm: 8px; /* الأزرار والحقول: شبه مربّعة بدل الكبسولة */
+  --shadow: 0 18px 40px -32px rgba(0, 0, 0, 0.22);
+  --shadow-nav: 0 12px 30px -22px rgba(0, 0, 0, 0.18);
+  --nav-space: 72px; /* ارتفاع شريط الترويسة الثابت */
+
+  --font-display: 'El Messiri', 'Amiri', Georgia, serif;
+  --font-display-en: 'Playfair Display', 'El Messiri', Georgia, serif;
 }
 
 [data-theme='dark'] {
   --bg: #000000;
-  --surface: #0d0d0d;
-  --surface-2: #151514;
-  --text: #eeeae4;
-  --muted: #99938b;
-  --accent: #d4ab63;
-  --accent-soft: rgba(212, 171, 99, 0.13);
-  --line: #262523;
-  --ok: #5cb075;
+  --surface: #0c0c0c;
+  --surface-2: #141414;
+  --text: #ededeb;
+  --muted: #9a9a96;
+  --accent: #7ba6e8;
+  --accent-soft: rgba(123, 166, 232, 0.13);
+  --on-accent: #081220;
+  --line: #262625;
+  --ok: #5cc48a;
   --shadow: 0 24px 60px -34px #000;
   --shadow-nav: 0 16px 40px -22px rgba(0, 0, 0, 0.9);
 }

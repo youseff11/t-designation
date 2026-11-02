@@ -10,13 +10,13 @@
 /* ---------------------------------------------------------- الأزرار */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 11px 22px; border-radius: 999px; border: 1px solid transparent;
+  padding: 11px 22px; border-radius: var(--radius-sm); border: 1px solid transparent;
   background: none; color: inherit; cursor: pointer; font: inherit; font-size: 14px;
   text-decoration: none; transition: transform .18s, filter .18s, border-color .18s;
 }
 .btn:hover { transform: translateY(-2px); }
 .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.btn--gold { background: var(--accent); color: #fff; }
+.btn--gold { background: var(--accent); color: var(--on-accent); }
 .btn--gold:hover { filter: brightness(1.07); }
 .btn--ghost { border-color: var(--line); }
 .btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
@@ -31,7 +31,7 @@
 
 .skip-link {
   position: absolute; inset-inline-start: -9999px; top: 0; z-index: 100;
-  background: var(--accent); color: #fff; padding: 10px 20px;
+  background: var(--accent); color: var(--on-accent); padding: 10px 20px;
   border-radius: 0 0 12px 12px; text-decoration: none; font-size: 14px;
 }
 .skip-link:focus { inset-inline-start: 24px; }
@@ -296,7 +296,7 @@ html[lang="en"][data-theme="dark"] .hero-art {
 .tpl-cover {
   aspect-ratio: 3/4; background: linear-gradient(150deg, var(--accent-soft), var(--surface-2));
   display: grid; place-items: center; color: var(--accent);
-  font-family: "Amiri", serif; font-size: 30px; background-size: cover; background-position: center;
+  font-family: var(--font-display); font-size: 30px; background-size: cover; background-position: center;
 }
 .tpl-body { padding: 15px 16px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .tpl-body h3 { margin: 0; font-size: 17px; }
@@ -313,11 +313,11 @@ html[lang="en"] .tpl-meta { letter-spacing: .1em; }
 .plan--featured { border-color: var(--accent); border-width: 2px; }
 .plan-badge {
   position: absolute; top: -12px; inset-inline-start: 22px;
-  background: var(--accent); color: #fff; font-size: 11px;
+  background: var(--accent); color: var(--on-accent); font-size: 11px;
   padding: 3px 12px; border-radius: 999px; letter-spacing: normal;
 }
 html[lang="en"] .plan-badge { letter-spacing: .1em; }
-.plan-price { font-family: "Amiri", serif; font-size: 40px; color: var(--accent); line-height: 1; }
+.plan-price { font-family: var(--font-display); font-size: 40px; color: var(--accent); line-height: 1; }
 .plan-price small { font-size: 14px; color: var(--muted); font-family: inherit; }
 .plan ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; font-size: 14px; }
 .plan li::before { content: "✓"; color: var(--accent); margin-inline-end: 8px; }
@@ -840,7 +840,7 @@ html[lang="en"] .plan-badge { letter-spacing: .1em; }
 }
 .faq-item summary {
   cursor: pointer; list-style: none; padding: 18px 22px;
-  color: var(--text); font-family: "Amiri", Georgia, serif; font-size: 20px;
+  color: var(--text); font-family: var(--font-display); font-size: 20px;
   font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 14px;
 }
 .faq-item summary::-webkit-details-marker { display: none; }
@@ -1103,7 +1103,7 @@ html[lang="en"] .feature-en { display: inline; }
 }
 .hero-trust li:last-child { border-inline-end: 0; }
 .hero-trust b {
-  font-family: "Amiri", Georgia, serif; color: var(--accent);
+  font-family: var(--font-display); color: var(--accent);
   font-size: clamp(15px, 1.5vw, 21px); line-height: 1.2; font-weight: 500;
 }
 .hero-trust span { font-size: clamp(10px, .95vw, 12.5px); color: var(--muted); line-height: 1.3; }
@@ -1127,7 +1127,7 @@ html[lang="en"] .feature-en { display: inline; }
               color-mix(in srgb, var(--accent) 88%, #fff) 0%,
               var(--accent) 52%,
               color-mix(in srgb, var(--accent) 82%, #000) 100%);
-  color: #fff; border-color: transparent;
+  color: var(--on-accent); border-color: transparent;
   box-shadow: 0 10px 24px -14px color-mix(in srgb, var(--accent) 85%, transparent);
 }
 .btn--gold:hover {
@@ -1328,7 +1328,7 @@ html.js [data-reveal].is-in { opacity: 1; transform: none; }
   display: grid; place-items: center; margin: 0 auto 16px;
   border-radius: 50%; border: 1px solid var(--accent);
   background: var(--step-punch); color: var(--accent);
-  font-family: "Amiri", Georgia, serif; font-size: 19px; line-height: 1;
+  font-family: var(--font-display); font-size: 19px; line-height: 1;
   /* من غير ‎direction: ltr‎ عن قصد: الأرقام بتتعرض صح من غيرها، ولو اتحطت
      بتخلّي ‎inset-inline-start‎ للدايرة نفسها يتحسب شمال بدل يمين في RTL. */
   letter-spacing: normal;
@@ -1509,3 +1509,232 @@ main { display: block; }
 .wa-float .wa-icon { width: .875em; height: 1em; }
 .foot-socials a[aria-label="WhatsApp"] .wa-icon { width: .875em; height: 1em; }
 .wa-bubble-time svg { color: #53bdeb; font-size: 11px; width: .875em; height: 1em; }
+
+
+
+/* ================================================================
+   إعادة تصميم الرئيسية — أسلوب تحريري (نص كبير، خطوط رفيعة، من غير زخارف)
+   اللايت أبيض والدارك أسود والألوان من styles/tokens.css. البلوك ده في الآخر
+   عشان يغلب اللي فوقه من غير !important؛ حذفه بيرجّع الشكل القديم.
+   ================================================================ */
+
+:root { --wrap: min(1180px, 100% - 36px); }
+
+/* ---- الأزرار: الأساسي سادة بلون النص (أسود في اللايت وأبيض في الدارك) ---- */
+.btn { border-radius: var(--radius-sm); }
+.btn--gold {
+  background: var(--text); color: var(--bg); border-color: var(--text);
+  box-shadow: none;
+}
+.btn--gold:hover { box-shadow: none; filter: none; opacity: .86; }
+.btn--outline { border-color: var(--text); color: var(--text); background: transparent; }
+.btn--outline:hover { background: var(--text); color: var(--bg); box-shadow: none; }
+.btn--shine::after { display: none; }
+.plan:hover .btn--gold { filter: none; box-shadow: none; }
+
+/* ---- الترويسة: شريط عادي بخط سفلي بدل الجزيرة العائمة ---- */
+.nav {
+  height: var(--nav-space); padding: 0; pointer-events: auto;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-shell,
+.nav.is-stuck .nav-shell {
+  width: var(--wrap); height: var(--nav-space); padding-inline: 0;
+  border: 0; border-radius: 0; background: none; box-shadow: none;
+  backdrop-filter: none; -webkit-backdrop-filter: none; transform: none;
+}
+.nav.is-stuck .brand { height: 44px; }
+.nav-links { gap: 26px; }
+.nav-links a {
+  padding: 6px 0; border-radius: 0; color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a.is-active {
+  background: none; color: var(--text); font-weight: 500; border-bottom-color: var(--text);
+}
+.lang-btn, .icon-btn { border-radius: var(--radius-sm); }
+.nav-burger { border-radius: var(--radius-sm); }
+
+/* ---- عناوين الأقسام: محاذاة للبداية بدل المنتصف، من غير زخرفة ---- */
+.section { padding: 96px 0; border-top: 1px solid var(--line); }
+.section--alt, .section--faq, .section--features, .home-cta, .foot { background: var(--bg); }
+.section-head { text-align: start; margin-bottom: 52px; max-width: 640px; }
+.section-head::after { content: none; display: none; }
+.section-head h2 { font-size: clamp(30px, 4.6vw, 52px); line-height: 1.15; margin-bottom: 14px; }
+.section-head p { margin-inline: 0; }
+.section-head--split {
+  max-width: none; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+}
+.section-head--split > div { max-width: 640px; }
+.section-link {
+  flex: none; color: var(--text); text-decoration: none; font-size: 15px; font-weight: 500;
+  padding-bottom: 4px; border-bottom: 1px solid var(--text); white-space: nowrap;
+}
+.section-link:hover { color: var(--accent); border-color: var(--accent); }
+.eyebrow {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  font-size: 13px; color: var(--muted); text-transform: none;
+}
+.eyebrow::before { content: ""; width: 24px; height: 1px; background: var(--accent); }
+html[lang="en"] .eyebrow { letter-spacing: .12em; text-transform: uppercase; }
+
+/* ---- الهيرو: الصورة خلفية كاملة بعرض الشاشة، والنص محاذي للبداية فوق المساحة الفاضية فيها ---- */
+.hero { display: grid; margin-top: 0; padding: 0; background: var(--bg); }
+.hero-art, .hero-grid { grid-area: 1 / 1; }
+.hero-grid {
+  position: relative; z-index: 2; display: flex; align-items: center; justify-content: flex-start;
+  min-height: clamp(540px, 52vw, 800px); padding-block: 40px 56px; pointer-events: none;
+}
+.hero-copy { position: static; display: block; width: min(46%, 540px); margin-left: 0; margin-right: auto; padding: 0; pointer-events: auto; }
+.hero-copy-in { width: auto; margin: 0; text-align: start; }
+.h1-top {
+  display: block; margin-bottom: 18px; color: var(--accent);
+  font-family: inherit; font-size: clamp(14px, 1.3vw, 17px); font-weight: 500; line-height: 1.5;
+}
+.h1-main {
+  color: var(--text); font-weight: 700; line-height: 1.1;
+  font-size: clamp(38px, 4.8vw, 74px); text-wrap: balance;
+}
+.hero-copy h1 { margin: 0; }
+.hero-sub { max-width: 32ch; margin: 22px 0 0; font-size: clamp(15px, 1.35vw, 18px); text-align: start; }
+.hero-actions { justify-content: flex-start; margin-top: 30px; }
+.hero-trust {
+  justify-content: flex-start; gap: clamp(22px, 3.4vw, 46px);
+  margin: 40px 0 0; padding-top: 22px; border-top: 1px solid var(--line);
+}
+.hero-trust li { align-items: flex-start; padding-inline: 0; border: 0; }
+.hero-trust b { font-size: clamp(20px, 2.2vw, 30px); font-weight: 700; color: var(--text); }
+.hero-trust span { font-size: 13px; }
+
+.hero-art {
+  position: relative; width: 100%; aspect-ratio: auto; border: 0; border-radius: 0; overflow: hidden;
+  background-size: cover; background-position: center;
+}
+html:not([data-theme="dark"]) .hero-art { background-color: var(--bg); background-blend-mode: multiply; }
+
+/* ---- كروت القوالب: صورة بحواف كبيرة وتحتها الاسم، من غير صندوق ---- */
+.tpl-card { background: none; border: 0; box-shadow: none; border-radius: 0; }
+.tpl-card:hover { transform: none; box-shadow: none; border-color: transparent; }
+.tpl-cover { border-radius: var(--radius); border: 1px solid var(--line); aspect-ratio: 4 / 5; }
+.tpl-card:hover .tpl-cover { border-color: var(--text); }
+.tpl-body { padding: 16px 2px 0; }
+.tpl-body h3 { font-size: 19px; }
+
+/* ---- المميزات: قايمة بخطوط رفيعة بدل كروت ---- */
+.feature-grid { max-width: none; gap: 0 56px; }
+.feature-card, .feature-card:hover {
+  min-height: 0; padding: 26px 0; text-align: start; border: 0; border-top: 1px solid var(--line);
+  border-radius: 0; background: none; box-shadow: none; transform: none;
+  display: grid; grid-template-columns: 28px 1fr; column-gap: 16px; align-items: start; justify-content: stretch;
+}
+.feature-icon, .feature-card:hover .feature-icon {
+  grid-row: 1 / span 2; width: 28px; height: 28px; margin: 2px 0 0;
+  border: 0; border-radius: 0; background: none; color: var(--accent); transform: none;
+}
+.feature-icon svg { width: 26px; height: 26px; }
+.feature-card h3 { margin: 0 0 4px; font-size: 19px; }
+.feature-card p { font-size: 14.5px; }
+
+/* ---- الباقات ---- */
+.plan { border-radius: var(--radius); box-shadow: none; }
+.plan:hover { transform: none; box-shadow: none; }
+.plan--featured { border: 1.5px solid var(--text); box-shadow: none; }
+.plan-badge { background: var(--text); color: var(--bg); border-radius: 6px; }
+.plan-price { color: var(--text); }
+
+/* ---- الخطوات: أرقام كبيرة فوق خط بدل الدواير المتوصّلة ---- */
+.steps { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 40px; }
+.steps::before, .step::after, .step:not(:last-child)::after { display: none; }
+.step { text-align: start; padding: 22px 0 0; border-top: 1px solid var(--text); }
+.step-number,
+.step:hover .step-number {
+  position: static; display: block; width: auto; height: auto; margin: 0 0 34px;
+  border: 0; border-radius: 0; background: none; box-shadow: none; transform: none;
+  color: var(--text); font-size: clamp(44px, 5.4vw, 76px); font-weight: 300; line-height: 1;
+  font-family: var(--font-display-en);
+}
+.step h3 { font-size: 21px; }
+.step p { max-width: 26ch; margin-inline: 0; }
+
+/* ---- الأسئلة: العنوان على جنب والأسئلة خطوط مفتوحة ---- */
+.section--faq .wrap--narrow {
+  width: var(--wrap); display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(28px, 6vw, 88px); align-items: start;
+}
+.section--faq .section-head { position: sticky; top: calc(var(--nav-space) + 24px); margin: 0; }
+.faq-item, .faq-item:hover, .faq-item[open] {
+  border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: none; box-shadow: none;
+}
+.faq-item:first-child { border-top: 1px solid var(--line); }
+.faq-item summary { padding: 22px 0; font-size: 20px; }
+.faq-answer { padding: 0 0 24px; max-width: 60ch; }
+
+/* ---- قسم الختام: كتلة معكوسة اللون (أسود في اللايت وأبيض في الدارك) ---- */
+.home-cta { background: var(--text); color: var(--bg); padding-block: clamp(72px, 10vw, 128px); border-top: 0; }
+.home-cta-in {
+  width: var(--wrap); max-width: none; margin-inline: auto; padding: 0; border: 0; border-radius: 0;
+  background: none; text-align: start;
+}
+.home-cta-in::before, .home-cta-in::after { display: none; }
+.home-cta .eyebrow { color: color-mix(in srgb, var(--bg) 62%, transparent); }
+.home-cta .eyebrow::before { background: color-mix(in srgb, var(--bg) 62%, transparent); }
+.home-cta h2 { color: var(--bg); font-size: clamp(34px, 6vw, 76px); line-height: 1.08; max-width: 14ch; margin-bottom: 18px; }
+.home-cta p:not(.eyebrow) { color: color-mix(in srgb, var(--bg) 68%, transparent); max-width: 44ch; }
+.home-cta .btn--gold { background: var(--bg); color: var(--text); border-color: var(--bg); }
+
+/* ---- الفوتر ---- */
+.foot { border-top: 1px solid var(--line); }
+.foot-socials a { border-radius: var(--radius-sm); }
+/* أيقونة واتساب مصمتة: قاعدة ‎.foot-socials svg‎ كانت بتخلّيها خط رفيع (fill:none) فتختفي */
+.foot-socials a[aria-label="WhatsApp"] svg { width: 22px; height: 22px; fill: currentColor; stroke: none; }
+
+/* ---- الشاشات الصغيرة ---- */
+@media (max-width: 900px) {
+  .section--faq .wrap--narrow { grid-template-columns: 1fr; }
+  .section--faq .section-head { position: static; margin-bottom: 28px; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 32px; }
+}
+@media (max-width: 780px) {
+  :root { --nav-space: 64px; }
+  .nav { height: var(--nav-space); padding: 0; }
+  .nav-shell, .nav.is-stuck .nav-shell { height: var(--nav-space); transform: none; }
+  .nav-links {
+    top: 100%; inset-inline: -18px; gap: 0; padding: 8px 18px 14px; border-radius: 0 0 var(--radius) var(--radius);
+    border-width: 0 0 1px; background: var(--bg);
+  }
+  .nav-links a { padding: 14px 0; border-radius: 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+  .nav-links a.is-active { border-bottom-color: var(--line); color: var(--accent); }
+  .nav-cta-inline { margin-top: 14px; }
+  .brand { height: 34px; }
+  /* على التليفون الصورة كاملة فوق والكلام تحتها (النص مايبقاش فوق الورد) */
+  .hero { display: block; }
+  .hero-grid { display: block; min-height: 0; padding-block: 28px 8px; pointer-events: auto; }
+  .hero-art { aspect-ratio: 1672 / 941; }
+  .hero-art::before { display: none; }
+  .hero-copy { width: auto; margin: 0; }
+  .hero-copy-in { width: auto; margin: 0; text-align: start; }
+  .hero-copy h1 { font-size: inherit; }
+  .hero-sub { margin-inline: 0; font-size: 16px; }
+  .hero-actions { justify-content: flex-start; }
+  .hero-actions .btn { flex: 1 1 auto; }
+  .hero-trust { margin-top: 32px; gap: 20px; }
+  .hero-trust li { padding-inline: 0; }
+  .hero-art { background-position: 100% center; aspect-ratio: 1 / 0.9; }
+  .section { padding: 64px 0; }
+  .section-head { margin-bottom: 34px; }
+  .section-head--split { align-items: flex-start; flex-direction: column; gap: 16px; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .feature-card { min-height: 0; padding: 20px 0; border-radius: 0; }
+  .feature-card h3 { font-size: 18px; }
+  .feature-card p { font-size: 14px; line-height: 1.7; }
+  .feature-icon { width: 28px; height: 28px; margin: 2px 0 0; }
+  .steps { grid-template-columns: 1fr 1fr; gap: 32px 20px; }
+  .step { padding: 18px 0 0; }
+  .step-number { position: static; margin: 0 0 22px; font-size: 44px; }
+  .step h3 { font-size: 17px; margin-bottom: 4px; }
+  .step p { font-size: 13.5px; }
+  .home-cta-in { padding: 0; }
+}

@@ -51,7 +51,7 @@
   margin: 0 0 8px;
 }
 .pass-top h1 {
-  font-family: 'Amiri', Georgia, serif;
+  font-family: var(--font-display);
   font-weight: 400;
   margin: 0;
   font-size: 27px;

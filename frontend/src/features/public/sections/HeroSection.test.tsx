@@ -31,8 +31,8 @@ afterEach(async () => {
 describe('HeroSection settings', () => {
   it('falls back to the translated defaults when nothing is set', () => {
     show(EMPTY)
-    expect(screen.getByText('تعكس قصة حبك')).toBeInTheDocument()
-    expect(screen.getByText('ابدأ تصميم دعوتك')).toBeInTheDocument()
+    expect(screen.getByText('دعوتك بطابعك أنت')).toBeInTheDocument()
+    expect(screen.getByText('اختر قالبك')).toBeInTheDocument()
     expect(document.querySelector('style')).toBeNull()
   })
 
@@ -43,10 +43,10 @@ describe('HeroSection settings', () => {
     }
     show(hero)
     expect(screen.getByText('عنوان مخصص')).toBeInTheDocument()
-    expect(screen.queryByText('تعكس قصة حبك')).toBeNull()
-    expect(screen.getByText('تصميم دعوات زفاف')).toBeInTheDocument() // السطر الصغير لسه الافتراضي
+    expect(screen.queryByText('دعوتك بطابعك أنت')).toBeNull()
+    expect(screen.getByText('دعوات رقمية للأفراح والمناسبات')).toBeInTheDocument() // السطر الصغير لسه الافتراضي
     expect(screen.getByText('+٨٠')).toBeInTheDocument()
-    expect(screen.getByText('قالب جاهز')).toBeInTheDocument() // التسمية فاضية → الافتراضي
+    expect(screen.getByText('قالب متاح')).toBeInTheDocument() // التسمية فاضية → الافتراضي
   })
 
   it('shows the text of the current language', async () => {

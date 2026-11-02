@@ -4,7 +4,6 @@ import { useLocation } from 'react-router-dom'
 
 import { useSite } from '@/api/hooks'
 import { useDocumentTitle } from '@/lib/useDocumentTitle'
-import { FxSky } from './fx'
 import { usePublicHome } from './hooks'
 import { CtaSection } from './sections/CtaSection'
 import { FaqSection } from './sections/FaqSection'
@@ -53,7 +52,6 @@ export function HomePage() {
 
   return (
     <>
-      <FxSky />
       <HeroSection plansPublic={site.plansPublic} hero={site.hero} />
       <TemplatesSection templates={home.data?.templates} error={home.error} perRow={site.templatesPerRow} />
       <FeaturesSection />
