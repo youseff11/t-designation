@@ -1532,31 +1532,59 @@ main { display: block; }
 .btn--shine::after { display: none; }
 .plan:hover .btn--gold { filter: none; box-shadow: none; }
 
-/* ---- الترويسة: شريط عادي بخط سفلي بدل الجزيرة العائمة ---- */
+/* ---- الترويسة: ثلاث مناطق (الروابط | الشعار في النص | الأدوات) بخط رفيع وحركة هادية ----
+   الارتفاع ثابت (--nav-space) حتى عند النزول: تغيير ارتفاع شريط sticky بيرعّش الصفحة. */
 .nav {
   height: var(--nav-space); padding: 0; pointer-events: auto;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg); border-bottom: 1px solid var(--line);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+  transition: box-shadow .3s ease, background-color .3s ease;
 }
+.nav.is-stuck { box-shadow: 0 18px 32px -28px rgba(0, 0, 0, .45); }
 .nav-shell,
 .nav.is-stuck .nav-shell {
-  width: var(--wrap); height: var(--nav-space); padding-inline: 0;
+  width: var(--wrap); height: var(--nav-space); padding-inline: 0; gap: 20px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center;
   border: 0; border-radius: 0; background: none; box-shadow: none;
   backdrop-filter: none; -webkit-backdrop-filter: none; transform: none;
 }
-.nav.is-stuck .brand { height: 44px; }
-.nav-links { gap: 26px; }
+.brand { grid-column: 2; grid-row: 1; margin: 0; height: 46px; transition: transform .3s ease, opacity .18s ease; }
+.nav.is-stuck .brand { height: 46px; transform: scale(.9); }
+.nav-links { grid-column: 1; grid-row: 1; margin: 0; justify-self: start; gap: 34px; }
+.nav-tools { grid-column: 3; grid-row: 1; margin: 0; justify-self: end; gap: 4px; }
+
+/* الروابط: نص صغير متباعد، والخط بيطلع من النص عند المرور وللقسم الحالي */
 .nav-links a {
-  padding: 6px 0; border-radius: 0; color: var(--muted);
-  border-bottom: 2px solid transparent;
+  position: relative; padding: 8px 0; border: 0; border-radius: 0; background: none;
+  color: var(--text); font-size: 14px; letter-spacing: .02em; font-weight: 400;
+}
+html[lang="en"] .nav-links a { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+.nav-links a::after {
+  content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 1px; background: var(--text);
+  transform: scaleX(0); transition: transform .32s cubic-bezier(.22, .8, .3, 1);
 }
 .nav-links a:hover { color: var(--text); }
-.nav-links a.is-active {
-  background: none; color: var(--text); font-weight: 500; border-bottom-color: var(--text);
+.nav-links a:hover::after, .nav-links a.is-active::after { transform: scaleX(1); }
+.nav-links a.is-active { background: none; color: var(--text); font-weight: 500; }
+
+/* أدوات من غير إطارات: اللغة والمظهر أيقونات هادية */
+.lang-btn, .icon-btn {
+  height: 40px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--text);
 }
-.lang-btn, .icon-btn { border-radius: var(--radius-sm); }
-.nav-burger { border-radius: var(--radius-sm); }
+.icon-btn { width: 40px; }
+.lang-btn:hover, .icon-btn:hover { color: var(--accent); border: 0; transform: none; background: var(--accent-soft); }
+.lang-btn span { letter-spacing: .1em; }
+
+/* «اطلب دعوتك»: إطار رفيع وحروف متباعدة، بيتملي عند المرور */
+.nav-tools .nav-cta {
+  margin-inline-start: 12px; padding: 11px 24px; min-height: 0; border-radius: 2px;
+  background: none; color: var(--text); border: 1px solid var(--text); box-shadow: none;
+  font-size: 13px; font-weight: 500; letter-spacing: .06em;
+  transition: background-color .25s ease, color .25s ease;
+}
+html[lang="en"] .nav-tools .nav-cta { letter-spacing: .14em; text-transform: uppercase; font-size: 11.5px; }
+.nav-tools .nav-cta:hover { background: var(--text); color: var(--bg); opacity: 1; transform: none; box-shadow: none; }
+.nav-burger { border-radius: var(--radius-sm); border: 0; }
 
 /* ---- عناوين الأقسام: محاذاة للبداية بدل المنتصف، من غير زخرفة ---- */
 .section { padding: 96px 0; border-top: 1px solid var(--line); }
@@ -1700,14 +1728,20 @@ html:not([data-theme="dark"]) .hero-art { background-color: var(--bg); backgroun
 @media (max-width: 780px) {
   :root { --nav-space: 64px; }
   .nav { height: var(--nav-space); padding: 0; }
-  .nav-shell, .nav.is-stuck .nav-shell { height: var(--nav-space); transform: none; }
+  .nav-shell, .nav.is-stuck .nav-shell { height: var(--nav-space); transform: none; display: flex; gap: 8px; }
+  .brand, .nav.is-stuck .brand { grid-column: auto; margin-inline-start: 0; transform: none; }
+  .nav-tools { margin-inline-start: auto; gap: 2px; }
   .nav-links {
-    top: 100%; inset-inline: -18px; gap: 0; padding: 8px 18px 14px; border-radius: 0 0 var(--radius) var(--radius);
-    border-width: 0 0 1px; background: var(--bg);
+    top: 100%; inset-inline: -18px; gap: 0; padding: 8px 18px 14px; justify-self: auto;
+    border-radius: 0 0 var(--radius) var(--radius); border-width: 0 0 1px; background: var(--bg);
   }
-  .nav-links a { padding: 14px 0; border-radius: 0; border-bottom: 1px solid var(--line); font-size: 16px; }
-  .nav-links a.is-active { border-bottom-color: var(--line); color: var(--accent); }
-  .nav-cta-inline { margin-top: 14px; }
+  .nav-links a { padding: 15px 0; border-bottom: 1px solid var(--line); font-size: 16px; }
+  .nav-links a::after { display: none; }
+  .nav-links a.is-active { color: var(--accent); }
+  .nav-links .nav-cta-inline {
+    margin-top: 18px; padding: 13px; border: 1px solid var(--text); border-radius: 2px;
+    background: none; color: var(--text); font-size: 15px; box-shadow: none;
+  }
   .brand { height: 34px; }
   /* على التليفون الصورة كاملة فوق والكلام تحتها (النص مايبقاش فوق الورد) */
   .hero { display: block; }

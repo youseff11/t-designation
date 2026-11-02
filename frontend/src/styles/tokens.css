@@ -20,7 +20,7 @@
   --radius-sm: 8px; /* الأزرار والحقول: شبه مربّعة بدل الكبسولة */
   --shadow: 0 18px 40px -32px rgba(0, 0, 0, 0.22);
   --shadow-nav: 0 12px 30px -22px rgba(0, 0, 0, 0.18);
-  --nav-space: 72px; /* ارتفاع شريط الترويسة الثابت */
+  --nav-space: 84px; /* ارتفاع شريط الترويسة الثابت */
 
   --font-display: 'El Messiri', 'Amiri', Georgia, serif;
   --font-display-en: 'Playfair Display', 'El Messiri', Georgia, serif;

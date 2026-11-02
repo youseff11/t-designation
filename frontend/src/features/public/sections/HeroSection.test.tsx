@@ -44,7 +44,7 @@ describe('HeroSection settings', () => {
     show(hero)
     expect(screen.getByText('عنوان مخصص')).toBeInTheDocument()
     expect(screen.queryByText('دعوتك بطابعك أنت')).toBeNull()
-    expect(screen.getByText('دعوات رقمية للأفراح والمناسبات')).toBeInTheDocument() // السطر الصغير لسه الافتراضي
+    expect(document.querySelector('.h1-top')).toBeNull() // السطر الصغير مفيش له افتراضي
     expect(screen.getByText('+٨٠')).toBeInTheDocument()
     expect(screen.getByText('قالب متاح')).toBeInTheDocument() // التسمية فاضية → الافتراضي
   })

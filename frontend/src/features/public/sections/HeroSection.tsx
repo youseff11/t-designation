@@ -37,7 +37,7 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
         <div className="hero-copy">
           <div className="hero-copy-in" data-reveal>
             <h1>
-              <span className="h1-top">{text(custom?.top, 'top')}</span>
+              {custom?.top?.trim() && <span className="h1-top">{custom.top}</span>}
               <span className="h1-main">{text(custom?.main, 'main')}</span>
             </h1>
             <p className="hero-sub">{text(custom?.sub, 'sub')}</p>

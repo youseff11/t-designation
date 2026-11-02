@@ -92,7 +92,7 @@ export function HeroPreview({
       label: word(`trust${index + 1}_label`, `trust.${name}Label`),
     }))
     return {
-      top: word('top', 'top'),
+      top: String(values[`top_${lang}`] ?? '').trim(),
       main: word('main', 'main'),
       sub: word('sub', 'sub'),
       cta: word('cta', 'start'),
@@ -126,7 +126,7 @@ export function HeroPreview({
       <div className={`hp-stage ${active === 'bg' ? 'is-active' : ''}`} data-theme={theme} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="hp-art" style={{ backgroundImage: `url("${background}")` }} data-testid="hero-bg" />
         <div className="hp-copy">
-          <p className={`hp-top ${mark('top')}`}>{text.top}</p>
+          {text.top && <p className={`hp-top ${mark('top')}`}>{text.top}</p>}
           <p className={`hp-main ${mark('main')}`}>{text.main}</p>
           <i className="hp-rule" aria-hidden="true" />
           <p className={`hp-sub ${mark('sub')}`}>{text.sub}</p>

@@ -261,9 +261,9 @@ CACHES = {
 
 # ---------------------------------------------------------------- app settings
 SITE_NAME = env("SITE_NAME", "T DESIGNATION")
-SITE_TAGLINE = env("SITE_TAGLINE", "دعوات رقمية تعكس قصة حبك")
+SITE_TAGLINE = env("SITE_TAGLINE", "دعوات رقمية بطابعك أنت")
 SITE_NAME_EN = env("SITE_NAME_EN", "T DESIGNATION")
-SITE_TAGLINE_EN = env("SITE_TAGLINE_EN", "Digital invitations that tell your love story")
+SITE_TAGLINE_EN = env("SITE_TAGLINE_EN", "Digital invitations, your way")
 SITE_WHATSAPP = env("SITE_WHATSAPP", "")
 SITE_EMAIL = env("SITE_EMAIL", "")
 SITE_CURRENCY = env("SITE_CURRENCY", "ج.م")
