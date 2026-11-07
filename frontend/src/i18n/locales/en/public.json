@@ -35,15 +35,38 @@
       "deliveryLabel": "to deliver",
       "editableValue": "100%",
       "editableLabel": "editable"
+    },
+    "signedBy": "Designed with love by",
+    "kicker": "Digital wedding & engagement invitations",
+    "art": {
+      "invite": "Request the pleasure of your company",
+      "wedding": "The wedding of",
+      "bride": "Laila",
+      "groom": "Omar",
+      "monogram": "L&O",
+      "date": "Thursday, 12 June 2027",
+      "dateShort": "12 · 06 · 2027",
+      "venue": "Jasmine Hall, Cairo",
+      "days": "Days",
+      "hours": "Hours",
+      "minutes": "Mins",
+      "daysValue": "12",
+      "hoursValue": "08",
+      "minutesValue": "45",
+      "rsvpBtn": "RSVP",
+      "rsvpChip": "128 guests confirmed",
+      "rsvpChipSub": "Latest reply 1 min ago",
+      "music": "Invitation music",
+      "musicSub": "Plays when opened"
     }
   },
   "templates": {
     "eyebrow": "Templates",
-    "title": "Start from a design you like",
-    "sub": "Pick a template and try it live before you order.",
+    "title": "Choose your invitation design",
+    "sub": "Elegant designs for every occasion, prepared for you with your names and details.",
     "all": "All templates",
     "empty": "No templates published yet.",
-    "preview": "Try it"
+    "preview": "Preview"
   },
   "features": {
     "eyebrow": "What you get",
@@ -72,7 +95,7 @@
   "steps": {
     "eyebrow": "The process",
     "title": "From idea to link in four steps",
-    "pick": { "title": "Pick", "text": "Browse the templates and try what you like." },
+    "pick": { "title": "Pick", "text": "Browse the templates and pick the one you like." },
     "send": { "title": "Share the details", "text": "Names, date, venue and any extras." },
     "design": { "title": "We design, you review", "text": "You get a preview before anything goes live." },
     "link": { "title": "Share the link", "text": "One link to send to every guest." }

@@ -39,14 +39,38 @@ describe('HeroSection settings', () => {
   it('uses only the fields that were filled and keeps the default for the rest', () => {
     const hero: HeroInfo = {
       ...EMPTY,
-      text: { ...EMPTY.text, ar: { ...EMPTY.text.ar, main: 'عنوان مخصص', trust: [{ value: '+٨٠', label: '' }, EMPTY.text.ar.trust[1], EMPTY.text.ar.trust[2]] } },
+      text: { ...EMPTY.text, ar: { ...EMPTY.text.ar, main: 'عنوان مخصص', cta: 'ابدأ الآن' } },
     }
     show(hero)
     expect(screen.getByText('عنوان مخصص')).toBeInTheDocument()
     expect(screen.queryByText('دعوتك بطابعك أنت')).toBeNull()
-    expect(document.querySelector('.h1-top')).toBeNull() // السطر الصغير مفيش له افتراضي
-    expect(screen.getByText('+٨٠')).toBeInTheDocument()
-    expect(screen.getByText('قالب متاح')).toBeInTheDocument() // التسمية فاضية → الافتراضي
+    expect(screen.getByText('ابدأ الآن')).toBeInTheDocument()
+    expect(screen.getByText('الأسعار')).toBeInTheDocument() // زر الأسعار فاضي → الافتراضي
+    // السطر الصغير: من غير قيمة في اللوحة بيظهر الوصف الثابت برّه العنوان
+    expect(document.querySelector('.h1-top')).toBeNull()
+    expect(screen.getByText('دعوات زفاف وخطوبة إلكترونية')).toBeInTheDocument()
+  })
+
+  it('shows the panel kicker inside the heading instead of the default one', () => {
+    show({ ...EMPTY, text: { ...EMPTY.text, ar: { ...EMPTY.text.ar, top: 'سطر من اللوحة' } } })
+    expect(document.querySelector('h1 .h1-top')?.textContent).toBe('سطر من اللوحة')
+    expect(screen.queryByText('دعوات زفاف وخطوبة إلكترونية')).toBeNull()
+  })
+
+  it('writes the groom first and the bride under him on the card and the phone', () => {
+    show(EMPTY)
+    const names = [...document.querySelectorAll('.wh-names')].map((el) => [...el.querySelectorAll('b')].map((b) => b.textContent))
+    expect(names).toEqual([
+      ['عمر', 'ليلى'],
+      ['عمر', 'ليلى'],
+    ])
+  })
+
+  it('replaces the numbers strip with the designed-by line', () => {
+    show(EMPTY)
+    expect(screen.queryByText('قالب متاح')).toBeNull()
+    expect(screen.getByText('صُممت بكل حب بواسطة')).toBeInTheDocument()
+    expect(screen.getByText('T DESIGNATION')).toBeInTheDocument()
   })
 
   it('shows the text of the current language', async () => {

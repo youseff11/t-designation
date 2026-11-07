@@ -16,8 +16,9 @@ export function HomeFooter({ site }: { site: SiteInfo }) {
         <Link className="foot-brand" to="/" aria-label={name}>
           <img src="/static/images/logo.jpeg" alt={name} />
         </Link>
-        <p>
-          {name} — {pick(lang, site.tagline.ar, site.tagline.en)}
+        {/* التوقيع بدل «الاسم — الشعار» (الشعار لسه مستعمل في عنوان الصفحة والمشاركة) */}
+        <p className="foot-sign">
+          {t('public.hero.signedBy')} <b dir="ltr">T DESIGNATION</b>
         </p>
         <div className="foot-socials" aria-label={t('public.footer.social')}>
           {site.whatsapp.url && (
