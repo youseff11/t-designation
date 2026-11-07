@@ -32,6 +32,12 @@ function ownsVideo(intro: IntroData): boolean {
   return Boolean(intro.video && js && /video/i.test(js) && /\.play\s*\(/.test(js))
 }
 
+/** مهلة الفيديو اللي ماتحرّكش بعد طلب التشغيل قبل ما نسمح بالفتح باللمس. */
+const STALL_MS = 12000
+
+/** أقصى حجم لفيديو الافتتاحية اللي بنحمّله كله في الذاكرة قبل الضغطة. */
+const PREFETCH_MAX_BYTES = 8 * 1024 * 1024
+
 interface MusicHandle {
   play: () => void
 }
@@ -55,6 +61,8 @@ export function Intro({ data }: { data: IntroData }) {
   const manual = Boolean(data.video) && (data.playMode === 'button' || data.playMode === 'button_effects')
   // كود الافتتاحية بيشغّل الفيديو بنفسه (مثلاً بعد ٣ دقّات): ماننافسوهوش بتشغيل تلقائي
   const selfPlay = !manual && ownsVideo(data)
+  // افتتاحية الفيديو مالهاش تخطّي: الضيف يتفرّج للآخر والدعوة تبدأ بعدها
+  const locked = Boolean(data.video)
   const [open, setOpen] = useState(false)
   const [awaiting, setAwaiting] = useState(manual)
   const [blocked, setBlocked] = useState(false)
@@ -70,6 +78,21 @@ export function Intro({ data }: { data: IntroData }) {
     let isOpen = false
     let isAwaiting = manual
     const vid = video.current
+    // الفيديو خلص (أو ماينفعش يتشغّل خالص): ساعتها بس الدعوة تتفتح
+    let finished = !locked || !vid
+    let forcePlay: (() => void) | null = null
+    let stallTimer: number | undefined
+    // طلبنا التشغيل والفيديو ماتحرّكش خالص (شبكة واقعة أو جهاز رافض)؟ مانحبسش
+    // الضيف: اللمسة بعدها بتفتح الدعوة عادي.
+    const armStallGuard = () => {
+      if (finished || !vid || stallTimer) return
+      stallTimer = window.setTimeout(() => {
+        if (vid.currentTime < 0.05) {
+          finished = true
+          intro.style.cursor = 'pointer'
+        }
+      }, STALL_MS)
+    }
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
@@ -96,10 +119,22 @@ export function Intro({ data }: { data: IntroData }) {
       // التمرير التلقائي مستني الإشارة دي — قبلها التمرير مقفول أصلاً
       document.dispatchEvent(new CustomEvent('lb:intro-open'))
     }
+    // طرق فتح الضيف (لمسة، زر، عدّاد، غطا الكود): طول ما الفيديو ماخلصش
+    // مابتفتحش. لو الفيديو واقف (المتصفح رفض التشغيل التلقائي أو الكود ماشغّلوش)
+    // اللمسة بتشغّله، وإلا الضيف هيفضل قدام صورة ثابتة.
+    const guestOpen = () => {
+      if (finished) {
+        doOpen()
+        return
+      }
+      forcePlay?.()
+    }
+    // ‎window.__lbIntro.open‎ بيفضل يفتح فوراً: المحرر بيستخدمه لتخطّي المعاينة
     window.__lbIntro = { open: doOpen, reopen: () => {} }
 
     const startAuto = () => {
       if (timer) clearTimeout(timer)
+      if (locked) return // الفيديو هو اللي بيفتح لما يخلص، مش العدّاد
       if (data.seconds > 0) timer = window.setTimeout(doOpen, data.seconds * 1000)
     }
     // لو الفيديو مستني ضغطة تشغيل، العدّاد التلقائي يستنى معاه
@@ -108,14 +143,29 @@ export function Intro({ data }: { data: IntroData }) {
     let startManual: (() => void) | null = null
     if (vid) {
       if (data.poster) {
-        const show = () => setLive(true)
+        let shown = false
+        const show = () => {
+          if (shown) return
+          shown = true
+          setLive(true)
+        }
         const onPlaying = () => {
           // ‎playing‎ بيجي قبل ما أول فريم يترسم؛ نستنى الفريم عشان الغلاف مايتشالش على فراغ
           if ('requestVideoFrameCallback' in vid) vid.requestVideoFrameCallback(show)
           else window.setTimeout(show, 120)
         }
+        // سفاري على الآيفون مابينادييش ‎requestVideoFrameCallback‎ لفيديو شفّاف
+        // (‎opacity:0‎ لحد ما يظهر) — فالفيديو كان بيشتغل مستخبّي ورا الغلاف والضيف
+        // شايف صورة ثابتة. الوقت لما يتحرّك فعلاً = فيه فريمات بتترسم.
+        const onTime = () => {
+          if (vid.currentTime > 0.05) show()
+        }
         vid.addEventListener('playing', onPlaying, { once: true })
-        cleanup.push(() => vid.removeEventListener('playing', onPlaying))
+        vid.addEventListener('timeupdate', onTime)
+        cleanup.push(() => {
+          vid.removeEventListener('playing', onPlaying)
+          vid.removeEventListener('timeupdate', onTime)
+        })
         if (!vid.paused) onPlaying()
       } else {
         // مفيش صورة غلاف: نلتقط أول فريم من الفيديو ونستخدمه كغلاف
@@ -154,7 +204,61 @@ export function Intro({ data }: { data: IntroData }) {
         }
       }
 
+      /* سفاري على الآيفون بيتجاهل ‎preload="auto"‎: مابيحمّلش غير الفهرس لحد الضغطة،
+         وبعدها بيعمل كذا طلب Range ورا بعض (كل واحد ~0.6ث على الاستضافة) — فالضيف
+         كان بيستنى ~3 ثواني بعد «اضغط لفتح الدعوة». بنحمّل الملف كله (نسخة
+         الموبايل ~0.7 ميجا) من أول ما الصفحة تفتح ونبدّل المصدر لنسخة في الذاكرة،
+         فالضغطة بتشغّل على طول. لو الضيف ضغط قبل ما التحميل يخلص، الفيديو بيكمّل
+         من الشبكة عادي ومش بنلمسه. */
+      const prefetch = new AbortController()
+      let blobUrl = ''
+      if (typeof fetch === 'function' && typeof URL.createObjectURL === 'function') {
+        fetch(data.video, { signal: prefetch.signal, credentials: 'same-origin' })
+          .then((res) => {
+            const size = Number(res.headers.get('Content-Length') || 0)
+            if (!res.ok || size > PREFETCH_MAX_BYTES) {
+              prefetch.abort()
+              return null
+            }
+            return res.blob()
+          })
+          .then((blob) => {
+            if (!blob || !blob.size || prefetch.signal.aborted) return
+            // اتشغّل خلاص من الشبكة؟ مانقطعوش
+            if (isOpen || !vid.paused || vid.currentTime > 0 || (manual && !isAwaiting)) return
+            const typed = blob.type.startsWith('video/') ? blob : new Blob([blob], { type: 'video/mp4' })
+            blobUrl = URL.createObjectURL(typed)
+            vid.src = blobUrl
+          })
+          .catch(() => {
+            /* التحميل المسبق تحسين بس — الفيديو بيشتغل من الشبكة */
+          })
+      }
+      cleanup.push(() => {
+        prefetch.abort()
+        if (blobUrl) URL.revokeObjectURL(blobUrl)
+      })
+
       const wantsSound = data.audio === 'sound'
+      forcePlay = () => {
+        if (!vid.paused || vid.ended) return
+        armStallGuard()
+        vid.muted = !wantsSound
+        const attempt = vid.play()
+        if (attempt && attempt.catch) {
+          attempt.catch(() => {
+            vid.muted = true
+            const again = vid.play()
+            if (again && again.catch) {
+              // الفيديو ماينفعش يتشغّل على الجهاز ده خالص — مانحبسش الضيف
+              again.catch(() => {
+                finished = true
+                doOpen()
+              })
+            }
+          })
+        }
+      }
       if (manual && playBtn.current) {
         let announced = false
         const announcePlay = () => {
@@ -178,6 +282,7 @@ export function Intro({ data }: { data: IntroData }) {
               if (again && again.catch) again.catch(() => setBlocked(true))
             })
           }
+          armStallGuard()
           startAuto() // العدّاد يبدأ من دلوقتي
         }
         const onPlay = (e: Event) => {
@@ -197,17 +302,27 @@ export function Intro({ data }: { data: IntroData }) {
         }
       }
       const onEnded = () => {
-        if (!intro.getAttribute('data-intro-auto')) doOpen()
+        finished = true
+        doOpen()
+      }
+      // ملف فيديو بايظ أو مش بيتحمّل: ماينفعش نستنى نهايته
+      const onError = () => {
+        finished = true
+        doOpen()
       }
       vid.addEventListener('ended', onEnded)
-      cleanup.push(() => vid.removeEventListener('ended', onEnded))
+      vid.addEventListener('error', onError)
+      cleanup.push(() => {
+        vid.removeEventListener('ended', onEnded)
+        vid.removeEventListener('error', onError)
+      })
     }
 
     const btn = openBtn.current
     if (btn) {
       const onBtn = (e: Event) => {
         e.stopPropagation()
-        doOpen()
+        guestOpen()
       }
       btn.addEventListener('click', onBtn)
       cleanup.push(() => btn.removeEventListener('click', onBtn))
@@ -219,7 +334,7 @@ export function Intro({ data }: { data: IntroData }) {
     if (data.code?.html) {
       void import('./runtime/intro-code').then((m) => {
         if (disposed) return
-        cover = m.bindCodeCover(intro, { open: doOpen, isOpen: () => isOpen })
+        cover = m.bindCodeCover(intro, { open: guestOpen, isOpen: () => isOpen })
       })
     }
     cleanup.push(() => {
@@ -235,15 +350,16 @@ export function Intro({ data }: { data: IntroData }) {
         startManual?.()
         return
       }
-      doOpen()
+      guestOpen()
     }
     intro.addEventListener('click', onTouch)
     cleanup.push(() => intro.removeEventListener('click', onTouch))
-    intro.style.cursor = 'pointer'
+    if (!locked) intro.style.cursor = 'pointer'
 
     return () => {
       cleanup.forEach((fn) => fn())
       if (timer) clearTimeout(timer)
+      if (stallTimer) clearTimeout(stallTimer)
       document.body.style.overflow = prevOverflow
       delete window.__lbIntro
     }
@@ -347,7 +463,7 @@ export function Intro({ data }: { data: IntroData }) {
             {data.text}
           </p>
         )}
-        {data.button && (
+        {data.button && !locked && (
           <button
             ref={openBtn}
             type="button"
