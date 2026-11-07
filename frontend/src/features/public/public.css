@@ -1787,13 +1787,6 @@ html[lang="en"] .wh .h1-main { font-family: var(--font-display-en); font-weight:
   font-size: clamp(15.5px, 1.3vw, 18px); line-height: 1.9;
 }
 .wh .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-start; margin-top: 34px; }
-.wh-sign {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 40px 0 0; padding-top: 20px;
-  border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; line-height: 1.5;
-}
-.wh-sign svg { width: 16px; height: 16px; flex: none; fill: var(--wh-gold); }
-.wh-sign b { color: var(--text); font-family: var(--font-display-en); font-weight: 600; letter-spacing: .14em; font-size: 13px; }
-
 /* زخارف صغيرة بالـSVG (الفاصل) */
 .wh-flourish { display: block; overflow: visible; }
 .wh-flourish path, .wh-flourish circle { fill: none; stroke: var(--wh-gold); stroke-width: 1.2; vector-effect: non-scaling-stroke; }
@@ -2037,7 +2030,6 @@ html[lang="en"] .wh-screen-pre { font-size: 1.3cqw; letter-spacing: .2em; text-t
   .wh .hero-sub { margin: 16px auto 0; font-size: 16px; text-align: center; }
   .wh .hero-actions { justify-content: center; margin-top: 26px; }
   .wh .hero-actions .btn { flex: 1 1 140px; min-width: 0; }
-  .wh-sign { justify-content: center; margin-top: 28px; padding-top: 16px; font-size: 13.5px; }
   /* الكروت العايمة أكبر شوية على التليفون عشان الكلام اللي فيها مايبقاش نمل */
   .wh-chip { gap: 2.2cqw; padding: 2.2cqw 2.8cqw; border-radius: 3.6cqw; }
   .wh-chip-text b { font-size: 2.8cqw; }

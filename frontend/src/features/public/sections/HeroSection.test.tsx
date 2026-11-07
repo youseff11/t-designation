@@ -66,11 +66,10 @@ describe('HeroSection settings', () => {
     ])
   })
 
-  it('replaces the numbers strip with the designed-by line', () => {
+  it('has no numbers strip and no designed-by line (that one lives in the footer)', () => {
     show(EMPTY)
     expect(screen.queryByText('قالب متاح')).toBeNull()
-    expect(screen.getByText('صُممت بكل حب بواسطة')).toBeInTheDocument()
-    expect(screen.getByText('T DESIGNATION')).toBeInTheDocument()
+    expect(screen.queryByText('صُممت بكل حب بواسطة')).toBeNull()
   })
 
   it('shows the text of the current language', async () => {
