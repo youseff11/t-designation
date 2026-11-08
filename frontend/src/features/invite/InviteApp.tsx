@@ -3,7 +3,7 @@ import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { fetchRender, type Source } from './api'
 import { BlockView } from './blocks'
 import { prefetchBlocks } from './blocks/lazy'
-import { LangToggle, PreviewBack, PreviewCtaBar, PreviewShare } from './Chrome'
+import { LangToggle, PreviewCtaBar, PreviewNav } from './Chrome'
 import { InviteContext } from './context'
 import { applyPageMeta, readHeadStyles, syncHeadStyles } from './head'
 import { Intro } from './Intro'
@@ -216,10 +216,16 @@ function Viewer({ initial }: { initial: RenderPayload }) {
         {payload.blocks.map((block) => (
           <BlockView key={block.id} block={block} />
         ))}
-        {payload.showBranding && (
+        {/* «صُنعت بكل حب بواسطة» — آخر سطر في الصفحة؛ في معاينة القوالب دايماً */}
+        {(payload.showBranding || kind === 'template') && (
           <footer className="lb-footer">
-            {t('footer.designedBy')}{' '}
-            <a href={payload.siteUrl || '/'} target="_blank" rel="noopener">
+            <span className="lb-footer-line">
+              {t('footer.designedBy')}
+              <svg className="lb-footer-heart" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.7a4.2 4.2 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z" />
+              </svg>
+            </span>
+            <a href={payload.siteUrl || '/'} target="_blank" rel="noopener" dir="ltr">
               {payload.siteName}
             </a>
           </footer>
@@ -230,8 +236,7 @@ function Viewer({ initial }: { initial: RenderPayload }) {
           <AutoScroll config={payload.scroll} />
         </Suspense>
       )}
-      {kind === 'template' && <PreviewBack siteUrl={payload.siteUrl} />}
-      {kind === 'template' && <PreviewShare name={payload.cta?.template_name ?? ''} />}
+      {kind === 'template' && <PreviewNav siteUrl={payload.siteUrl} name={payload.cta?.template_name ?? ''} />}
       {kind === 'template' && payload.cta && <PreviewCtaBar cta={payload.cta} />}
       {payload.music && <Music config={payload.music} />}
     </InviteContext.Provider>

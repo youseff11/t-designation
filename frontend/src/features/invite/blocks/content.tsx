@@ -5,6 +5,7 @@ import { Lines } from '../Lines'
 import { parseStyle, fluid, text } from '../style'
 import { Icon, Ornament, SocialLink } from '../svg'
 import type { BlockData, ButtonItem, SocialItem, WishItem } from '../types'
+import { WishCard } from './WishCard'
 import { Frame, Tail } from './Frame'
 
 /**
@@ -517,12 +518,7 @@ export function Wishes({ block }: { block: BlockData }) {
       )}
       <div className={`lb-wishes lb-wishes--${text(p.layout)}`}>
         {wishes.length ? (
-          wishes.map((w, i) => (
-            <article className="lb-wish" key={i}>
-              <p>{w.message}</p>
-              <cite>{w.name}</cite>
-            </article>
-          ))
+          wishes.map((w, i) => <WishCard key={i} wish={w} className="lb-wish" />)
         ) : (
           <p className="lb-body lb-muted" data-ts="empty_text">
             {p.empty_text}

@@ -8,6 +8,7 @@ import { DividerOrnament } from '../svg'
 import { Gate, Tail } from './Frame'
 import { parseStyle } from '../style'
 import type { BlockData, RsvpExtras } from '../types'
+import { WishCard } from './WishCard'
 
 interface RsvpProps {
   heading?: string
@@ -401,16 +402,12 @@ export function Rsvp({ block }: { block: BlockData }) {
             {p.wishes_heading && (
               <p className="lb-rsvp-wishes-title" data-ts="wishes_heading">
                 {p.wishes_heading}
+                {x.wishes.length > 0 && <span className="lb-rsvp-wishes-count">{x.wishes.length}</span>}
               </p>
             )}
             <div className="lb-rsvp-wishes-list">
               {x.wishes.length ? (
-                x.wishes.map((w, i) => (
-                  <article className="lb-rsvp-wish" key={i}>
-                    <p>{w.message}</p>
-                    <cite>{w.name}</cite>
-                  </article>
-                ))
+                x.wishes.map((w, i) => <WishCard key={i} wish={w} className="lb-wish lb-rsvp-wish" />)
               ) : (
                 <p className="lb-rsvp-wishes-empty" data-ts="wishes_empty">
                   {p.wishes_empty}

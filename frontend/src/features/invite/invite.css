@@ -1175,51 +1175,51 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
    متناسقة مش صندوقين بشكلين. الارتفاع محدود وبسكرول: عدد الرسائل
    بيكبر مع أيام الفرح، ومن غير الحد ده القسم كان هيطول لآخر الصفحة
    ويدفن اللي بعده. */
-.lb-rsvp-wishes { margin-top: 16px; padding: 20px 18px; }
+.lb-rsvp-wishes { margin-top: 16px; padding: 22px 18px 18px; }
 .lb-rsvp-wishes-title {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
   text-align: center;
   font-family: var(--font-heading);
-  font-size: 1.02em;
+  font-size: 1.08em;
   color: var(--accent);
+}
+/* خطين رفيعين على جنب العنوان */
+.lb-rsvp-wishes-title::before,
+.lb-rsvp-wishes-title::after {
+  content: ""; flex: 0 1 46px; block-size: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-40), transparent);
+}
+.lb-rsvp-wishes-count {
+  min-inline-size: 22px; block-size: 22px; padding-inline: 6px;
+  display: inline-grid; place-items: center;
+  border-radius: 999px; background: var(--accent); color: var(--surface);
+  font: 700 11px/1 var(--font-body); letter-spacing: 0;
 }
 .lb-rsvp-wishes-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: var(--wishes-max-h, 320px);
+  gap: 12px;
+  max-height: var(--wishes-max-h, 340px);
   overflow-y: auto;
   /* مساحة للسكرول بار من غير ما يركب على الكلام */
   padding-inline-end: 6px;
+  padding-block: 2px;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--accent-40) transparent;
+  /* الرسايل بتختفي بالتدريج تحت بدل ما تتقص فجأة */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 26px), transparent);
 }
-.lb-rsvp-wishes-list::-webkit-scrollbar { width: 6px; }
+.lb-rsvp-wishes-list::-webkit-scrollbar { width: 5px; }
 .lb-rsvp-wishes-list::-webkit-scrollbar-track { background: transparent; }
 .lb-rsvp-wishes-list::-webkit-scrollbar-thumb {
   background: var(--accent-40);
   border-radius: 999px;
 }
-.lb-rsvp-wish {
-  background: var(--accent-10);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 0.75);
-  padding: 12px 14px;
-  text-align: start;
-}
-.lb-rsvp-wish p {
-  margin: 0 0 6px;
-  font-size: 0.92em;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
-}
-.lb-rsvp-wish cite {
-  font-style: normal;
-  font-size: 0.78em;
-  color: var(--accent);
-  letter-spacing: 0.04em;
-}
+/* ‎flex-shrink: 0‎: من غيرها الكروت بتنضغط جوّه الارتفاع المحدود والكلام يتقص بدل ما يظهر سكرول */
+.lb-rsvp-wishes-list > .lb-wish { flex-shrink: 0; }
+.lb-rsvp-wishes-list .lb-wish:last-child { margin-block-end: 18px; }
 .lb-rsvp-wishes-empty {
   margin: 0;
   text-align: center;
@@ -1233,15 +1233,55 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 .lb-wishes { width: 100%; display: grid; gap: 12px; }
 .lb-wishes--cards { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 .lb-wishes--list { grid-template-columns: 1fr; }
+/* كارت التهنئة (بلوك سجل التهاني + تحت فورم التأكيد): علامة اقتباس باهتة،
+   الرسالة، وتحتها دايرة بأول حرف من الاسم. */
 .lb-wish {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--surface), color-mix(in srgb, var(--surface) 88%, var(--accent)));
+  border: 1px solid var(--accent-20);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 18px 18px 14px;
   text-align: start;
+  box-shadow: 0 10px 26px -22px rgba(0, 0, 0, .45);
 }
-.lb-wish p { margin: 0 0 8px; font-size: 0.94em; }
-.lb-wish cite { font-style: normal; font-size: 0.8em; color: var(--accent); }
+.lb-wish::before {
+  content: ""; position: absolute; inset-block-start: 0; inset-inline: 18px;
+  block-size: 2px; border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: .55;
+}
+.lb-wish-mark {
+  position: absolute; inset-block-start: -14px; inset-inline-end: 10px;
+  font: 700 76px/1 Georgia, "Times New Roman", serif;
+  color: var(--accent); opacity: .14; pointer-events: none; user-select: none;
+}
+.lb-wish .lb-wish-msg {
+  position: relative;
+  margin: 0 0 12px;
+  font-size: 0.95em;
+  line-height: 1.75;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.lb-wish-by {
+  display: flex; align-items: center; gap: 9px;
+  padding-block-start: 10px;
+  border-block-start: 1px dashed var(--accent-20);
+}
+.lb-wish-avatar {
+  inline-size: 28px; block-size: 28px; flex: none;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--accent-10); border: 1px solid var(--accent-40);
+  color: var(--accent); font: 700 13px/1 var(--font-heading);
+}
+.lb-wish cite {
+  font-style: normal; font-weight: 600;
+  font-size: 0.82em; color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.lb-rsvp-wish { padding: 14px 15px 12px; box-shadow: none; }
+.lb-rsvp-wish .lb-wish-mark { font-size: 60px; inset-block-start: -10px; }
 .lb-wishes--marquee { display: flex; overflow-x: auto; gap: 12px; }
 .lb-wishes--marquee .lb-wish { flex: 0 0 260px; }
 
@@ -1264,32 +1304,86 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 .lb-qr-link { margin: 0; font-size: 0.76em; color: var(--muted); word-break: break-all; }
 
 /* ---------------------------------------------------------- الموسيقى */
+/* زرار زجاجي: نوتة وهو واقف، ولما يشتغل يتملي بلون القالب وتظهر أعمدة صوت
+   بتتحرك + هالة بتنبض حواليه (بدل الدوران القديم لعلامة ♪). */
 .lb-music {
   position: fixed;
   inset-block-end: calc(18px + env(safe-area-inset-bottom, 0px));
-
   inset-inline-end: 18px;
   z-index: 60;
-  width: 48px;
-  height: 48px;
+  inline-size: 52px;
+  block-size: 52px;
+  padding: 0;
   border-radius: 50%;
   border: 1px solid var(--accent-40);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   color: var(--accent);
   display: grid;
   place-items: center;
   cursor: pointer;
-  box-shadow: var(--shadow);
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .5);
+  transition: transform .2s ease, background-color .25s ease, color .25s ease, border-color .25s ease;
 }
-.lb-music.is-playing { animation: lb-spin 6s linear infinite; }
-@keyframes lb-spin { to { transform: rotate(360deg); } }
+.lb-music::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1.5px solid var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+.lb-music:hover { transform: translateY(-2px); }
+.lb-music:active { transform: scale(.94); }
+.lb-music:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lb-music.is-playing { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.lb-music.is-playing::before { animation: lb-music-pulse 2.4s ease-out infinite; }
+@keyframes lb-music-pulse {
+  0% { transform: scale(1); opacity: .6; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+.lb-music-disc { display: grid; place-items: center; inline-size: 22px; block-size: 22px; }
+.lb-music-note {
+  inline-size: 22px; block-size: 22px;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.lb-music-note circle { fill: currentColor; stroke: none; }
+.lb-music-eq { display: none; align-items: flex-end; justify-content: center; gap: 3px; block-size: 18px; }
+.lb-music-eq i {
+  inline-size: 3px; block-size: 100%;
+  border-radius: 2px; background: currentColor;
+  transform-origin: bottom; transform: scaleY(.3);
+  animation: lb-music-eq .9s ease-in-out infinite;
+}
+.lb-music-eq i:nth-child(2) { animation-delay: -.45s; animation-duration: .8s; }
+.lb-music-eq i:nth-child(3) { animation-delay: -.2s; animation-duration: 1.05s; }
+.lb-music-eq i:nth-child(4) { animation-delay: -.6s; animation-duration: .95s; }
+@keyframes lb-music-eq {
+  0%, 100% { transform: scaleY(.3); }
+  50% { transform: scaleY(1); }
+}
+.lb-music.is-playing .lb-music-note { display: none; }
+.lb-music.is-playing .lb-music-eq { display: flex; }
+/* شكل «الشريط»: كبسولة في النص تحت فيها الأيقونة + الكلام */
 .lb-music--bar {
   inset-inline: 0;
-  width: auto;
-  border-radius: 0;
-  height: 54px;
-  justify-content: center;
+  margin-inline: auto;
+  inline-size: max-content;
+  block-size: 46px;
+  padding-inline: 16px 20px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
 }
+.lb-music--bar::before { display: none; }
+.lb-music--bar:hover { transform: none; }
+.lb-music-text { font: 600 13px/1 var(--font-body, inherit); }
+.lb-music-text-pause, .lb-music.is-playing .lb-music-text-play { display: none; }
+.lb-music.is-playing .lb-music-text-pause { display: inline; }
 
 /* ------------------------------------------- شريط «عجبك القالب؟» */
 /* شريط ثابت تحت في معاينة القالب. ‎padding-block-end‎ فيه ‎safe-area‎
@@ -1349,30 +1443,53 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 
 /* ------------------------------------------- زر التمرير التلقائي */
 /* في الناحية المقابلة لزر الموسيقى (‎inset-inline-start‎ مقابل ‎end‎)
-   عشان ما يتراكبوش مع بعض لما الاتنين شغّالين. */
+   عشان ما يتراكبوش مع بعض لما الاتنين شغّالين. حواليه حلقة بتتملي
+   بنسبة النزول في الصفحة (‎--lb-progress‎ من 0 لـ1). */
 .lb-autoscroll {
   position: fixed;
-  inset-block-end: 18px;
+  inset-block-end: calc(18px + env(safe-area-inset-bottom, 0px));
   inset-inline-start: 18px;
   z-index: 60;
-  width: 44px; height: 44px; padding: 0;
+  inline-size: 48px; block-size: 48px; padding: 0;
   border-radius: 50%;
-  border: 1px solid var(--accent-40);
-  background: var(--surface);
+  border: 0;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   color: var(--accent);
   display: grid; place-items: center;
   cursor: pointer;
-  box-shadow: var(--shadow);
-  opacity: .72;
-  transition: opacity .2s ease, transform .2s ease;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .5);
+  transition: transform .2s ease;
 }
-.lb-autoscroll:hover, .lb-autoscroll:focus-visible { opacity: 1; transform: scale(1.06); }
-.lb-autoscroll svg { width: 17px; height: 17px; }
+.lb-autoscroll:hover { transform: translateY(-2px); }
+.lb-autoscroll:active { transform: scale(.94); }
+.lb-autoscroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lb-autoscroll-ring {
+  position: absolute; inset: 0;
+  inline-size: 100%; block-size: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+.lb-autoscroll-ring circle { fill: none; stroke-width: 2.5; }
+.lb-autoscroll-track { stroke: var(--accent-20); }
+.lb-autoscroll-fill {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--lb-progress, 0) * 100);
+  transition: stroke-dashoffset .2s linear;
+}
+.lb-autoscroll .i-pause, .lb-autoscroll .i-play { position: relative; width: 16px; height: 16px; }
 /* أيقونة واحدة ظاهرة حسب الحالة */
 .lb-autoscroll .i-play { display: none; }
 .lb-autoscroll.is-paused .i-pause { display: none; }
 .lb-autoscroll.is-paused .i-play { display: block; }
 @media print { .lb-autoscroll { display: none !important; } }
+
+/* سكرول بار الصفحة في الدعوة/القالب: رفيع وبلون القالب بدل الرمادي الافتراضي */
+html:has(.lb-stage) { scrollbar-width: thin; scrollbar-color: var(--accent-40) transparent; }
 
 /* ---------------------------------------------------------- الافتتاحية */
 .lb-intro {
@@ -1451,16 +1568,44 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 .lb-lightbox[hidden] { display: none; }
 
 /* ---------------------------------------------------------- التذييل */
+/* «صُنعت بكل حب بواسطة» — آخر سطر في الصفحة: قلب صغير بينبض واسم المنصة في كبسولة */
 .lb-footer {
   position: relative;
   z-index: 1;
-  padding: 26px 20px 34px;
+  padding: 24px 20px calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
   text-align: center;
-  font-size: 0.74em;
+  font-size: 0.78em;
   color: var(--muted);
   border-top: 1px solid var(--border);
 }
-.lb-footer a { color: var(--accent); text-decoration: none; }
+.lb-footer-line { display: inline-flex; align-items: center; gap: 6px; }
+.lb-footer-heart {
+  inline-size: 13px; block-size: 13px; flex: none;
+  fill: var(--accent);
+  animation: lb-heartbeat 1.6s ease-in-out infinite;
+}
+@keyframes lb-heartbeat {
+  0%, 60%, 100% { transform: scale(1); }
+  20% { transform: scale(1.22); }
+  40% { transform: scale(.94); }
+}
+.lb-footer a {
+  display: inline-flex; align-items: center;
+  padding: 7px 16px;
+  border: 1px solid var(--accent-40);
+  border-radius: 999px;
+  background: var(--accent-10);
+  color: var(--accent);
+  font: 700 0.95em/1 var(--font-body, inherit);
+  letter-spacing: .2em;
+  text-decoration: none;
+  transition: background-color .2s ease, color .2s ease;
+}
+.lb-footer a:hover { background: var(--accent); color: var(--surface); }
 
 /* ---------------------------------------------------------- الحركات */
 .lb-anim { opacity: 0; will-change: transform, opacity; }
@@ -1482,7 +1627,8 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
 
 @media (prefers-reduced-motion: reduce) {
   .lb-anim { opacity: 1 !important; transform: none !important; filter: none !important; }
-  .lb-scroll-hint i, .lb-music.is-playing { animation: none; }
+  .lb-scroll-hint i, .lb-music.is-playing::before, .lb-music-eq i, .lb-footer-heart { animation: none; }
+  .lb-music-eq i { transform: scaleY(.7); }
   * { scroll-behavior: auto !important; }
 }
 
@@ -1857,51 +2003,52 @@ a.lb-social:hover { transform: translateY(-2px); opacity: .85; }
    لازم يلاقي التبديل من أول شاشة، مش بعد ما يفتح الدعوة.
    مستمع «اضغط في أي حتة» متربط على ‎.lb-intro‎ نفسها، والزرار أخوها
    مش ابنها — فالضغط عليه مابيفتحش الدعوة بالغلط. */
-/* زرار مشاركة معاينة القالب: الركن المقابل لزرار اللغة، فوق الافتتاحية كمان */
-.lb-share-fab {
+/* شريط معاينة القالب: «رجوع للموقع» + «مشاركة» في كبسولة زجاجية واحدة،
+   الركن المقابل لزرار اللغة، وفوق الافتتاحية كمان (‎z-index: 95‎). */
+.lb-pv-nav {
   position: fixed; z-index: 95;
-  inset-block-start: 16px; inset-inline-end: 16px;
-  inline-size: 42px; block-size: 42px; padding: 0;
-  display: inline-grid; place-items: center;
-  border: 1px solid var(--border); border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 8px 22px -12px rgba(0, 0, 0, .45);
-  transition: transform .18s ease, background .18s ease, color .18s ease;
-}
-.lb-share-fab svg { inline-size: 19px; block-size: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.lb-share-fab svg circle { fill: currentColor; stroke: none; }
-.lb-share-fab:hover { transform: translateY(-1px); background: #25d366; color: #fff; border-color: #25d366; }
-.lb-share-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-@media (max-width: 480px) {
-  .lb-share-fab { inset-block-start: 12px; inset-inline-end: 12px; inline-size: 38px; block-size: 38px; }
-}
-@media print { .lb-share-fab { display: none !important; } }
-
-/* زرار الرجوع للموقع في معاينة القالب: جنب زرار المشاركة (inline-end)، فوق الافتتاحية كمان */
-.lb-back-fab {
-  position: fixed; z-index: 95;
-  inset-block-start: 16px; inset-inline-end: 68px;
-  block-size: 42px; padding-inline: 14px 16px;
+  inset-block-start: calc(14px + env(safe-area-inset-top, 0px));
+  inset-inline-end: 14px;
   display: inline-flex; align-items: center; gap: 4px;
-  border: 1px solid var(--border); border-radius: 999px;
-  background: color-mix(in srgb, var(--surface) 82%, transparent);
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  color: var(--text); text-decoration: none;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--border));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 14px 32px -18px rgba(0, 0, 0, .55);
+}
+.lb-pv-back, .lb-pv-share {
+  display: inline-flex; align-items: center; gap: 6px;
+  block-size: 36px;
+  border-radius: 999px;
   font: 600 13px/1 var(--font-body, inherit);
-  box-shadow: 0 8px 22px -12px rgba(0, 0, 0, .45);
-  transition: transform .18s ease, background .18s ease;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color .18s ease, color .18s ease, transform .18s ease;
 }
-.lb-back-fab svg { inline-size: 17px; block-size: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-[dir="rtl"] .lb-back-fab svg { transform: none; }
-[dir="ltr"] .lb-back-fab svg { transform: scaleX(-1); }
-.lb-back-fab:hover { transform: translateY(-1px); background: var(--accent-10); }
-.lb-back-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.lb-pv-back { padding-inline: 8px 12px; color: var(--text); text-decoration: none; }
+.lb-pv-back svg { inline-size: 16px; block-size: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+[dir="ltr"] .lb-pv-back svg { transform: scaleX(-1); }
+.lb-pv-back:hover { background: var(--accent-10); color: var(--accent); }
+.lb-pv-sep { inline-size: 1px; block-size: 18px; background: var(--accent-40); }
+.lb-pv-share {
+  padding-inline: 11px 14px;
+  border: 0; cursor: pointer;
+  background: var(--accent); color: var(--surface);
+}
+.lb-pv-share svg { inline-size: 15px; block-size: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.lb-pv-share svg circle { fill: currentColor; stroke: none; }
+.lb-pv-share:hover { filter: brightness(1.08); }
+.lb-pv-back:active, .lb-pv-share:active { transform: scale(.96); }
+.lb-pv-back:focus-visible, .lb-pv-share:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 480px) {
-  .lb-back-fab { inset-block-start: 12px; inset-inline-end: 58px; block-size: 38px; padding-inline: 11px 13px; font-size: 12px; }
+  .lb-pv-nav { inset-block-start: calc(10px + env(safe-area-inset-top, 0px)); inset-inline-end: 10px; padding: 3px; }
+  .lb-pv-back, .lb-pv-share { block-size: 32px; font-size: 12px; }
+  .lb-pv-back { padding-inline: 6px 10px; }
+  .lb-pv-share { padding-inline: 9px 12px; }
 }
-@media print { .lb-back-fab { display: none !important; } }
+@media print { .lb-pv-nav { display: none !important; } }
 
 .lb-intro:not(.is-open) ~ .lb-lang {
   /* خلفية الافتتاحية ممكن تكون صورة أو فيديو — نضبّب اللي ورا الزرار

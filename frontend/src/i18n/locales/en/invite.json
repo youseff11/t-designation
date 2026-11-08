@@ -55,7 +55,7 @@
     "toAr": "اعرض بالعربية"
   },
   "footer": {
-    "designedBy": "This invitation was designed with"
+    "designedBy": "Made with love by"
   },
   "lock": {
     "title": "This invitation is protected",
@@ -74,7 +74,8 @@
   "templateShare": {
     "label": "Share this template on WhatsApp",
     "text": "Take a look at the “{name}” invitation template:",
-    "textPlain": "Take a look at this invitation template:"
+    "textPlain": "Take a look at this invitation template:",
+    "short": "Share"
   },
   "templateBack": {
     "label": "Back to site"

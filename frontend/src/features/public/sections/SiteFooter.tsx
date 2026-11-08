@@ -16,10 +16,8 @@ export function HomeFooter({ site }: { site: SiteInfo }) {
         <Link className="foot-brand" to="/" aria-label={name}>
           <img src="/static/images/logo.jpeg" alt={name} />
         </Link>
-        {/* التوقيع بدل «الاسم — الشعار» (الشعار لسه مستعمل في عنوان الصفحة والمشاركة) */}
-        <p className="foot-sign">
-          {t('public.hero.signedBy')} <b dir="ltr">T DESIGNATION</b>
-        </p>
+        {/* «صُنعت بكل حب بواسطة» بقت في آخر القوالب بس؛ هنا الحقوق */}
+        <p className="foot-rights">{t('public.footer.rights', { year: new Date().getFullYear(), name })}</p>
         <div className="foot-socials" aria-label={t('public.footer.social')}>
           {site.whatsapp.url && (
             <a href={site.whatsapp.url} target="_blank" rel="noopener" aria-label="WhatsApp">
@@ -48,12 +46,19 @@ export function HomeFooter({ site }: { site: SiteInfo }) {
   )
 }
 
-/** فوتر معرض القوالب: اسم الموقع بس. */
+/** فوتر معرض القوالب: سطر الحقوق بس. */
 export function GalleryFooter({ site }: { site: SiteInfo | undefined }) {
+  const { t } = useTranslation()
   const lang = useLang()
   return (
     <footer className="foot">
-      <div className="wrap">{site && pick(lang, site.name.ar, site.name.en)}</div>
+      <div className="wrap">
+        {site && (
+          <p className="foot-rights">
+            {t('public.footer.rights', { year: new Date().getFullYear(), name: pick(lang, site.name.ar, site.name.en) })}
+          </p>
+        )}
+      </div>
     </footer>
   )
 }

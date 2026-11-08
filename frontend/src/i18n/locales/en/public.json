@@ -20,7 +20,7 @@
     "switchLanguage": "التبديل إلى العربية",
     "switchLanguageShort": "ع",
     "faq": "FAQ",
-    "reels": "Reels"
+    "reels": "Video design"
   },
   "hero": {
     "alt": "An elegant digital invitation on a phone surrounded by flowers",
@@ -36,7 +36,6 @@
       "editableValue": "100%",
       "editableLabel": "editable"
     },
-    "signedBy": "Designed with love by",
     "kicker": "Digital wedding & engagement invitations",
     "art": {
       "invite": "Request the pleasure of your company",
@@ -128,7 +127,7 @@
     "title": "Got a question?"
   },
   "reels": {
-    "eyebrow": "Reels",
+    "eyebrow": "Video design",
     "title": "See our work in motion",
     "sub": "Short clips of our invitations in action.",
     "empty": "New clips are coming soon.",
@@ -144,7 +143,8 @@
     "button": "Start the chat"
   },
   "footer": {
-    "social": "Social links"
+    "social": "Social links",
+    "rights": "© {{year}} {{name}}. All rights reserved."
   },
   "gallery": {
     "eyebrow": "Gallery",

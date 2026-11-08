@@ -76,7 +76,7 @@
   color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
   transition: background-color .18s ease, color .18s ease;
 }
-.da-model:hover .da-model-icon { background: var(--accent); color: #fff; }
+.da-model:hover .da-model-icon { background: var(--accent); color: var(--on-accent); }
 .da-icon { width: 23px; height: 23px; }
 .da-model-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .da-model-text strong { font-size: 16px; line-height: 1.35; overflow-wrap: anywhere; }
@@ -86,7 +86,7 @@
   border: 1px solid var(--line); background: var(--surface); transition: color .18s ease, border-color .18s ease, background-color .18s ease;
 }
 .da-add svg { width: 16px; height: 16px; }
-.da-add:hover, .da-add:focus-visible { color: #fff; background: var(--accent); border-color: var(--accent); outline: none; }
+.da-add:hover, .da-add:focus-visible { color: var(--on-accent); background: var(--accent); border-color: var(--accent); outline: none; }
 
 @media (max-width: 900px) {
   .da-banner { grid-template-columns: minmax(0, 1fr); grid-template-areas: "logo" "text" "stats" "search"; padding: 22px 20px; text-align: center; justify-items: center; }
@@ -185,15 +185,15 @@ details > summary { cursor: pointer; padding: 8px 12px; border: 1px dashed var(-
 .hp-bar strong { margin-inline-end: auto; font-size: 14px; }
 .hp-seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
 .hp-seg button { border: 0; background: none; color: var(--muted); padding: 5px 13px; font: inherit; font-size: 12.5px; cursor: pointer; }
-.hp-seg button.is-on { background: var(--accent); color: #fff; }
+.hp-seg button.is-on { background: var(--accent); color: var(--on-accent); }
 
 /* المسرح: نفس نسبة صورة الهيرو، والمقاسات بـcqw عشان تكبر وتصغر مع العرض (مع تكبير بسيط عشان الكلام يتقري) */
 .hp-stage {
-  --hp-bg: #fff; --hp-text: #141414; --hp-muted: #6b6b68; --hp-accent: #2f62b3;
+  --hp-bg: #fff; --hp-text: #141414; --hp-muted: #6b6b68; --hp-accent: #a87b00;
   position: relative; aspect-ratio: 1672 / 941; container-type: inline-size; overflow: hidden;
   border: 1px solid var(--line); border-radius: 14px; background: var(--hp-bg); color: var(--hp-text);
 }
-.hp-stage[data-theme="dark"] { --hp-bg: #000; --hp-text: #ededeb; --hp-muted: #9a9a96; --hp-accent: #7ba6e8; }
+.hp-stage[data-theme="dark"] { --hp-bg: #000; --hp-text: #ededeb; --hp-muted: #9a9a96; --hp-accent: #f5bd14; }
 .hp-stage.is-active { outline: 2px solid var(--accent); outline-offset: 2px; }
 .hp-art { position: absolute; inset: 0; background: center / cover no-repeat; }
 .hp-art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, var(--hp-bg) 0%, color-mix(in srgb, var(--hp-bg) 70%, transparent) 26%, transparent 55%); }

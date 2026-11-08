@@ -124,14 +124,30 @@ export function Music({ config }: { config: MusicConfig }) {
   }, [config.url, config.loop, config.autoplay, hidden])
 
   if (!config.url || hidden) return null
+  const bar = config.player === 'bar'
+  // الحالة (‎is-playing‎) بتتبدّل من المشغّل مباشرة على الزرار؛ الـCSS بيقلب
+  // بين أيقونة النوتة (واقف) وأعمدة الصوت المتحركة (شغّال)
   return (
-    <button
-      ref={btn}
-      type="button"
-      className={`lb-music${config.player === 'bar' ? ' lb-music--bar' : ''}`}
-      aria-label={t('music.play')}
-    >
-      ♪
+    <button ref={btn} type="button" className={`lb-music${bar ? ' lb-music--bar' : ''}`} aria-label={t('music.play')}>
+      <span className="lb-music-disc" aria-hidden="true">
+        <svg className="lb-music-note" viewBox="0 0 24 24" focusable="false">
+          <path d="M9.5 17.2V5.8l9-2v11.1" />
+          <circle cx="7" cy="17.2" r="2.5" />
+          <circle cx="16" cy="14.9" r="2.5" />
+        </svg>
+        <span className="lb-music-eq">
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+      </span>
+      {bar && (
+        <span className="lb-music-text" aria-hidden="true">
+          <span className="lb-music-text-play">{t('music.play')}</span>
+          <span className="lb-music-text-pause">{t('music.pause')}</span>
+        </span>
+      )}
     </button>
   )
 }

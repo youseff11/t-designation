@@ -121,6 +121,15 @@ export function AutoScroll({ config }: { config: ScrollConfig }) {
       startTimer = window.setTimeout(start, delay)
     }
 
+    // نسبة النزول في الصفحة للحلقة اللي حوالين الزرار (شغّال أو واقف)
+    const progress = () => {
+      const el = document.scrollingElement || document.documentElement
+      const max = el.scrollHeight - window.innerHeight
+      button.style.setProperty('--lb-progress', String(max > 0 ? Math.min(1, el.scrollTop / max) : 0))
+    }
+    progress()
+    window.addEventListener('scroll', progress, { passive: true })
+
     // الافتتاحية بتقفل التمرير على الصفحة، فمالوش معنى نبدأ قبلها
     window.__lbScroll = { start: schedule, stop }
     if (document.querySelector('.lb-intro:not(.is-open)')) {
@@ -130,6 +139,7 @@ export function AutoScroll({ config }: { config: ScrollConfig }) {
     }
 
     return () => {
+      window.removeEventListener('scroll', progress)
       events.forEach((ev) => window.removeEventListener(ev, userStop))
       button.removeEventListener('click', onClick)
       document.removeEventListener('lb:intro-open', schedule)
@@ -142,6 +152,11 @@ export function AutoScroll({ config }: { config: ScrollConfig }) {
   if (!enabled) return null
   return (
     <button ref={btn} type="button" className="lb-autoscroll" hidden>
+      {/* حلقة بتتملي مع النزول في الصفحة (‎--lb-progress‎ من مستمع السكرول) */}
+      <svg className="lb-autoscroll-ring" viewBox="0 0 48 48" aria-hidden="true">
+        <circle className="lb-autoscroll-track" cx="24" cy="24" r="21" pathLength="100" />
+        <circle className="lb-autoscroll-fill" cx="24" cy="24" r="21" pathLength="100" />
+      </svg>
       <svg className="i-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
         <path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z" />
       </svg>

@@ -237,7 +237,14 @@ export function ClientFollowupPage() {
             <div className="client-followup-section-head">
               <div>
                 <p className="client-followup-kicker">GUESTBOOK</p>
-                <h2 id="messages-title">{t('guests.client.wishesTitle')}</h2>
+                <h2 id="messages-title">
+                  <span className="client-followup-wishes-icon no-print" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.7a4.2 4.2 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z" />
+                    </svg>
+                  </span>
+                  {t('guests.client.wishesTitle')}
+                </h2>
                 {invitation.nameOne && <p className="client-followup-print-names">{names}</p>}
               </div>
               <span className="client-followup-section-tools">
@@ -256,11 +263,17 @@ export function ClientFollowupPage() {
             <div className="client-followup-messages">
               {messageRows.map((row) => (
                 <article className="client-followup-message-card" key={row.id}>
+                  <span className="client-followup-message-mark" aria-hidden="true">
+                    ”
+                  </span>
+                  <p>{row.message}</p>
                   <div className="client-followup-message-card-head">
+                    <span className="client-followup-message-avatar" aria-hidden="true">
+                      {Array.from(row.name.trim())[0] ?? '♥'}
+                    </span>
                     <strong>{row.name}</strong>
                     <time>{row.createdAt}</time>
                   </div>
-                  <p>{row.message}</p>
                 </article>
               ))}
               {messageRows.length === 0 && <p className="client-followup-empty">{t('guests.client.noWishes')}</p>}

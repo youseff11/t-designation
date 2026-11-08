@@ -17,6 +17,7 @@ import { StepsSection } from './sections/StepsSection'
 import { TemplatesSection } from './sections/TemplatesSection'
 import { pick, useLang } from './text'
 import { useReveal } from './useReveal'
+import { useScrollToTemplates } from './useScrollToTemplates'
 
 /**
  * نموذج «اطلب دعوتك» في الرئيسية.
@@ -46,6 +47,7 @@ export function HomePage() {
 
   useReveal()
   useHashScroll(!!home.data)
+  useScrollToTemplates(!!home.data)
   useDocumentTitle(site ? t('public.title.home', { name: pick(lang, site.name.ar, site.name.en) }) : '')
 
   // الإعدادات (مفاتيح الإظهار) جاية مع الصفحة نفسها فالهيكل بيتعرض قبل البيانات

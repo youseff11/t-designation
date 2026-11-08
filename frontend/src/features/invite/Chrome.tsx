@@ -35,8 +35,8 @@ export function LangToggle({
   )
 }
 
-/** زرار مشاركة معاينة القالب على واتساب — ركن علوي، بيظهر في معاينة القالب بس. */
-export function PreviewShare({ name }: { name: string }) {
+/** زرار مشاركة معاينة القالب على واتساب — جوّه شريط المعاينة العلوي. */
+function PreviewShare({ name }: { name: string }) {
   const { t } = useInvite()
   const label = t('templateShare.label')
   const share = () => {
@@ -47,13 +47,14 @@ export function PreviewShare({ name }: { name: string }) {
 ${url}`)}`, '_blank', 'noopener')
   }
   return (
-    <button type="button" className="lb-share-fab" data-template-share aria-label={label} title={label} onClick={share}>
+    <button type="button" className="lb-pv-share" data-template-share aria-label={label} title={label} onClick={share}>
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <circle cx="18" cy="5" r="2.6" />
         <circle cx="6" cy="12" r="2.6" />
         <circle cx="18" cy="19" r="2.6" />
         <path d="m8.3 10.8 7.4-4.3M8.3 13.2l7.4 4.3" />
       </svg>
+      <span className="lb-pv-share-text">{t('templateShare.short')}</span>
     </button>
   )
 }
@@ -62,12 +63,12 @@ ${url}`)}`, '_blank', 'noopener')
  * زرار الرجوع للموقع في معاينة القالب. لو الضيف جه من صفحة جوّه التطبيق بنرجّعه لها بالظبط
  * (مكان السكرول محفوظ)، وإلا (فتح مباشر / رابط مشترك) بنودّيه للرئيسية.
  */
-export function PreviewBack({ siteUrl }: { siteUrl: string }) {
+function PreviewBack({ siteUrl }: { siteUrl: string }) {
   const { t } = useInvite()
   const href = siteUrl || '/'
   return (
     <a
-      className="lb-back-fab"
+      className="lb-pv-back"
       data-template-back
       href={href}
       onClick={(e) => {
@@ -82,8 +83,22 @@ export function PreviewBack({ siteUrl }: { siteUrl: string }) {
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="m9 6 6 6-6 6" />
       </svg>
-      {t('templateBack.label')}
+      <span>{t('templateBack.label')}</span>
     </a>
+  )
+}
+
+/**
+ * شريط المعاينة العلوي: «رجوع للموقع» والمشاركة في كبسولة زجاجية واحدة
+ * (بدل زرارين سايبين)، فوق الافتتاحية كمان.
+ */
+export function PreviewNav({ siteUrl, name }: { siteUrl: string; name: string }) {
+  return (
+    <nav className="lb-pv-nav" data-template-nav>
+      <PreviewBack siteUrl={siteUrl} />
+      <span className="lb-pv-sep" aria-hidden="true" />
+      <PreviewShare name={name} />
+    </nav>
   )
 }
 

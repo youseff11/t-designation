@@ -18,8 +18,8 @@
   --e-line-soft: #efedea;
   --e-text:      #17130f;
   --e-muted:     #6d675f;
-  --e-accent:    #2f62b3;
-  --e-accent-dim: rgba(47, 98, 179, .13);
+  --e-accent:    #a87b00;
+  --e-accent-dim: rgba(168, 123, 0, .13);
   --e-accent-ink: #8a6a33;   /* ذهبي أغمق للنصوص الصغيرة على أبيض — 5:1 */
   --e-on-accent: #ffffff;
   --e-danger:    #c1544d;
@@ -43,9 +43,9 @@
   --e-line-soft: #1f1f1f;
   --e-text:      #ebe8e3;
   --e-muted:     #98928a;
-  --e-accent:    #7ba6e8;
-  --e-accent-dim: rgba(123, 166, 232, .16);
-  --e-accent-ink: #7ba6e8;
+  --e-accent:    #f5bd14;
+  --e-accent-dim: rgba(245, 189, 20, .16);
+  --e-accent-ink: #f5bd14;
   --e-on-accent: #17130f;
   --e-danger:    #d9635c;
   --e-ok:        #6bbf7d;

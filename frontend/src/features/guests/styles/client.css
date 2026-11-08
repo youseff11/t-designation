@@ -150,14 +150,60 @@
 .client-followup-code { color: var(--accent); letter-spacing: .08em; direction: ltr; display: inline-block; }
 .client-followup-qr { width: 55px; height: 55px; display: block; }
 .client-followup-actions { display: flex; gap: 6px; align-items: center; }
-.client-followup-messages { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; padding: 20px; }
-.client-followup-message-card {
-  padding: 16px; border: 1px solid var(--line); border-radius: 14px;
-  background: var(--surface-2);
+/* رسائل التهنئة: كروت بارتفاعات مختلفة في أعمدة (زي دفتر التهاني)، علامة اقتباس
+   باهتة، الرسالة بخط أوضح، وتحتها دايرة بأول حرف + الاسم + الوقت. */
+.client-followup-wishes .client-followup-section-head {
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
+    var(--surface);
 }
-.client-followup-message-card-head { display: flex; justify-content: space-between; gap: 10px; color: var(--text); }
-.client-followup-message-card time { color: var(--muted); font-size: 11px; direction: ltr; }
-.client-followup-message-card p { margin: 12px 0 0; color: var(--muted); line-height: 1.75; }
+.client-followup-wishes h2 { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.client-followup-wishes .client-followup-section-head { flex-wrap: wrap; }
+.client-followup-wishes-icon {
+  inline-size: 34px; block-size: 34px; flex: none; display: grid; place-items: center;
+  border-radius: 50%; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.client-followup-wishes-icon svg { inline-size: 17px; block-size: 17px; fill: currentColor; }
+.client-followup-messages { columns: 3 260px; column-gap: 14px; padding: 20px; }
+.client-followup-message-card {
+  position: relative; overflow: hidden;
+  break-inside: avoid; margin: 0 0 14px;
+  padding: 20px 18px 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 16px;
+  background: linear-gradient(165deg, var(--surface-2), color-mix(in srgb, var(--surface-2) 90%, var(--accent)));
+  box-shadow: 0 14px 30px -26px rgba(0, 0, 0, .55);
+  transition: transform .2s ease, border-color .2s ease;
+}
+.client-followup-message-card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.client-followup-message-card::before {
+  content: ""; position: absolute; inset-block-start: 0; inset-inline: 20px; block-size: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity: .6;
+}
+.client-followup-message-mark {
+  position: absolute; inset-block-start: -16px; inset-inline-end: 12px;
+  font: 700 84px/1 Georgia, "Times New Roman", serif; color: var(--accent); opacity: .13;
+  pointer-events: none; user-select: none;
+}
+.client-followup-message-card p {
+  position: relative; margin: 0 0 14px;
+  color: var(--text); font-size: 15px; line-height: 1.85; overflow-wrap: anywhere;
+}
+.client-followup-message-card-head {
+  display: flex; align-items: center; gap: 9px;
+  padding-block-start: 11px; border-block-start: 1px dashed color-mix(in srgb, var(--accent) 30%, var(--line));
+  color: var(--text);
+}
+.client-followup-message-avatar {
+  inline-size: 30px; block-size: 30px; flex: none; display: grid; place-items: center;
+  border-radius: 50%; color: var(--accent); font: 700 14px/1 var(--font-display);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.client-followup-message-card-head strong { color: var(--accent); font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.client-followup-message-card time { margin-inline-start: auto; color: var(--muted); font-size: 11px; direction: ltr; white-space: nowrap; }
 .client-followup-empty, .client-followup-empty-state { color: var(--muted); text-align: center; }
 .client-followup-empty-state { padding: 70px 20px; border: 1px dashed var(--line); border-radius: var(--radius); }
 .client-followup-empty-state span { display: block; color: var(--accent); font-size: 38px; }
@@ -236,9 +282,11 @@
     margin: 0; border: 0; box-shadow: none; background: #fff; color: #000; overflow: visible;
   }
   body.print-wishes .client-followup-print-names { display: block; margin: 4px 0 0; color: #333; }
-  body.print-wishes .client-followup-messages { display: block; padding: 14px 0 0; }
+  body.print-wishes .client-followup-messages { display: block; columns: auto; padding: 14px 0 0; }
+  body.print-wishes .client-followup-message-mark,
+  body.print-wishes .client-followup-message-card::before { display: none; }
   body.print-wishes .client-followup-message-card {
-    break-inside: avoid; margin-bottom: 10px; background: #fff; border-color: #bbb; color: #000;
+    break-inside: avoid; margin-bottom: 10px; background: #fff; border-color: #bbb; color: #000; box-shadow: none;
   }
   body.print-wishes .client-followup-message-card p,
   body.print-wishes .client-followup-message-card time { color: #333; }
