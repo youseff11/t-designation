@@ -12,7 +12,9 @@ function Cover({ template, name }: { template: PublicTemplate; name: string }) {
       className="tpl-cover"
       style={template.cover ? { backgroundImage: `url(${JSON.stringify(template.cover)})` } : undefined}
     >
-      {!template.cover && firstChar(name)}
+      {!template.cover && <span className="tpl-mono">{firstChar(name)}</span>}
+      <span className="tpl-frame" aria-hidden="true" />
+      <span className="tpl-shine" aria-hidden="true" />
     </div>
   )
 }
@@ -51,6 +53,9 @@ export function HomeTemplateCard({ template }: { template: PublicTemplate }) {
         <div className="tpl-actions">
           <Link className="btn btn--gold btn--sm" to={previewPath(template)}>
             {t('public.templates.preview')}
+            <svg className="btn-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M5 12h13m0 0-5-5m5 5-5 5" />
+            </svg>
           </Link>
         </div>
       </div>

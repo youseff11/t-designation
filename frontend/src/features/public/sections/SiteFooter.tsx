@@ -14,7 +14,7 @@ export function HomeFooter({ site }: { site: SiteInfo }) {
     <footer className="foot">
       <div className="wrap foot-inner">
         <Link className="foot-brand" to="/" aria-label={name}>
-          <img src="/static/images/logo.jpeg" alt={name} />
+          <img src="/static/images/logo-full-dark.png" alt={name} />
         </Link>
         {/* «صُنعت بكل حب بواسطة» بقت في آخر القوالب بس؛ هنا الحقوق */}
         <p className="foot-rights">{t('public.footer.rights', { year: new Date().getFullYear(), name })}</p>

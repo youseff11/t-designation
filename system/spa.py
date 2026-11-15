@@ -45,3 +45,25 @@ def spa_shell(request, *args, **kwargs):
     if noindex:
         response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+
+@ensure_csrf_cookie
+@never_cache
+@require_safe
+def client_followup_shell(request, *args, **kwargs):
+    """لينك متابعة الردود اللي بيتبعت للعميل: نفس الـshell بس بمعاينة لينك
+    مخصوصة (صورة «تابع ردود المعازيم» وعنوانها) بدل معاينة الموقع العامة.
+    اللينك خاص بتوكن، فمابيتفهرسش أبداً."""
+    en = (get_language() or "").startswith("en")
+    name = (getattr(settings, "SITE_NAME_EN", "") or settings.SITE_NAME) if en else settings.SITE_NAME
+    response = render(request, "spa/shell.html", {
+        "boot": boot_payload(request),
+        "noindex": True,
+        "og_title": (f"Track your guests' replies — {name}" if en
+                     else f"تابع ردود المعازيم — {name}"),
+        "og_desc": ("Who's coming, who can't make it, and how many — live, from one link." if en
+                    else "مين جاي، ومين معتذر، وعددهم كام — لحظة بلحظة من لينك واحد."),
+        "og_image": settings.SITE_URL + settings.STATIC_URL + "images/share-followup.jpg",
+    })
+    response["X-Robots-Tag"] = "noindex, nofollow"
+    return response

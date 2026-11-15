@@ -162,19 +162,23 @@
   },
   "reels": {
     "eyebrow": "Video design",
-    "title": "See our work in motion",
-    "sub": "Short clips of our invitations in action.",
+    "title": "We make video invitations too",
+    "sub": "A short video with your names and details, ready for WhatsApp and stories.",
     "empty": "New clips are coming soon.",
     "close": "Close",
     "prev": "Previous",
     "next": "Next",
-    "play": "Play"
+    "play": "Play",
+    "badge": "Video service",
+    "points": { "names": "Your names and wedding date", "music": "Set to the song you pick", "story": "Story and WhatsApp ready" },
+    "order": "Order a video"
   },
   "cta": {
     "eyebrow": "Ready",
     "title": "Let's start your invitation",
     "sub": "Message us on WhatsApp and we'll reply with details and pricing.",
-    "button": "Start the chat"
+    "button": "Chat on WhatsApp",
+    "browse": "See the designs"
   },
   "footer": {
     "social": "Social links",

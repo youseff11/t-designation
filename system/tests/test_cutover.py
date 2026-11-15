@@ -10,7 +10,7 @@ from django.test import override_settings
 from django.urls import clear_url_caches, resolve, reverse
 
 from system.api.invite_page import invitation_page, template_page
-from system.spa import spa_shell
+from system.spa import client_followup_shell, spa_shell
 from system.tests.test_api_invite import InviteBase
 
 
@@ -59,9 +59,11 @@ class CutoverTests(InviteBase):
         self.assertIs(resolve(f"/i/{slug}/g/{token}/").func, invitation_page)
         self.assertIs(resolve(f"/templates/{self.template.slug}/preview/").func, template_page)
         for path in ("/", "/login/", "/templates/", "/dashboard/", "/dashboard/invitations/1/editor",
-                     f"/i/{slug}/g/{token}/pass/", f"/i/{slug}/client/c/", f"/i/{slug}/venue/v/", "/anything/else"):
+                     f"/i/{slug}/g/{token}/pass/", f"/i/{slug}/venue/v/", "/anything/else"):
             with self.subTest(path=path):
                 self.assertIs(resolve(path).func, spa_shell)
+        # لينك متابعة الردود: نفس الـshell بمعاينة لينك مخصوصة
+        self.assertIs(resolve(f"/i/{slug}/client/c/").func, client_followup_shell)
 
     # -------------------------------------------------------------- طلبات حقيقية
     def test_old_shared_links_answer(self):
@@ -70,6 +72,18 @@ class CutoverTests(InviteBase):
         self.assertEqual(self.client.get(f"/i/{slug}/g/{token}/").status_code, 200)
         self.assertEqual(self.client.get(f"/i/{slug}/g/{token}/pass/").status_code, 200)
         self.assertEqual(self.client.get(f"/i/{slug}/client/{self.inv.client_token}/").status_code, 200)
+
+    def test_client_followup_link_has_its_own_share_preview(self):
+        res = self.client.get(f"/i/{self.inv.slug}/client/{self.inv.client_token}/")
+        html = res.content.decode()
+        self.assertIn("images/share-followup.jpg", html)
+        self.assertNotIn("images/share-site.jpg", html)
+        self.assertIn('name="robots" content="noindex, nofollow"', html)
+        self.assertEqual(res["X-Robots-Tag"], "noindex, nofollow")
+        home = self.client.get("/").content.decode()
+        self.assertIn('property="og:image" content="', home)
+        self.assertIn("images/share-site.jpg", home)
+        self.assertNotIn("share-followup", home)
 
     def test_qr_images_are_still_django(self):
         slug, token = self.inv.slug, self.guest.token

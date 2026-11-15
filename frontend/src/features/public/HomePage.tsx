@@ -57,11 +57,11 @@ export function HomePage() {
     <>
       <HeroSection plansPublic={site.plansPublic} hero={site.hero} />
       <TemplatesSection templates={home.data?.templates} error={home.error} perRow={site.templatesPerRow} />
-      <ReelsSection reels={home.data?.reels} />
       <FeaturesSection />
       {site.plansPublic && <PlansSection site={site} plans={home.data?.plans} />}
       <StepsSection />
       {SHOW_ORDER_FORM && site.ordersEnabled && <OrderSection site={site} />}
+      <ReelsSection reels={home.data?.reels} orderUrl={site.whatsapp.url} />
       <FaqSection faqs={home.data?.faqs} />
       <CtaSection site={site} />
       <HomeFooter site={site} />

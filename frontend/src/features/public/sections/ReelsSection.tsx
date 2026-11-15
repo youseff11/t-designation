@@ -185,45 +185,70 @@ function ReelViewer({
   )
 }
 
+const POINTS = ['names', 'music', 'story'] as const
+
+/** عمود «خدمة الفيديو»: إننا بنعمل دعوات فيديو + نقط سريعة + زرار طلب على الواتساب */
+function VideoService({ orderUrl }: { orderUrl?: string }) {
+  const { t } = useTranslation()
+  return (
+    <div className="vid-copy" data-reveal>
+      <p className="eyebrow">{t('public.reels.eyebrow')}</p>
+      <h2>{t('public.reels.title')}</h2>
+      <p className="vid-sub">{t('public.reels.sub')}</p>
+      <ul className="vid-points">
+        {POINTS.map((key) => (
+          <li key={key}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 12.5 4 4 8-9" />
+            </svg>
+            {t(`public.reels.points.${key}`)}
+          </li>
+        ))}
+      </ul>
+      {orderUrl && (
+        <a className="btn btn--gold vid-order" href={orderUrl} target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+          </svg>
+          <span>{t('public.reels.order')}</span>
+        </a>
+      )}
+    </div>
+  )
+}
+
 /**
- * الريلز — صف كروت رأسية (9:16) بتشتغل بالـhover وبتتفتح ملء الشاشة.
- * اللينك في الترويسة ظاهر دايماً، فلو مفيش ريلز لسه بنعرض رسالة «قريباً» بدل قسم مخفي
- * (ومنعرضش حاجة قبل ما البيانات توصل عشان مايحصلش وميض).
+ * الفيديوهات — قبل الأسئلة. ناحية فيها إننا بنقدّم خدمة دعوات الفيديو، وناحية
+ * فيها الكروت الرأسية (9:16) بإطار تليفون، بتشتغل بالـhover وبتتفتح ملء الشاشة.
+ * لو مفيش فيديوهات لسه بيفضل عمود الخدمة ورسالة «قريباً» (ومنعرضش حاجة قبل ما البيانات توصل).
  */
-export function ReelsSection({ reels }: { reels: PublicReel[] | undefined }) {
+export function ReelsSection({ reels, orderUrl }: { reels: PublicReel[] | undefined; orderUrl?: string }) {
   const { t } = useTranslation()
   const lang = useLang()
   const [open, setOpen] = useState<number | null>(null)
   const close = useCallback(() => setOpen(null), [])
   if (!reels) return null
 
-  if (!reels.length) {
-    return (
-      <section className="section section--reels" id="reels">
-        <div className="wrap">
-          <div className="section-head" data-reveal>
-            <p className="eyebrow">{t('public.reels.eyebrow')}</p>
-            <h2>{t('public.reels.title')}</h2>
-            <p>{t('public.reels.empty')}</p>
-          </div>
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section className="section section--reels" id="reels">
-      <div className="wrap">
-        <div className="section-head" data-reveal>
-          <p className="eyebrow">{t('public.reels.eyebrow')}</p>
-          <h2>{t('public.reels.title')}</h2>
-          <p>{t('public.reels.sub')}</p>
+    <section className="section section--reels vid" id="reels">
+      <div className="vid-glow" aria-hidden="true" />
+      <div className="wrap vid-grid">
+        <VideoService orderUrl={orderUrl} />
+        <div className="vid-stage" data-reveal>
+          <span className="vid-badge">
+            <i aria-hidden="true" />
+            {t('public.reels.badge')}
+          </span>
+          {reels.length ? (
+            <div className="reel-rail vid-rail" data-count={Math.min(reels.length, 3)}>
+              {reels.map((reel, i) => (
+                <ReelCard key={reel.id} reel={reel} title={pick(lang, reel.title, reel.titleEn)} onOpen={() => setOpen(i)} />
+              ))}
+            </div>
+          ) : (
+            <p className="vid-empty">{t('public.reels.empty')}</p>
+          )}
         </div>
-      </div>
-      <div className="reel-rail" data-reveal>
-        {reels.map((reel, i) => (
-          <ReelCard key={reel.id} reel={reel} title={pick(lang, reel.title, reel.titleEn)} onOpen={() => setOpen(i)} />
-        ))}
       </div>
       {open !== null && <ReelViewer reels={reels} index={open} onIndex={setOpen} onClose={close} />}
     </section>
