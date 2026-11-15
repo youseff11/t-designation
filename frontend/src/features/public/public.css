@@ -2336,6 +2336,8 @@ html[lang="en"] .section-head h2 { font-weight: 700; letter-spacing: -.02em; }
 
 @media (max-width: 780px) {
   .nx { aspect-ratio: auto; min-height: 0; }
+  /* على التليفون الصورة فوق خالص بعرض الشاشة والكلام تحتها */
+  .nx-media { background-position: 14% top; transform-origin: 14% top; }
   .nx-ticker { position: relative; }
   .nx-grid { padding-block: 36vh 30px; }
   .nx-veil, [dir="ltr"] .nx-veil {
@@ -2343,6 +2345,7 @@ html[lang="en"] .section-head h2 { font-weight: 700; letter-spacing: -.02em; }
       linear-gradient(to top, rgba(var(--veil), 1) 0%, rgba(var(--veil), 1) calc(100% - 52vh), rgba(var(--veil), .55) calc(100% - 38vh), rgba(var(--veil), .05) calc(100% - 22vh), rgba(var(--veil), .45) 100%);
   }
   .nx-feather:nth-child(n + 7) { display: none; }
+  .nx-feather { width: 7px; height: 16px; }
 }
 
 /* ================================================================
