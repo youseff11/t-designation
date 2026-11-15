@@ -2685,3 +2685,33 @@ html.site-deep .btn--outline:hover { color: #fff; border-color: var(--neon-2); b
 
 /* الختام: يفضل كتلة تركواز زاهية (هي اللمعة الوحيدة الفاتحة) */
 html.site-deep .home-cta { background: var(--grad); }
+
+/* ================================================================
+   الهيرو على التليفون: الصورة ليها مساحتها فوق (من تحت الناف على طول)
+   بارتفاع ثابت بيتناسب مع الشاشة، و‎cover‎ عشان تملاها في أي مقاس،
+   وتحتها بتدوب في لون الصفحة والكلام بيبدأ على آخرها.
+   ================================================================ */
+@media (max-width: 780px) {
+  html .nx { --mh: clamp(330px, 92vw, 500px); aspect-ratio: auto; min-height: 0; }
+  /* الصورة الكبيرة عشان تفضل حادة على شاشات التليفون؛ نفس قوة الـselector عشان صورة اللوحة تغلب */
+  .nx-media { --hero-img: url("/static/images/hero-neon.webp"); }
+  html .nx-media {
+    inset: 0 0 auto 0; height: var(--mh);
+    background-size: cover; background-position: 22% 40%;
+    transform-origin: 30% 40%; translate: none;
+  }
+  html .nx-veil,
+  html [dir="ltr"] .nx-veil,
+  html.site-deep .nx-veil,
+  html.site-deep [dir="ltr"] .nx-veil {
+    background:
+      linear-gradient(to bottom,
+        rgba(var(--veil), .35) 0,
+        rgba(var(--veil), 0) 90px,
+        rgba(var(--veil), 0) calc(var(--mh) - 190px),
+        rgba(var(--veil), .75) calc(var(--mh) - 70px),
+        rgba(var(--veil), 1) var(--mh));
+  }
+  html .nx-grid { padding-block: calc(var(--mh) - 110px) 30px; }
+  html .nx-air { height: var(--mh); bottom: auto; }
+}
