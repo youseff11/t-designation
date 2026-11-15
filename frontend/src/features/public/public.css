@@ -3002,3 +3002,99 @@ html.site-deep .finale .btn--gold:hover { background: var(--grad); filter: brigh
 
 /* الفوتر: اللوجو الكامل الشفاف بدل المربع الأسود */
 html.site-deep .foot-brand { width: 74px; height: 70px; }
+
+/* ================================================================
+   اللوجو أكبر في الترويسة
+   ================================================================ */
+html.site-deep .brand { height: 52px; padding: 8px 24px; }
+html.site-deep .nav.is-stuck .brand { height: 44px; }
+@media (min-width: 781px) and (max-width: 1150px) { html.site-deep .brand { height: 44px; padding-inline: 16px; } }
+@media (min-width: 781px) and (max-width: 980px) {
+  html.site-deep .brand, html.site-deep .nav.is-stuck .brand { height: 34px; padding-block: 7px; }
+}
+@media (max-width: 780px) {
+  html.site-deep .brand, html.site-deep .nav.is-stuck .brand { height: 34px; padding: 7px 16px; }
+}
+
+/* ================================================================
+   زرار الواتساب: بهوية الموقع (تركواز بحلقة دهبي ونبض)، والشات من جوّه
+   تيل غامق بدل ألوان واتساب البيج.
+   ================================================================ */
+html.site-deep .wa-float {
+  width: 60px; height: 60px; color: var(--ink);
+  background: radial-gradient(circle at 30% 25%, #b8fffb, var(--neon-2) 45%, var(--neon-3));
+  box-shadow: 0 0 0 3px #032a31, 0 0 0 4.5px rgba(216, 183, 122, .85), 0 16px 34px -10px rgba(var(--glow), .7);
+}
+html.site-deep .wa-float::before,
+html.site-deep .wa-float::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none;
+  border: 2px solid rgba(var(--glow), .7); opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.site-deep .wa-float:not(.is-open)::before { animation: wa-ring 2.6s ease-out infinite; }
+  html.site-deep .wa-float:not(.is-open)::after { animation: wa-ring 2.6s 1.3s ease-out infinite; }
+}
+@keyframes wa-ring { 0% { opacity: .9; transform: scale(1); } 80%, 100% { opacity: 0; transform: scale(1.7); } }
+html.site-deep .wa-float:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 0 0 3px #032a31, 0 0 0 4.5px #d8b77a, 0 20px 40px -10px rgba(var(--glow), .9); }
+html.site-deep .wa-float .wa-icon { width: 30px; height: 30px; filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .4)); }
+html.site-deep .wa-float.is-open { background: #04323a; color: var(--neon-1); }
+@media (max-width: 600px) {
+  html.site-deep .wa-float { width: 54px; height: 54px; }
+  html.site-deep .wa-float .wa-icon { width: 27px; height: 27px; }
+}
+
+html.site-deep .wa-chat {
+  --wa-green: transparent;
+  --wa-bg: #032a31;
+  --wa-bubble: #0b4b55;
+  --wa-ink: #e8fbfb;
+  --wa-soft: #9cc5c8;
+  --wa-foot: #021f24;
+  inset-block-end: 98px;
+  border-radius: 26px; border: 1px solid transparent;
+  background:
+    linear-gradient(var(--wa-bg), var(--wa-bg)) padding-box,
+    linear-gradient(150deg, rgba(var(--glow), .7), rgba(255, 255, 255, .06) 45%, rgba(216, 183, 122, .7)) border-box;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, .85), 0 0 60px -30px rgba(var(--glow), .6);
+}
+html.site-deep .wa-chat-head {
+  position: relative; padding: 16px 18px;
+  background:
+    radial-gradient(80% 140% at 100% 0%, rgba(var(--glow), .35), transparent 60%),
+    linear-gradient(135deg, #0a5562, #053a43);
+  border-bottom: 1px solid rgba(216, 183, 122, .35);
+}
+html.site-deep .wa-chat-avatar {
+  width: 48px; height: 48px; padding: 7px; border-radius: 50%; object-fit: contain;
+  background: #021f24; box-shadow: 0 0 0 2px rgba(216, 183, 122, .8), 0 6px 14px -6px rgba(0, 0, 0, .6);
+}
+html.site-deep .wa-chat-who strong { font-family: var(--font-display); font-weight: 700; letter-spacing: .02em; }
+html.site-deep .wa-chat-who small { display: inline-flex; align-items: center; gap: 6px; color: var(--neon-1); opacity: 1; }
+html.site-deep .wa-chat-who small::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%; background: #3ef08a; box-shadow: 0 0 0 3px rgba(62, 240, 138, .2);
+}
+html.site-deep .wa-chat-close { color: #e8fbfb; }
+html.site-deep .wa-chat-body {
+  background:
+    radial-gradient(70% 60% at 0% 100%, rgba(216, 183, 122, .1), transparent 70%),
+    radial-gradient(rgba(143, 243, 238, .1) 1px, transparent 1.6px) 0 0 / 22px 22px,
+    #032a31;
+}
+html.site-deep .wa-bubble {
+  color: #e8fbfb; border: 1px solid rgba(143, 243, 238, .18);
+  background: linear-gradient(160deg, #0d5a66, #0a4952);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .7);
+}
+html.site-deep .wa-bubble-time { color: rgba(214, 243, 243, .65); }
+html.site-deep .wa-bubble-time svg { color: var(--neon-2); }
+html.site-deep .wa-chat-foot { background: #021f24; border-top: 1px solid rgba(143, 243, 238, .1); padding: 12px; }
+html.site-deep .wa-chat-foot input {
+  border-radius: 999px; padding: 0 18px; color: #e8fbfb;
+  background: rgba(255, 255, 255, .06); border: 1px solid rgba(143, 243, 238, .16);
+}
+html.site-deep .wa-chat-foot input::placeholder { color: rgba(214, 243, 243, .5); }
+html.site-deep .wa-chat-foot input:focus { outline: 2px solid var(--neon-2); outline-offset: 0; }
+html.site-deep .wa-chat-send { background: rgba(255, 255, 255, .06); color: var(--muted); }
+html.site-deep .wa-chat-foot.has-text .wa-chat-send { background: var(--grad); color: var(--ink); box-shadow: 0 8px 20px -8px rgba(var(--glow), .8); }
+html.site-deep .wa-chat-send:focus-visible { outline-color: var(--neon-2); }
+@media (max-width: 600px) { html.site-deep .wa-chat { inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); border-radius: 22px; } html.site-deep .wa-chat-avatar { width: 42px; height: 42px; padding: 6px; } }

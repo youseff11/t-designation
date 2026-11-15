@@ -49,10 +49,8 @@ ${url}`)}`, '_blank', 'noopener')
   return (
     <button type="button" className="lb-pv-share" data-template-share aria-label={label} title={label} onClick={share}>
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <circle cx="18" cy="5" r="2.6" />
-        <circle cx="6" cy="12" r="2.6" />
-        <circle cx="18" cy="19" r="2.6" />
-        <path d="m8.3 10.8 7.4-4.3M8.3 13.2l7.4 4.3" />
+        <path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" />
+        <path d="M8 11H6.5A2.5 2.5 0 0 0 4 13.5v4A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-4a2.5 2.5 0 0 0-2.5-2.5H16" />
       </svg>
       <span className="lb-pv-share-text">{t('templateShare.short')}</span>
     </button>

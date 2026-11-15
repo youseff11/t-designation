@@ -11,6 +11,42 @@ import { InvalidLink } from './PageStatus'
 import '../styles/base.css'
 import '../styles/client.css'
 
+/** أيقونات كروت الملخص (خطوط بس، بتاخد لون النص) */
+const STAT_ICONS = {
+  replies: 'M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3v-3A2.5 2.5 0 0 1 4 14.5Z M8.5 10.5l2 2 4-4',
+  attending: 'M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.7a4.2 4.2 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z',
+  guests: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2',
+  checkedIn: 'M10 17l5-5-5-5M15 12H3M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5',
+  wishes: 'M3.5 6.5h17v11h-17zM3.5 7l8.5 6 8.5-6',
+} as const
+
+function StatIcon({ name }: { name: keyof typeof STAT_ICONS }) {
+  return (
+    <span className="client-followup-stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d={STAT_ICONS[name]} />
+      </svg>
+    </span>
+  )
+}
+
+/** حلقة نسبة الحضور: سيحضر (تركواز) + معتذر (دهبي) + مش متأكد (فاتح) من إجمالي الردود */
+function RsvpRing({ attending, declined, maybe }: { attending: number; declined: number; maybe: number }) {
+  const total = attending + declined + maybe
+  const part = (n: number) => (total ? (n / total) * 100 : 0)
+  const a = part(attending)
+  const d = part(declined)
+  const m = part(maybe)
+  return (
+    <svg className="client-followup-ring" viewBox="0 0 120 120" aria-hidden="true">
+      <circle className="client-followup-ring-bg" cx="60" cy="60" r="50" />
+      {m > 0 && <circle className="client-followup-ring-maybe" cx="60" cy="60" r="50" pathLength="100" strokeDasharray={`${m} 100`} strokeDashoffset={-(a + d)} />}
+      {d > 0 && <circle className="client-followup-ring-declined" cx="60" cy="60" r="50" pathLength="100" strokeDasharray={`${d} 100`} strokeDashoffset={-a} />}
+      {a > 0 && <circle className="client-followup-ring-attending" cx="60" cy="60" r="50" pathLength="100" strokeDasharray={`${a} 100`} />}
+    </svg>
+  )
+}
+
 /**
  * تحميل رسائل التهنئة PDF: بنطبع القسم ده لوحده (الـCSS بيخفي الباقي لما ‎body.print-wishes‎ موجود)
  * والمتصفح بيحفظه PDF بالخط العربي الصح من غير مكتبات. عنوان الصفحة هو اسم الملف الافتراضي.
@@ -62,23 +98,55 @@ export function ClientFollowupPage() {
       <main className="client-followup">
         {/* الصفحة دي بيفتحها العميل نفسه، فمفيش كلام موجّه لينا ولا العنوان الداخلي ولا حالة النشر */}
         <header className="client-followup-welcome">
-          <Link className="brand brand--stacked client-followup-logo" to="/">
-            <span className="sr-only">{siteName}</span>
-          </Link>
-          <h1>{invitation.nameOne ? t('guests.client.welcomeNamed', { names }) : t('guests.client.welcome')}</h1>
-          <p className="client-followup-subtitle">{t('guests.client.subtitle')}</p>
+          <div className="client-followup-welcome-copy">
+            <Link className="brand brand--stacked client-followup-logo" to="/">
+              <span className="sr-only">{siteName}</span>
+            </Link>
+            <h1>{invitation.nameOne ? t('guests.client.welcomeNamed', { names }) : t('guests.client.welcome')}</h1>
+            <p className="client-followup-subtitle">{t('guests.client.subtitle')}</p>
+          </div>
+          {hasRsvp && (
+            <div className="client-followup-ring-wrap">
+              <div className="client-followup-ring-box">
+                <RsvpRing attending={stats.attending} declined={stats.declined} maybe={stats.maybe} />
+                <span className="client-followup-ring-label">
+                  <b>{stats.attending}</b>
+                  <small>{t('guests.client.attending')}</small>
+                </span>
+              </div>
+              <ul className="client-followup-legend">
+                <li className="is-attending">
+                  <i aria-hidden="true" />
+                  {rsvpLabel(t, 'attending')}
+                  <b>{stats.attending}</b>
+                </li>
+                <li className="is-declined">
+                  <i aria-hidden="true" />
+                  {rsvpLabel(t, 'declined')}
+                  <b>{stats.declined}</b>
+                </li>
+                {stats.maybe > 0 && (
+                  <li className="is-maybe">
+                    <i aria-hidden="true" />
+                    {rsvpLabel(t, 'maybe')}
+                    <b>{stats.maybe}</b>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
         </header>
 
         <section className="client-followup-stats" aria-label={t('guests.client.summary')}>
           {hasRsvp && (
             <>
               <article className="client-followup-stat">
-                <span className="client-followup-stat-icon">✓</span>
+                <StatIcon name="replies" />
                 <span className="client-followup-stat-label">{t('guests.client.allReplies')}</span>
                 <strong>{stats.rsvpTotal}</strong>
               </article>
               <article className="client-followup-stat">
-                <span className="client-followup-stat-icon client-followup-stat-icon--ok">♥</span>
+                <StatIcon name="attending" />
                 <span className="client-followup-stat-label">{t('guests.client.attending')}</span>
                 <strong>{stats.attending}</strong>
               </article>
@@ -87,12 +155,12 @@ export function ClientFollowupPage() {
           {hasQr && (
             <>
               <article className="client-followup-stat">
-                <span className="client-followup-stat-icon">▣</span>
+                <StatIcon name="guests" />
                 <span className="client-followup-stat-label">{t('guests.client.guestsQr')}</span>
                 <strong>{stats.guests}</strong>
               </article>
               <article className="client-followup-stat">
-                <span className="client-followup-stat-icon client-followup-stat-icon--ok">↗</span>
+                <StatIcon name="checkedIn" />
                 <span className="client-followup-stat-label">{t('guests.client.checkedIn')}</span>
                 <strong>{stats.checkedIn}</strong>
               </article>
@@ -100,7 +168,7 @@ export function ClientFollowupPage() {
           )}
           {hasGuestbook && (
             <article className="client-followup-stat">
-              <span className="client-followup-stat-icon">✉</span>
+              <StatIcon name="wishes" />
               <span className="client-followup-stat-label">{t('guests.client.wishes')}</span>
               <strong>{stats.messages}</strong>
             </article>

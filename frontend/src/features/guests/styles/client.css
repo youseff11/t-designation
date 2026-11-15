@@ -291,3 +291,156 @@
   body.print-wishes .client-followup-message-card p,
   body.print-wishes .client-followup-message-card time { color: #333; }
 }
+
+/* ================================================================
+   صفحة متابعة العميل بهوية الموقع: تيل غامق، كروت زجاج بشعرة متدرّجة
+   (تركواز ← دهبي)، وحلقة نسبة الحضور في الهيدر. للشاشة بس — طباعة
+   رسائل التهنئة PDF فاضلة بيضا زي ما هي.
+   ================================================================ */
+@media screen {
+  .client-followup-page {
+    --bg: #032a31; --surface: #063a43; --surface-2: #04323a;
+    --text: #e8fbfb; --muted: #9cc5c8; --line: rgba(143, 243, 238, .14);
+    --accent: #3fe0dd; --ok: #3ef0b0; --danger: #ff8a7a;
+    --gold: #d8b77a;
+    color-scheme: dark;
+    color: var(--text);
+    background:
+      radial-gradient(60% 40% at 100% 0%, rgba(25, 211, 209, .14), transparent 70%),
+      radial-gradient(50% 40% at 0% 30%, rgba(216, 183, 122, .07), transparent 70%),
+      linear-gradient(180deg, #04333b, #032a31 40%, #021f24);
+  }
+  .client-followup-page::before {
+    content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(143, 243, 238, .08) 1px, transparent 1.6px); background-size: 26px 26px;
+    -webkit-mask-image: linear-gradient(to bottom, #000, transparent 70%); mask-image: linear-gradient(to bottom, #000, transparent 70%);
+  }
+  .client-followup { position: relative; z-index: 1; }
+
+  /* الهيدر: كارت كبير فيه الأسامي وحلقة الردود */
+  .client-followup-welcome {
+    position: relative; isolation: isolate; overflow: hidden;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 28px;
+    margin-bottom: 22px; padding: clamp(24px, 4vw, 40px); border-radius: 32px; text-align: start;
+    border: 1px solid transparent;
+    background:
+      radial-gradient(80% 120% at 100% 0%, rgba(25, 211, 209, .22), transparent 60%) padding-box,
+      linear-gradient(150deg, #07444e, #04313a 60%, #022328) padding-box,
+      linear-gradient(140deg, rgba(25, 211, 209, .7), rgba(255, 255, 255, .06) 45%, rgba(216, 183, 122, .7)) border-box;
+    box-shadow: 0 40px 70px -40px rgba(0, 0, 0, .85);
+  }
+  .client-followup .brand.client-followup-logo {
+    box-sizing: content-box; height: 78px; width: auto; aspect-ratio: 694 / 658;
+    margin: 0 0 14px; padding: 0; border: 0; border-radius: 0; box-shadow: none;
+    background: url("/static/images/logo-full-dark.png") center / contain no-repeat;
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+  }
+  .client-followup-welcome h1 {
+    font-size: clamp(26px, 3.4vw, 42px); line-height: 1.25;
+    background: linear-gradient(115deg, #ffffff, #8ff3ee 55%, #f6e3bd); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .client-followup-welcome .client-followup-subtitle { margin-top: 10px; max-width: 52ch; color: #cfeeee; font-size: 15px; line-height: 1.8; }
+
+  .client-followup-ring-wrap { display: flex; align-items: center; gap: 20px; }
+  .client-followup-ring-box { position: relative; width: 150px; aspect-ratio: 1; flex: none; }
+  .client-followup-ring { width: 100%; height: 100%; rotate: -90deg; }
+  .client-followup-ring circle { fill: none; stroke-width: 11; }
+  .client-followup-ring-bg { stroke: rgba(25, 211, 209, .14); }
+  .client-followup-ring-attending { stroke: #19d3d1; }
+  .client-followup-ring-declined { stroke: var(--gold); }
+  .client-followup-ring-maybe { stroke: rgba(255, 255, 255, .45); }
+  .client-followup-ring-label { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .client-followup-ring-label b { font-family: var(--font-display-en); font-weight: 800; font-size: 38px; line-height: 1; color: #fff; }
+  .client-followup-ring-label small { margin-top: 4px; color: var(--accent); font-size: 13px; font-weight: 600; }
+  .client-followup-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; min-width: 150px; }
+  .client-followup-legend li {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px;
+    background: rgba(2, 26, 30, .45); border: 1px solid var(--line); font-size: 13.5px; font-weight: 600;
+  }
+  .client-followup-legend i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .client-followup-legend .is-attending i { background: #19d3d1; box-shadow: 0 0 10px #19d3d1; }
+  .client-followup-legend .is-declined i { background: var(--gold); }
+  .client-followup-legend .is-maybe i { background: rgba(255, 255, 255, .5); }
+  .client-followup-legend b { margin-inline-start: auto; font-family: var(--font-display-en); font-size: 16px; }
+
+  /* كروت الملخص */
+  .client-followup-stats { gap: 12px; }
+  .client-followup-stat {
+    position: relative; overflow: hidden; border-radius: 24px; border: 1px solid transparent;
+    background:
+      linear-gradient(165deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02)) padding-box,
+      linear-gradient(#063a43, #063a43) padding-box,
+      linear-gradient(140deg, rgba(25, 211, 209, .5), rgba(255, 255, 255, .05) 45%, rgba(216, 183, 122, .5)) border-box;
+    box-shadow: 0 26px 46px -34px rgba(0, 0, 0, .85);
+  }
+  .client-followup-stat-icon {
+    width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px;
+    color: #04323a; border: 0;
+    background: linear-gradient(135deg, #8ff3ee, #19d3d1 55%, #0aa5b8);
+    box-shadow: 0 8px 18px -8px rgba(25, 211, 209, .8);
+  }
+  .client-followup-stat:nth-child(2) .client-followup-stat-icon { background: linear-gradient(135deg, #f6e3bd, #d8b77a); box-shadow: 0 8px 18px -8px rgba(216, 183, 122, .8); }
+  .client-followup-stat-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .client-followup-stat-label { color: var(--muted); font-size: 13px; font-weight: 600; }
+  .client-followup-stat strong { color: #fff; font-size: 36px; }
+
+  /* الأقسام والجداول */
+  .client-followup-section {
+    border-radius: 28px; border: 1px solid rgba(143, 243, 238, .16); overflow: hidden;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .015)), #04323a;
+    box-shadow: 0 30px 60px -40px rgba(0, 0, 0, .85);
+  }
+  .client-followup-section-head { border-bottom: 1px solid var(--line); background: rgba(2, 26, 30, .35); }
+  .client-followup-kicker { color: var(--gold); letter-spacing: .14em; font-weight: 700; }
+  .client-followup h2 { color: #fff; }
+  .client-followup-count, .client-followup-badge {
+    color: #f6e3bd; border-color: rgba(216, 183, 122, .5); background: rgba(216, 183, 122, .1);
+  }
+  .client-followup-table th { background: rgba(2, 26, 30, .5); color: var(--muted); border-color: var(--line); }
+  .client-followup td { border-color: var(--line); color: var(--text); }
+  .client-followup tbody tr:hover { background: rgba(143, 243, 238, .05); }
+  .client-followup-message { color: #cfeeee; }
+  .client-followup-pill {
+    border-radius: 999px; padding: 4px 12px; font-weight: 700; font-size: 12px;
+    border: 1px solid currentColor; background: color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .client-followup-pill--attending { color: #3ef0b0; }
+  .client-followup-pill--declined { color: #ffb4a6; }
+  .client-followup-pill--maybe { color: #f6e3bd; }
+  .client-followup-code { color: var(--accent); }
+  .client-followup .btn--gold { background: linear-gradient(115deg, #8ff3ee, #19d3d1 50%, #0aa5b8); color: #04323a; border: 0; }
+  .client-followup .btn--ghost { color: var(--text); border-color: rgba(143, 243, 238, .3); background: rgba(255, 255, 255, .04); }
+  .client-followup-answer b { color: var(--gold); }
+
+  /* رسائل التهنئة */
+  .client-followup-wishes-icon { color: #04323a; background: linear-gradient(135deg, #f6e3bd, #d8b77a); border: 0; }
+  .client-followup-message-card {
+    border-radius: 22px; border: 1px solid rgba(143, 243, 238, .16);
+    background: linear-gradient(165deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02)), #063a43;
+    box-shadow: 0 20px 40px -30px rgba(0, 0, 0, .85);
+  }
+  .client-followup-message-card:hover { border-color: rgba(216, 183, 122, .55); }
+  .client-followup-message-card::before { background: linear-gradient(to left, #19d3d1, #d8b77a); }
+  .client-followup-message-mark { color: rgba(216, 183, 122, .55); }
+  .client-followup-message-card p { color: #e8fbfb; }
+  .client-followup-message-avatar { color: #04323a; background: linear-gradient(135deg, #8ff3ee, #19d3d1); border: 0; }
+  .client-followup-message-card-head strong { color: #f6e3bd; }
+  .client-followup-message-card time { color: var(--muted); }
+  .client-followup-empty-state { border-color: rgba(143, 243, 238, .25); background: rgba(255, 255, 255, .03); }
+
+  @media (max-width: 680px) {
+    .client-followup-welcome { grid-template-columns: minmax(0, 1fr); text-align: center; border-radius: 26px; gap: 20px; }
+    .client-followup .brand.client-followup-logo { margin-inline: auto; height: 66px; }
+    .client-followup-stats { grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; }
+    .client-followup-stat { min-height: 0; padding: 14px 12px; border-radius: 20px; }
+    .client-followup-stat-label { font-size: 12px; }
+    .client-followup-welcome .client-followup-subtitle { margin-inline: auto; font-size: 14px; }
+    .client-followup-ring-wrap { justify-content: center; }
+    .client-followup-ring-box { width: 124px; }
+    .client-followup-ring-label b { font-size: 32px; }
+    .client-followup-legend { min-width: 0; }
+    .client-followup-stat strong { font-size: 30px; }
+    .client-followup-stat-icon { width: 38px; height: 38px; }
+    .client-followup .client-followup-table--rsvp tr { border-color: var(--line); }
+  }
+}

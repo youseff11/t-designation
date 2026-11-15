@@ -2343,3 +2343,36 @@ html:has(.lb-stage) { scrollbar-width: thin; scrollbar-color: var(--accent-40) t
 }
 .lb-cta-links a:hover { transform: translateY(-2px); }
 .lb-cta-links svg { width: 24px; height: 24px; }
+
+/* ------------------------------------------- شريط المعاينة بهوية الموقع */
+/* نفس كبسولة «عجبك القالب؟»: تيل غامق بشعرة دهبي وخط الموقع، و«مشاركة»
+   زرار تركواز بأيقونة «ابعت» واضحة بدل نقط الشبكة. */
+.lb-pv-nav {
+  gap: 2px; padding: 4px;
+  border: 1px solid rgba(216, 183, 122, .55);
+  background: linear-gradient(120deg, rgba(7, 68, 78, .92), rgba(3, 42, 49, .92));
+  box-shadow: 0 16px 34px -16px rgba(2, 26, 30, .75), inset 0 1px 0 rgba(255, 255, 255, .08);
+}
+.lb-pv-back, .lb-pv-share { font-family: 'Alexandria', 'IBM Plex Sans Arabic', 'Tajawal', system-ui, sans-serif; font-weight: 600; }
+.lb-pv-back { color: #e8fbfb; }
+.lb-pv-back:hover { background: rgba(143, 243, 238, .12); color: #ffffff; }
+.lb-pv-sep { background: rgba(216, 183, 122, .45); }
+.lb-pv-share {
+  position: relative; overflow: hidden; gap: 7px;
+  color: #04323a;
+  background: linear-gradient(115deg, #8ff3ee 0%, #19d3d1 50%, #0aa5b8 100%);
+  box-shadow: 0 6px 16px -8px rgba(25, 211, 209, .9), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.lb-pv-share svg { inline-size: 16px; block-size: 16px; stroke-width: 2.1; }
+.lb-pv-share svg circle { fill: none; }
+.lb-pv-share::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .55) 50%, transparent 65%);
+  transform: translateX(-130%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .lb-pv-share::after { animation: lb-pv-shine 4.5s 1.5s ease-in-out infinite; }
+}
+@keyframes lb-pv-shine { 0% { transform: translateX(-130%); } 30%, 100% { transform: translateX(130%); } }
+.lb-pv-share:hover { filter: brightness(1.06) saturate(1.1); }
+.lb-pv-back:focus-visible, .lb-pv-share:focus-visible { outline-color: #8ff3ee; }
