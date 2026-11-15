@@ -175,6 +175,56 @@ export function ClientFollowupPage() {
           )}
         </section>
 
+        {/* رسائل التهنئة وزرار الـPDF أول حاجة بعد الملخص — أكتر حاجة العرسان بيدوروا عليها */}
+        {hasGuestbook && (
+          <section className="client-followup-section client-followup-wishes" aria-labelledby="messages-title">
+            <div className="client-followup-section-head">
+              <div>
+                <p className="client-followup-kicker">GUESTBOOK</p>
+                <h2 id="messages-title">
+                  <span className="client-followup-wishes-icon no-print" aria-hidden="true">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.7a4.2 4.2 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z" />
+                    </svg>
+                  </span>
+                  {t('guests.client.wishesTitle')}
+                </h2>
+                {invitation.nameOne && <p className="client-followup-print-names">{names}</p>}
+              </div>
+              <span className="client-followup-section-tools">
+                <span className="client-followup-count">{t('guests.client.wishesCount', { n: stats.messages })}</span>
+                {messageRows.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn--gold btn--sm no-print"
+                    onClick={() => printWishes(`${t('guests.client.wishesTitle')} — ${names || invitation.slug}`)}
+                  >
+                    {t('guests.client.wishesPdf')}
+                  </button>
+                )}
+              </span>
+            </div>
+            <div className="client-followup-messages">
+              {messageRows.map((row) => (
+                <article className="client-followup-message-card" key={row.id}>
+                  <span className="client-followup-message-mark" aria-hidden="true">
+                    ”
+                  </span>
+                  <p>{row.message}</p>
+                  <div className="client-followup-message-card-head">
+                    <span className="client-followup-message-avatar" aria-hidden="true">
+                      {Array.from(row.name.trim())[0] ?? '♥'}
+                    </span>
+                    <strong>{row.name}</strong>
+                    <time>{row.createdAt}</time>
+                  </div>
+                </article>
+              ))}
+              {messageRows.length === 0 && <p className="client-followup-empty">{t('guests.client.noWishes')}</p>}
+            </div>
+          </section>
+        )}
+
         {hasRsvp && (
           <section className="client-followup-section" aria-labelledby="rsvp-title">
             <div className="client-followup-section-head">
@@ -296,55 +346,6 @@ export function ClientFollowupPage() {
                   )}
                 </tbody>
               </table>
-            </div>
-          </section>
-        )}
-
-        {hasGuestbook && (
-          <section className="client-followup-section client-followup-wishes" aria-labelledby="messages-title">
-            <div className="client-followup-section-head">
-              <div>
-                <p className="client-followup-kicker">GUESTBOOK</p>
-                <h2 id="messages-title">
-                  <span className="client-followup-wishes-icon no-print" aria-hidden="true">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M12 20.5s-7.5-4.6-7.5-10.1A4.2 4.2 0 0 1 12 7.7a4.2 4.2 0 0 1 7.5 2.7c0 5.5-7.5 10.1-7.5 10.1Z" />
-                    </svg>
-                  </span>
-                  {t('guests.client.wishesTitle')}
-                </h2>
-                {invitation.nameOne && <p className="client-followup-print-names">{names}</p>}
-              </div>
-              <span className="client-followup-section-tools">
-                <span className="client-followup-count">{t('guests.client.wishesCount', { n: stats.messages })}</span>
-                {messageRows.length > 0 && (
-                  <button
-                    type="button"
-                    className="btn btn--gold btn--sm no-print"
-                    onClick={() => printWishes(`${t('guests.client.wishesTitle')} — ${names || invitation.slug}`)}
-                  >
-                    {t('guests.client.wishesPdf')}
-                  </button>
-                )}
-              </span>
-            </div>
-            <div className="client-followup-messages">
-              {messageRows.map((row) => (
-                <article className="client-followup-message-card" key={row.id}>
-                  <span className="client-followup-message-mark" aria-hidden="true">
-                    ”
-                  </span>
-                  <p>{row.message}</p>
-                  <div className="client-followup-message-card-head">
-                    <span className="client-followup-message-avatar" aria-hidden="true">
-                      {Array.from(row.name.trim())[0] ?? '♥'}
-                    </span>
-                    <strong>{row.name}</strong>
-                    <time>{row.createdAt}</time>
-                  </div>
-                </article>
-              ))}
-              {messageRows.length === 0 && <p className="client-followup-empty">{t('guests.client.noWishes')}</p>}
             </div>
           </section>
         )}
