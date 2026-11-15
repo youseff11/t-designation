@@ -1,9 +1,10 @@
-import { useRef } from 'react'
+import { useEffect, useRef, type CSSProperties, type RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import type { HeroInfo } from '@/api/types'
 
+import { prefersReducedMotion } from '../motion'
 import { useLang } from '../text'
 import { useHeroIdle } from '../useHeroIdle'
 
@@ -20,6 +21,31 @@ function heroImagesCss(images: HeroInfo['images'] | undefined): string {
 /** الشريط اللي بيلف تحت الهيرو: مميزات الدعوة في كلمتين */
 const TICKER = ['link', 'rsvp', 'qr', 'music', 'countdown', 'maps', 'gallery'] as const
 
+/** حاجات طايرة فوق الصورة: ريش صغير بيقع ولمعات بتنوّر وتطفي */
+const AIR = ['feather', 'spark', 'feather', 'spark', 'feather', 'spark', 'feather', 'spark', 'feather', 'spark', 'spark', 'feather'] as const
+
+/** الصورة والكروت بيتحرّكوا سنة مع الماوس (عمق خفيف) */
+function useParallax(ref: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current
+    if (!el || prefersReducedMotion() || !window.matchMedia?.('(pointer: fine)').matches) return
+    let frame = 0
+    const onMove = (e: PointerEvent) => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(() => {
+        const box = el.getBoundingClientRect()
+        el.style.setProperty('--mx', ((e.clientX - box.left) / box.width - 0.5).toFixed(3))
+        el.style.setProperty('--my', ((e.clientY - box.top) / box.height - 0.5).toFixed(3))
+      })
+    }
+    el.addEventListener('pointermove', onMove)
+    return () => {
+      cancelAnimationFrame(frame)
+      el.removeEventListener('pointermove', onMove)
+    }
+  }, [ref])
+}
+
 /**
  * الهيرو بالهوية «نيون»: صورة دعوة زفاف (مولّدة بـGoogle Flow) بعرض الشاشة كلها،
  * فوقها تدرّج حبر من ناحية الكلام، ووهج فسفوري، وكروت زجاج صغيرة، وشريط مميزات بيلف.
@@ -30,6 +56,7 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
   const lang = useLang()
   const ref = useRef<HTMLElement>(null)
   const idle = useHeroIdle(ref)
+  useParallax(ref)
   // أي حقل فاضي في اللوحة بيرجع للنص الافتراضي المترجم
   const custom = hero?.text[lang]
   const text = (value: string | undefined, key: string) => value?.trim() || t(`public.hero.${key}`)
@@ -42,8 +69,14 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
       {imagesCss && <style>{imagesCss}</style>}
       <div className="nx-media" role="img" aria-label={t('public.hero.alt')} />
       <div className="nx-veil" aria-hidden="true" />
+      <div className="nx-shine" aria-hidden="true" />
       <div className="nx-glow nx-glow--a" aria-hidden="true" />
       <div className="nx-glow nx-glow--b" aria-hidden="true" />
+      <div className="nx-air" aria-hidden="true">
+        {AIR.map((kind, i) => (
+          <i key={i} className={'nx-' + kind} style={{ '--n': i } as CSSProperties} />
+        ))}
+      </div>
 
       <div className="wrap nx-grid">
         <div className="nx-copy" data-reveal>
