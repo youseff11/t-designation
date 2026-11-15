@@ -38,7 +38,7 @@ function renderForm() {
   )
 }
 
-const submitButton = () => screen.getByRole('button', { name: 'إرسال الطلب' })
+const submitButton = () => screen.getByRole('button', { name: 'ابعت' })
 const orderBody = () => {
   const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/orders/'))
   return JSON.parse(String(call?.[1]?.body))
@@ -78,13 +78,13 @@ describe('OrderSection', () => {
     fireEvent.change(screen.getByLabelText('الباقة'), { target: { value: '2' } })
     fireEvent.click(screen.getByRole('checkbox', { name: /موسيقى/ }))
     fireEvent.click(screen.getByRole('checkbox', { name: /تسليم سريع/ }))
-    expect(screen.getByText('إجمالي الإضافات: +300 ج.م')).toBeInTheDocument()
+    expect(screen.getByText('الإضافات: +300 ج.م')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('الاسم الكامل'), { target: { value: 'أحمد علي' } })
-    fireEvent.change(screen.getByLabelText('رقم واتساب'), { target: { value: '01012345678' } })
+    fireEvent.change(screen.getByLabelText('الاسم'), { target: { value: 'أحمد علي' } })
+    fireEvent.change(screen.getByLabelText('واتساب'), { target: { value: '01012345678' } })
     fireEvent.submit(submitButton().closest('form')!)
 
-    expect(await screen.findByText(/تم استلام طلبك/)).toBeInTheDocument()
+    expect(await screen.findByText(/وصلنا طلبك/)).toBeInTheDocument()
     expect(orderBody()).toMatchObject({
       customerName: 'أحمد علي',
       customerPhone: '01012345678',
@@ -120,7 +120,7 @@ describe('OrderSection', () => {
 
     fireEvent.submit(submitButton().closest('form')!)
 
-    expect(await screen.findByText('يرجى مراجعة البيانات المدخلة.')).toBeInTheDocument()
+    expect(await screen.findByText('راجع البيانات.')).toBeInTheDocument()
     expect(screen.getByText('هذا الحقل مطلوب.')).toBeInTheDocument()
   })
 })

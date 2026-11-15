@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
@@ -6,70 +6,63 @@ import type { HeroInfo } from '@/api/types'
 
 import { useLang } from '../text'
 import { useHeroIdle } from '../useHeroIdle'
-import { Flourish, HeroArt, HeroBackdrop } from './HeroArt'
 
-/** خلفيات الهيرو المخصّصة: نفس تدرّج الـselectors في public.css (والأحدث في الترتيب بيكسب) */
+/** خلفيات الهيرو المخصّصة من اللوحة: نفس الـselectors في public.css (والأحدث في الترتيب بيكسب) */
 function heroImagesCss(images: HeroInfo['images'] | undefined): string {
   if (!images) return ''
   const rule = (selector: string, url: string) => (url ? `${selector}{--hero-img:url("${encodeURI(url)}")}` : '')
   return [
-    rule('.hero-art', images.lightAr),
-    rule('html[lang="en"] .hero-art', images.lightEn),
-    rule('[data-theme="dark"] .hero-art', images.darkAr),
-    rule('html[lang="en"][data-theme="dark"] .hero-art', images.darkEn),
+    rule('.nx-media', images.lightAr),
+    rule('html[lang="en"] .nx-media', images.lightEn),
   ].join('')
 }
 
-/**
- * خطوط الأسماء في رسمة الهيرو (خط رقعة للعربي وخط يد للإنجليزي): بتتحمّل مرة واحدة
- * بس لما الرئيسية تفتح، مش في كل صفحات الموقع. لو ماوصلتش الأسماء بتترسم بخط العناوين.
- */
-const SCRIPT_FONTS = 'https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Pinyon+Script&display=swap'
-function useScriptFonts() {
-  useEffect(() => {
-    if (document.querySelector(`link[href="${SCRIPT_FONTS}"]`)) return
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = SCRIPT_FONTS
-    document.head.appendChild(link)
-  }, [])
-}
+/** الشريط اللي بيلف تحت الهيرو: مميزات الدعوة في كلمتين */
+const TICKER = ['link', 'rsvp', 'qr', 'music', 'countdown', 'maps', 'gallery'] as const
 
+/**
+ * الهيرو بالهوية «نيون»: صورة دعوة زفاف (مولّدة بـGoogle Flow) بعرض الشاشة كلها،
+ * فوقها تدرّج حبر من ناحية الكلام، ووهج فسفوري، وكروت زجاج صغيرة، وشريط مميزات بيلف.
+ * الهيرو غامق في المظهرين عن قصد عشان النيون يلمع.
+ */
 export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?: HeroInfo }) {
   const { t } = useTranslation()
   const lang = useLang()
   const ref = useRef<HTMLElement>(null)
   const idle = useHeroIdle(ref)
-  useScriptFonts()
   // أي حقل فاضي في اللوحة بيرجع للنص الافتراضي المترجم
   const custom = hero?.text[lang]
   const text = (value: string | undefined, key: string) => value?.trim() || t(`public.hero.${key}`)
   const imagesCss = heroImagesCss(hero?.images)
   const top = custom?.top?.trim()
+  const ticker = TICKER.map((key) => t(`public.hero.ticker.${key}`))
 
   return (
-    <section ref={ref} className={'hero wh' + (idle ? ' is-idle' : '')}>
+    <section ref={ref} className={'hero nx' + (idle ? ' is-idle' : '')}>
       {imagesCss && <style>{imagesCss}</style>}
-      <HeroBackdrop />
-      <div className="wrap wh-grid">
-        <div className="wh-copy" data-reveal>
+      <div className="nx-media" role="img" aria-label={t('public.hero.alt')} />
+      <div className="nx-veil" aria-hidden="true" />
+      <div className="nx-glow nx-glow--a" aria-hidden="true" />
+      <div className="nx-glow nx-glow--b" aria-hidden="true" />
+
+      <div className="wrap nx-grid">
+        <div className="nx-copy" data-reveal>
           {/* السطر الصغير فوق العنوان: من اللوحة لو متكتب، وإلا وصف ثابت للموقع */}
           {!top && (
-            <p className="wh-kicker">
-              <Flourish className="wh-kicker-orn" />
+            <p className="nx-kicker">
+              <i aria-hidden="true" />
               <span>{t('public.hero.kicker')}</span>
             </p>
           )}
           <h1>
             {top && (
-              <span className="h1-top wh-kicker">
-                <Flourish className="wh-kicker-orn" />
+              <span className="h1-top nx-kicker">
+                <i aria-hidden="true" />
                 <span>{top}</span>
               </span>
             )}
             <span className="h1-main">{text(custom?.main, 'main')}</span>
           </h1>
-          <Flourish className="wh-rule" />
           <p className="hero-sub">{text(custom?.sub, 'sub')}</p>
           <div className="hero-actions">
             <Link className="btn btn--gold btn--lg" to="/templates">
@@ -85,8 +78,48 @@ export function HeroSection({ plansPublic, hero }: { plansPublic: boolean; hero?
             )}
           </div>
         </div>
-        <div className="wh-art" aria-hidden="true">
-          <HeroArt />
+
+        <div className="nx-chips" aria-hidden="true">
+          <div className="nx-chip nx-chip--rsvp">
+            <span className="nx-chip-dot">
+              <svg viewBox="0 0 24 24">
+                <path d="m6 12.5 4 4 8-9" />
+              </svg>
+            </span>
+            <span className="nx-chip-text">
+              <b>{t('public.hero.art.rsvpChip')}</b>
+              <small>{t('public.hero.art.rsvpChipSub')}</small>
+            </span>
+          </div>
+          <div className="nx-chip nx-chip--music">
+            <span className="nx-eq">
+              <i />
+              <i />
+              <i />
+              <i />
+            </span>
+            <span className="nx-chip-text">
+              <b>{t('public.hero.art.music')}</b>
+              <small>{t('public.hero.art.musicSub')}</small>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="nx-ticker" aria-hidden="true">
+        <div className="nx-ticker-track">
+          {[0, 1].map((copy) => (
+            <span className="nx-ticker-set" key={copy}>
+              {ticker.map((word) => (
+                <span key={word}>
+                  {word}
+                  <svg viewBox="0 0 24 24">
+                    <path d="M12 2c.6 4.8 2.2 7.4 10 10-7.8 2.6-9.4 5.2-10 10-.6-4.8-2.2-7.4-10-10 7.8-2.6 9.4-5.2 10-10Z" />
+                  </svg>
+                </span>
+              ))}
+            </span>
+          ))}
         </div>
       </div>
     </section>

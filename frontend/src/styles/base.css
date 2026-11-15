@@ -9,7 +9,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Tajawal', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
 }

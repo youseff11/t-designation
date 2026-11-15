@@ -225,3 +225,27 @@ details > summary { cursor: pointer; padding: 8px 12px; border: 1px dashed var(-
 
 /* النص الأصلي شفاف في الخانة الفاضية (فاضي = الأصلي بيتعرض في الموقع) */
 .da-control input::placeholder, .da-control textarea::placeholder { color: var(--muted); opacity: .55; }
+
+/* معاينة الهيرو بالهوية «تركواز»: نفس الهيرو في الموقع — فاتح، الكلام على جنب
+   البداية فوق تدرّج بلون الخلفية، والعنوان بتدرّج التيل. */
+.hp-stage {
+  --hp-bg: #f3fdfd; --hp-text: #062e35; --hp-muted: #4d757b; --hp-accent: #078a99; --hp-veil: 243, 253, 253;
+  aspect-ratio: 16 / 9;
+}
+.hp-stage[data-theme="dark"] { --hp-bg: #031a1e; --hp-text: #e6fbfb; --hp-muted: #8fb5b9; --hp-accent: #4fe6e3; --hp-veil: 3, 26, 30; }
+.hp-art::after,
+.hp-stage[dir="ltr"] .hp-art::after { background: linear-gradient(to left, rgba(var(--hp-veil), .94) 0%, rgba(var(--hp-veil), .72) 36%, transparent 64%); }
+.hp-stage[dir="ltr"] .hp-art { scale: -1 1; }
+.hp-copy { left: auto; right: 6%; width: 42%; align-items: flex-start; text-align: start; }
+.hp-stage[dir="ltr"] .hp-copy { right: auto; left: 6%; }
+.hp-main {
+  font-family: var(--font-display); font-weight: 800; font-size: 5cqw; line-height: 1.15;
+  background: linear-gradient(115deg, #04323a, #078a99 55%, #19d3d1); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hp-stage[data-theme="dark"] .hp-main { background: linear-gradient(115deg, #fff, #8ff3ee 50%, #19d3d1); -webkit-background-clip: text; background-clip: text; }
+.hp-rule { display: none; }
+.hp-sub { margin-top: 1.4cqw; }
+.hp-actions { justify-content: flex-start; }
+.hp-btn { border-color: rgba(25, 211, 209, .5); color: var(--hp-text); }
+.hp-btn--gold { background: var(--grad); color: #04323a; border: 0; }
+.hp-trust { display: none; }

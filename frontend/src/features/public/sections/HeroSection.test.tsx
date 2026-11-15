@@ -31,8 +31,8 @@ afterEach(async () => {
 describe('HeroSection settings', () => {
   it('falls back to the translated defaults when nothing is set', () => {
     show(EMPTY)
-    expect(screen.getByText('دعوتك بطابعك أنت')).toBeInTheDocument()
-    expect(screen.getByText('اختر قالبك')).toBeInTheDocument()
+    expect(screen.getByText('اعزم حبايبك بلينك')).toBeInTheDocument()
+    expect(screen.getByText('اختار تصميمك')).toBeInTheDocument()
     expect(document.querySelector('style')).toBeNull()
   })
 
@@ -43,27 +43,24 @@ describe('HeroSection settings', () => {
     }
     show(hero)
     expect(screen.getByText('عنوان مخصص')).toBeInTheDocument()
-    expect(screen.queryByText('دعوتك بطابعك أنت')).toBeNull()
+    expect(screen.queryByText('اعزم حبايبك بلينك')).toBeNull()
     expect(screen.getByText('ابدأ الآن')).toBeInTheDocument()
     expect(screen.getByText('الأسعار')).toBeInTheDocument() // زر الأسعار فاضي → الافتراضي
     // السطر الصغير: من غير قيمة في اللوحة بيظهر الوصف الثابت برّه العنوان
     expect(document.querySelector('.h1-top')).toBeNull()
-    expect(screen.getByText('دعوات زفاف وخطوبة إلكترونية')).toBeInTheDocument()
+    expect(screen.getByText('دعوات فرح أونلاين')).toBeInTheDocument()
   })
 
   it('shows the panel kicker inside the heading instead of the default one', () => {
     show({ ...EMPTY, text: { ...EMPTY.text, ar: { ...EMPTY.text.ar, top: 'سطر من اللوحة' } } })
     expect(document.querySelector('h1 .h1-top')?.textContent).toBe('سطر من اللوحة')
-    expect(screen.queryByText('دعوات زفاف وخطوبة إلكترونية')).toBeNull()
+    expect(screen.queryByText('دعوات فرح أونلاين')).toBeNull()
   })
 
-  it('writes the groom first and the bride under him on the card and the phone', () => {
+  it('shows the feature ticker twice so the loop is seamless', () => {
     show(EMPTY)
-    const names = [...document.querySelectorAll('.wh-names')].map((el) => [...el.querySelectorAll('b')].map((b) => b.textContent))
-    expect(names).toEqual([
-      ['عمر', 'ليلى'],
-      ['عمر', 'ليلى'],
-    ])
+    expect(document.querySelectorAll('.nx-ticker-set')).toHaveLength(2)
+    expect(screen.getAllByText('لينك واحد للكل')).toHaveLength(2)
   })
 
   it('has no numbers strip and no designed-by line (that one lives in the footer)', () => {
@@ -83,12 +80,12 @@ describe('HeroSection settings', () => {
     expect(screen.queryByText('عربي')).toBeNull()
   })
 
-  it('emits a background rule per filled image with the same selectors as the stylesheet', () => {
+  it('emits a background rule per filled light image and ignores the old dark ones', () => {
     show({ ...EMPTY, images: { lightAr: '/media/home/a/l.webp', lightEn: '', darkAr: '/media/home/b/d ar.webp', darkEn: '/media/home/c/de.webp' } })
     const css = document.querySelector('style')?.textContent ?? ''
-    expect(css).toContain('.hero-art{--hero-img:url("/media/home/a/l.webp")}')
-    expect(css).toContain('[data-theme="dark"] .hero-art{--hero-img:url("/media/home/b/d%20ar.webp")}')
-    expect(css).toContain('html[lang="en"][data-theme="dark"] .hero-art{--hero-img:url("/media/home/c/de.webp")}')
-    expect(css).not.toContain('html[lang="en"] .hero-art{')
+    expect(css).toContain('.nx-media{--hero-img:url("/media/home/a/l.webp")}')
+    expect(css).not.toContain('data-theme')
+    expect(css).not.toContain('d%20ar.webp')
+    expect(css).not.toContain('html[lang="en"] .nx-media{')
   })
 })

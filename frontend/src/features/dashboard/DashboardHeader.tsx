@@ -7,7 +7,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useLogout, useMe, useSetLanguage, useSite } from '@/api/hooks'
 import type { Lang } from '@/api/types'
 import { applyDocumentLanguage } from '@/i18n'
-import { useTheme } from '@/lib/theme'
 
 import { prefetchAllChunks, prefetchDashboard } from './prefetch'
 
@@ -133,7 +132,6 @@ export function DashboardHeader() {
   }
   useEffect(() => prefetchAllChunks(queryClient), [queryClient])
   const setLanguage = useSetLanguage()
-  const toggleTheme = useTheme((state) => state.toggle)
   const [menuOpen, setMenuOpen] = useState(false)
   const [stuck, setStuck] = useState(false)
 
@@ -259,37 +257,6 @@ export function DashboardHeader() {
               </button>
             </form>
 
-            <button
-              className="icon-btn"
-              type="button"
-              onClick={toggleTheme}
-              aria-label={t('dashboard.nav.theme')}
-            >
-              <svg
-                className="i-sun"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="4.2" />
-                <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5" />
-              </svg>
-              <svg
-                className="i-moon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.9 6.9 0 0 0 10.8 10.8Z" />
-              </svg>
-            </button>
 
             <form className="nav-logout" onSubmit={signOut}>
               <button className="btn btn--ghost btn--sm nav-cta" type="submit">

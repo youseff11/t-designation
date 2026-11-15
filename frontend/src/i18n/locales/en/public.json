@@ -23,10 +23,10 @@
     "reels": "Video design"
   },
   "hero": {
-    "alt": "An elegant digital invitation on a phone surrounded by flowers",
-    "main": "Your invitation, your way",
-    "sub": "Pick a template, add your details and send one link to every guest. No printing, no waiting.",
-    "start": "Pick a template",
+    "alt": "A black wedding invitation envelope with a gold border, a fluorescent wax seal and two rings",
+    "main": "Invite everyone with one link",
+    "sub": "A beautiful design, one link, and every guest has it in seconds.",
+    "start": "Pick your design",
     "plans": "Pricing",
     "trust": {
       "templatesValue": "50+",
@@ -36,27 +36,21 @@
       "editableValue": "100%",
       "editableLabel": "editable"
     },
-    "kicker": "Digital wedding & engagement invitations",
+    "kicker": "Online wedding invitations",
     "art": {
-      "invite": "Request the pleasure of your company",
-      "wedding": "The wedding of",
-      "bride": "Laila",
-      "groom": "Omar",
-      "monogram": "L&O",
-      "date": "Thursday, 12 June 2027",
-      "dateShort": "12 · 06 · 2027",
-      "venue": "Jasmine Hall, Cairo",
-      "days": "Days",
-      "hours": "Hours",
-      "minutes": "Mins",
-      "daysValue": "12",
-      "hoursValue": "08",
-      "minutesValue": "45",
-      "rsvpBtn": "RSVP",
-      "rsvpChip": "128 guests confirmed",
-      "rsvpChipSub": "Latest reply 1 min ago",
+      "rsvpChip": "128 confirmed",
+      "rsvpChipSub": "1 min ago",
       "music": "Invitation music",
-      "musicSub": "Plays when opened"
+      "musicSub": "Playing now"
+    },
+    "ticker": {
+      "link": "One link for all",
+      "rsvp": "RSVP",
+      "qr": "Venue QR",
+      "music": "Music",
+      "countdown": "Countdown",
+      "maps": "Location",
+      "gallery": "Your photos"
     }
   },
   "templates": {
@@ -71,15 +65,42 @@
     "eyebrow": "What you get",
     "title": "Everything your invitation needs",
     "sub": "Small details that make it easier for your guests.",
-    "countdown": { "title": "Countdown", "text": "Counts the days to your date" },
-    "gallery": { "title": "Photo gallery", "text": "Show your moments inside the invitation" },
-    "rsvp": { "title": "RSVP", "text": "A guest list that updates live" },
-    "whatsapp": { "title": "WhatsApp sharing", "text": "One link, ready to send" },
-    "music": { "title": "Music", "text": "Choose the track that sounds like you" },
-    "maps": { "title": "Venue on the map", "text": "Guests arrive without asking" },
-    "qr": { "title": "Invitation QR", "text": "Opens with a single scan" },
-    "calendar": { "title": "Add to calendar", "text": "Guests remember the date by themselves" },
-    "venueQr": { "title": "Venue entry QR", "text": "Quick check-in at the door" }
+    "countdown": {
+      "title": "Countdown",
+      "text": "Counts the days to your date"
+    },
+    "gallery": {
+      "title": "Photo gallery",
+      "text": "Show your moments inside the invitation"
+    },
+    "rsvp": {
+      "title": "RSVP",
+      "text": "A guest list that updates live"
+    },
+    "whatsapp": {
+      "title": "WhatsApp sharing",
+      "text": "One link, ready to send"
+    },
+    "music": {
+      "title": "Music",
+      "text": "Choose the track that sounds like you"
+    },
+    "maps": {
+      "title": "Venue on the map",
+      "text": "Guests arrive without asking"
+    },
+    "qr": {
+      "title": "Invitation QR",
+      "text": "Opens with a single scan"
+    },
+    "calendar": {
+      "title": "Add to calendar",
+      "text": "Guests remember the date by themselves"
+    },
+    "venueQr": {
+      "title": "Venue entry QR",
+      "text": "Quick check-in at the door"
+    }
   },
   "plans": {
     "eyebrow": "Pricing",
@@ -94,10 +115,22 @@
   "steps": {
     "eyebrow": "The process",
     "title": "From idea to link in four steps",
-    "pick": { "title": "Pick", "text": "Browse the templates and pick the one you like." },
-    "send": { "title": "Share the details", "text": "Names, date, venue and any extras." },
-    "design": { "title": "We design, you review", "text": "You get a preview before anything goes live." },
-    "link": { "title": "Share the link", "text": "One link to send to every guest." }
+    "pick": {
+      "title": "Pick",
+      "text": "Browse the templates and pick the one you like."
+    },
+    "send": {
+      "title": "Share the details",
+      "text": "Names, date, venue and any extras."
+    },
+    "design": {
+      "title": "We design, you review",
+      "text": "You get a preview before anything goes live."
+    },
+    "link": {
+      "title": "Share the link",
+      "text": "One link to send to every guest."
+    }
   },
   "order": {
     "eyebrow": "Order now",

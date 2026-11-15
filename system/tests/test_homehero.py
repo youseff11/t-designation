@@ -124,9 +124,10 @@ class HeroDataAdminTests(HeroBase):
 
     def test_form_groups_images_and_texts_in_the_admin_order(self):
         data = self.client.get(f"{BASE}/{HomeHero.load().pk}/").json()
-        self.assertEqual(data["fieldsets"][0]["fields"], ["bg_light_ar", "bg_light_en", "bg_dark_ar", "bg_dark_en"])
+        # الموقع فاتح بس: خلفيات الدارك مش في النموذج
+        self.assertEqual(data["fieldsets"][0]["fields"], ["bg_light_ar", "bg_light_en"])
         kinds = {f["name"]: f["kind"] for f in data["fields"]}
-        self.assertEqual(kinds["bg_dark_ar"], "image")
+        self.assertEqual(kinds["bg_light_ar"], "image")
         self.assertEqual(kinds["main_ar"], "text")
         self.assertEqual(len(data["fieldsets"]), 5)
 
@@ -148,10 +149,10 @@ class HeroDataAdminTests(HeroBase):
 
     def test_removing_a_background_through_the_data_admin(self):
         hero = HomeHero.load()
-        hero.bg_dark_ar = self.upload("x.png", noisy_png(800, 450))
+        hero.bg_light_ar = self.upload("x.png", noisy_png(800, 450))
         hero.save()
-        path = Path(hero.bg_dark_ar.path)
-        response = self.client.post(f"{BASE}/{hero.pk}/", data=json.dumps({"bg_dark_ar": None}), content_type="application/json")
+        path = Path(hero.bg_light_ar.path)
+        response = self.client.post(f"{BASE}/{hero.pk}/", data=json.dumps({"bg_light_ar": None}), content_type="application/json")
         self.assertEqual(response.status_code, 200, response.content[:300])
-        self.assertFalse(HomeHero.load().bg_dark_ar)
+        self.assertFalse(HomeHero.load().bg_light_ar)
         self.assertFalse(path.exists())

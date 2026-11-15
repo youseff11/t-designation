@@ -152,10 +152,10 @@ class SiteSettingAdmin(admin.ModelAdmin):
 
 @admin.register(HomeHero)
 class HomeHeroAdmin(admin.ModelAdmin):
-    """هيرو الرئيسية: خلفيات (دارك/لايت × عربي/إنجليزي) + الكلام. فاضي = الافتراضي المترجم."""
+    """هيرو الرئيسية: خلفيات (عربي/إنجليزي — الموقع فاتح بس) + الكلام. فاضي = الافتراضي المترجم."""
 
     fieldsets = (
-        ("الخلفيات (بتتضغط وتتحوّل WebP تلقائياً)", {"fields": ("bg_light_ar", "bg_light_en", "bg_dark_ar", "bg_dark_en")}),
+        ("الخلفيات (بتتضغط وتتحوّل WebP تلقائياً)", {"fields": ("bg_light_ar", "bg_light_en")}),
         ("النصوص — عربي", {"fields": ("top_ar", "main_ar", "sub_ar", "cta_ar", "plans_ar")}),
         ("النصوص — إنجليزي", {"fields": ("top_en", "main_en", "sub_en", "cta_en", "plans_en")}),
         ("خانات الثقة — عربي", {"fields": (

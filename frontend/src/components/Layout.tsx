@@ -11,7 +11,6 @@ import { Outlet, useLocation } from 'react-router-dom'
 
 import { MetaPixel } from '@/features/public/metaPixel'
 import { WhatsAppFloat } from '@/features/public/WhatsAppFloat'
-import { scheduleWarm } from '@/features/public/warm'
 import { Header } from './Header'
 
 /** مسار الدخول: صفحة مستقلة من غير ترويسة ولا واتساب (زي ‎auth/login.html‎ القديم). */
@@ -32,7 +31,6 @@ function useScrollTopOnNavigate() {
 export function Layout() {
   const { pathname } = useLocation()
   useScrollTopOnNavigate()
-  useEffect(() => scheduleWarm(), [])
 
   return (
     <>

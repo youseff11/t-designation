@@ -11,8 +11,8 @@ export interface HeroView {
 }
 
 const DEFAULT_BG: Record<Theme, Record<Lang, string>> = {
-  light: { ar: '/static/images/home-arabic-light.webp', en: '/static/images/home-english-light.webp' },
-  dark: { ar: '/static/images/home-arabic-dark.webp', en: '/static/images/home-english-dark.webp' },
+  light: { ar: '/static/images/hero-neon.webp', en: '/static/images/hero-neon.webp' },
+  dark: { ar: '/static/images/hero-neon.webp', en: '/static/images/hero-neon.webp' },
 }
 
 /** الحقل اللي المستخدم واقف عليه → أنهي عنصر في المعاينة يتلوّن */
@@ -26,13 +26,13 @@ function targetOf(field: string): string {
 /** المظهر/اللغة اللي الحقل بتاعهم — عشان المعاينة تقلب لوحدها لما تقف على حقل إنجليزي أو دارك */
 export function viewForField(field: string, current: HeroView): HeroView {
   const lang = field.endsWith('_ar') ? 'ar' : field.endsWith('_en') ? 'en' : current.lang
-  const theme = field.startsWith('bg_dark_') ? 'dark' : field.startsWith('bg_light_') ? 'light' : current.theme
-  return { lang, theme }
+  return { lang, theme: current.theme }
 }
 
 /** الحقل ظاهر في النموذج؟ — اللي ليه علاقة بالمظهر/اللغة المختارين في المعاينة بس. */
 export function heroFieldVisible(field: string, view: HeroView): boolean {
-  if (field.startsWith('bg_')) return field === `bg_${view.theme}_${view.lang}`
+  // الموقع فاتح بس: خلفيات الدارك مش بتظهر في النموذج
+  if (field.startsWith('bg_')) return field === `bg_light_${view.lang}`
   if (field.endsWith('_ar')) return view.lang === 'ar'
   if (field.endsWith('_en')) return view.lang === 'en'
   return true
@@ -67,11 +67,11 @@ export function HeroPreview({
   onView: (view: HeroView) => void
 }) {
   const { t, i18n } = useTranslation()
-  const { lang, theme } = view
+  const { lang } = view
   const active = focus ? targetOf(focus) : ''
 
   // صورة اتختارت ولسه ماتحفظتش: رابط مؤقت من الملف نفسه
-  const key = `bg_${theme}_${lang}`
+  const key = `bg_light_${lang}`
   const picked = files[key]
   const [local, setLocal] = useState<{ file: File; url: string } | null>(null)
   useEffect(() => {
@@ -80,7 +80,7 @@ export function HeroPreview({
     setLocal({ file: picked, url })
     return () => URL.revokeObjectURL(url)
   }, [picked])
-  const background = picked && local?.file === picked ? local.url : fileUrl(values[key]) || DEFAULT_BG[theme][lang]
+  const background = picked && local?.file === picked ? local.url : fileUrl(values[key]) || DEFAULT_BG.light[lang]
 
   const text = useMemo(() => {
     const word = (name: string, defaultKey: string) => {
@@ -114,16 +114,9 @@ export function HeroPreview({
             </button>
           ))}
         </div>
-        <div className="hp-seg" role="group" aria-label={t('dataadmin.hero.theme')}>
-          {(['light', 'dark'] as const).map((value) => (
-            <button key={value} type="button" className={theme === value ? 'is-on' : undefined} onClick={() => onView({ ...view, theme: value })}>
-              {t(`dataadmin.hero.${value}`)}
-            </button>
-          ))}
-        </div>
       </div>
 
-      <div className={`hp-stage ${active === 'bg' ? 'is-active' : ''}`} data-theme={theme} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+      <div className={`hp-stage ${active === 'bg' ? 'is-active' : ''}`} data-theme="light" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
         <div className="hp-art" style={{ backgroundImage: `url("${background}")` }} data-testid="hero-bg" />
         <div className="hp-copy">
           {text.top && <p className={`hp-top ${mark('top')}`}>{text.top}</p>}
