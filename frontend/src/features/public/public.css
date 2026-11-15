@@ -2435,3 +2435,250 @@ html[lang="en"] .section-head h2 { font-weight: 700; letter-spacing: -.02em; }
   .flow-num { font-size: 46px; }
   .flow-step h3 { font-size: 19px; }
 }
+
+/* ================================================================
+   «كل حاجة في مكانها»: شبكة بينتو فخمة (lux-*)
+   ================================================================ */
+.lux-grid {
+  --gold: #d8b77a;
+  display: grid; gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-areas:
+    "countdown countdown rsvp music"
+    "gallery whatsapp rsvp qr"
+    "maps maps calendar venueQr";
+}
+.lux-card--countdown { grid-area: countdown; }
+.lux-card--rsvp { grid-area: rsvp; }
+.lux-card--music { grid-area: music; }
+.lux-card--gallery { grid-area: gallery; }
+.lux-card--whatsapp { grid-area: whatsapp; }
+.lux-card--qr { grid-area: qr; }
+.lux-card--maps { grid-area: maps; }
+.lux-card--calendar { grid-area: calendar; }
+.lux-card--venueQr { grid-area: venueQr; }
+
+.lux-card {
+  --x: 50%; --y: 0%;
+  position: relative; isolation: isolate; overflow: hidden;
+  display: flex; flex-direction: column; gap: 14px; min-height: 178px;
+  padding: 26px; border-radius: 26px; border: 1px solid transparent;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .015)) padding-box,
+    linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(135deg, rgba(var(--glow), .55), rgba(255, 255, 255, .06) 40%, rgba(255, 255, 255, .04) 60%, rgba(216, 183, 122, .55)) border-box;
+  box-shadow: 0 30px 60px -40px rgba(0, 0, 0, .7);
+  transition: transform .4s cubic-bezier(.2, .8, .2, 1), box-shadow .4s ease;
+}
+/* نور بيمشي مع الماوس */
+.lux-card::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0;
+  background: radial-gradient(340px circle at var(--x) var(--y), rgba(var(--glow), .16), transparent 60%);
+  transition: opacity .4s ease;
+}
+.lux-card:hover::before { opacity: 1; }
+.lux-card:hover { transform: translateY(-5px); box-shadow: 0 34px 70px -38px rgba(var(--glow), .45); }
+
+.lux-icon {
+  width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 14px;
+  color: var(--neon-1);
+  background: linear-gradient(145deg, rgba(var(--glow), .18), rgba(var(--glow), .04));
+  border: 1px solid rgba(var(--glow), .3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+.lux-icon svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.lux-text h3 { margin: 0 0 4px; font-family: var(--font-display); font-size: 20px; font-weight: 700; color: var(--text); }
+.lux-text p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--muted); }
+.lux-mini { margin-top: auto; }
+
+/* الكبار: الأيقونة جنب العنوان */
+.lux-card--countdown, .lux-card--maps { display: grid; grid-template-columns: auto 1fr; align-content: start; column-gap: 14px; }
+.lux-card--countdown .lux-mini, .lux-card--maps .lux-mini { grid-column: 1 / -1; }
+
+/* العدّاد */
+.lux-card--countdown {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(var(--glow), .28), transparent 55%) padding-box,
+    linear-gradient(160deg, #0a4e59, #04303a 70%) padding-box,
+    linear-gradient(135deg, rgba(var(--glow), .7), rgba(216, 183, 122, .6)) border-box;
+}
+.lux-clock { direction: ltr; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+.lux-clock-cell {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 6px 10px; border-radius: 16px;
+  background: rgba(2, 24, 28, .45); border: 1px solid rgba(var(--glow), .2);
+}
+.lux-clock-cell b {
+  font-family: var(--font-display-en); font-weight: 800; font-size: clamp(26px, 2.6vw, 38px); line-height: 1; font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, #ffffff, var(--neon-1)); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.lux-clock-cell small { font-size: 12px; color: var(--muted); }
+.lux-clock-cell:last-child b { background: linear-gradient(180deg, #f6e3bd, var(--gold)); -webkit-background-clip: text; background-clip: text; }
+
+/* تأكيد الحضور: حلقة بتتملي + وشوش */
+.lux-card--rsvp {
+  background:
+    radial-gradient(90% 60% at 50% 100%, rgba(216, 183, 122, .22), transparent 70%) padding-box,
+    linear-gradient(180deg, #08454f, #04303a) padding-box,
+    linear-gradient(160deg, rgba(var(--glow), .6), rgba(216, 183, 122, .65)) border-box;
+}
+.lux-rsvp { position: relative; display: grid; justify-items: center; gap: 18px; padding-top: 10px; }
+.lux-ring { width: min(170px, 100%); grid-area: 1 / 1; rotate: -90deg; }
+.lux-ring circle { fill: none; stroke-width: 7; }
+.lux-ring circle:first-child { stroke: rgba(var(--glow), .14); }
+.lux-ring circle:last-child {
+  stroke: var(--neon-2); stroke-linecap: round; stroke-dasharray: 82 100;
+}
+.lux-ring-label { grid-area: 1 / 1; align-self: center; display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
+.lux-ring-label b { font-family: var(--font-display-en); font-size: 40px; font-weight: 800; line-height: 1; color: #ffffff; }
+.lux-ring-label small { color: var(--gold); font-weight: 600; font-size: 13px; }
+.lux-faces { display: flex; direction: ltr; }
+.lux-faces i {
+  width: 36px; height: 36px; margin-inline-start: -10px; display: grid; place-items: center; border-radius: 50%;
+  font-style: normal; font-weight: 700; font-size: 14px; color: var(--ink);
+  background: var(--grad); border: 2px solid #04303a;
+}
+.lux-faces i:first-child { margin-inline-start: 0; }
+.lux-faces i:nth-child(2) { background: linear-gradient(135deg, #f6e3bd, var(--gold)); }
+.lux-faces i:nth-child(4) { background: linear-gradient(135deg, #ffd9c2, var(--peach)); }
+.lux-faces i:last-child { background: rgba(255, 255, 255, .1); color: #fff; }
+
+/* اللوكيشن: سكة بتترسم */
+.lux-route { width: 100%; height: auto; overflow: visible; }
+.lux-route > path {
+  fill: none; stroke: var(--neon-2); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 6 8;
+  filter: drop-shadow(0 0 6px rgba(var(--glow), .7));
+}
+.lux-route circle { fill: var(--neon-1); }
+.lux-route g path { fill: var(--gold); }
+
+/* المزيكا */
+.lux-eq { display: flex; align-items: flex-end; gap: 5px; height: 40px; }
+.lux-eq i { flex: 1; height: 100%; border-radius: 4px; background: linear-gradient(to top, var(--neon-3), var(--neon-1)); transform-origin: bottom; scale: 1 .4; }
+.lux-eq i:nth-child(3n) { background: linear-gradient(to top, #b8955a, #f6e3bd); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lux-eq i { animation: nx-eq 1.1s ease-in-out infinite alternate; }
+  .lux-route > path { animation: lux-dash 2.4s linear infinite; }
+  [data-reveal].is-in .lux-ring circle:last-child { animation: lux-fill 2s .3s cubic-bezier(.3, .7, .2, 1) both; }
+  .lux-clock-cell:last-child b { animation: lux-tick 1s ease-in-out infinite; }
+}
+@keyframes lux-dash { to { stroke-dashoffset: -28; } }
+@keyframes lux-fill { from { stroke-dasharray: 0 100; } }
+@keyframes lux-tick { 50% { opacity: .55; } }
+
+@media (max-width: 1000px) {
+  .lux-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "countdown countdown"
+      "rsvp music"
+      "rsvp gallery"
+      "whatsapp qr"
+      "maps maps"
+      "calendar venueQr";
+  }
+}
+@media (max-width: 560px) {
+  .lux-grid { gap: 12px; }
+  .lux-card { padding: 18px; min-height: 150px; border-radius: 22px; gap: 10px; }
+  .lux-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .lux-text h3 { font-size: 16.5px; }
+  .lux-text p { font-size: 12.5px; }
+  .lux-clock { gap: 6px; }
+  .lux-clock-cell { padding: 10px 2px 8px; border-radius: 12px; }
+  .lux-clock-cell b { font-size: 24px; }
+  .lux-ring { width: 120px; }
+  .lux-ring-label b { font-size: 30px; }
+  .lux-faces i { width: 28px; height: 28px; font-size: 12px; margin-inline-start: -8px; }
+}
+
+/* ================================================================
+   ألوان الموقع العام «تيل غامق» زي قسم الخطوات. متعرّفة على ‎html.site-deep‎
+   (Layout بيحطها) عشان اللوحة والمحرر يفضلوا فاتحين.
+   ================================================================ */
+html.site-deep {
+  --bg: #032a31;
+  --surface: #063a43;
+  --surface-2: #04323a;
+  --text: #e8fbfb;
+  --muted: #9cc5c8;
+  --accent: #3fe0dd;
+  --accent-soft: rgba(25, 211, 209, .14);
+  --on-accent: #04323a;
+  --line: rgba(143, 243, 238, .14);
+  --shadow: 0 26px 50px -30px rgba(0, 0, 0, .75);
+  --shadow-nav: 0 14px 34px -18px rgba(0, 0, 0, .7);
+  color-scheme: dark;
+}
+html.site-deep body {
+  background:
+    radial-gradient(70% 50% at 100% 0%, rgba(25, 211, 209, .1), transparent 70%),
+    linear-gradient(180deg, #04333b 0%, #032a31 50%, #022329 100%);
+  background-color: var(--bg);
+  color: var(--text);
+}
+html.site-deep .section,
+html.site-deep .section--alt,
+html.site-deep .section--faq,
+html.site-deep .section--features,
+html.site-deep .foot { background: transparent; }
+html.site-deep .section + .section { border-top-color: var(--line); }
+html.site-deep .section.flow { background: transparent; }
+html.site-deep .section.flow .flow-bg { opacity: .8; }
+html.site-deep .section-head h2 { color: #ffffff; }
+html.site-deep .eyebrow { background: rgba(var(--glow), .14); color: var(--neon-1); }
+html.site-deep ::selection { background: rgba(var(--glow), .35); color: #fff; }
+
+/* الترويسة: كبسولات زجاج غامقة */
+html.site-deep .brand,
+html.site-deep .nav-tools {
+  background-color: rgba(4, 40, 46, .72); border-color: rgba(var(--glow), .22);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+html.site-deep .brand { background-image: var(--site-logo-dark, url("/site-logo/dark.png")); }
+html.site-deep .brand--stacked { background-image: url("/static/images/logo-full-dark.png"); }
+html.site-deep .nav-links { background: rgba(2, 26, 30, .8); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+html.site-deep .nav-tools button,
+html.site-deep .nav-tools a:not(.nav-cta) { color: var(--text); }
+html.site-deep .nav-shell { background: transparent; }
+
+/* الهيرو: الصورة كاملة، ضل تيل من ناحية الكلام وذوبان تحت في لون الصفحة */
+html.site-deep .nx { --veil: 3, 42, 49; background: var(--bg); color: var(--text); }
+html.site-deep .nx-veil {
+  background:
+    linear-gradient(to left, rgba(var(--veil), .86) 0%, rgba(var(--veil), .6) 30%, rgba(var(--veil), 0) 56%),
+    linear-gradient(to top, rgba(var(--veil), .9) 0%, transparent 22%),
+    linear-gradient(to bottom, rgba(var(--veil), .5) 0%, transparent 16%);
+}
+html.site-deep[dir="ltr"] .nx-veil, html.site-deep [dir="ltr"] .nx-veil {
+  background:
+    linear-gradient(to right, rgba(var(--veil), .86) 0%, rgba(var(--veil), .6) 30%, rgba(var(--veil), 0) 56%),
+    linear-gradient(to top, rgba(var(--veil), .9) 0%, transparent 22%),
+    linear-gradient(to bottom, rgba(var(--veil), .5) 0%, transparent 16%);
+}
+html.site-deep .nx .h1-main {
+  background: linear-gradient(115deg, #ffffff 0%, var(--neon-1) 30%, var(--neon-2) 50%, var(--neon-1) 70%, #ffffff 100%) 0 50% / 220% 100%;
+  -webkit-background-clip: text; background-clip: text;
+}
+html.site-deep .nx .hero-sub { color: #cfeeee; }
+html.site-deep .nx-kicker { background: rgba(var(--glow), .12); color: var(--neon-1); border-color: rgba(var(--glow), .4); }
+html.site-deep .nx .btn--outline { color: #fff; background: rgba(2, 26, 30, .45); border-color: rgba(var(--glow), .45); }
+html.site-deep .nx .btn--outline:hover { color: #fff; background: rgba(var(--glow), .14); }
+html.site-deep .nx-chip { background: rgba(4, 40, 46, .72); border-color: rgba(var(--glow), .35); box-shadow: 0 20px 40px -20px rgba(0, 0, 0, .7); }
+html.site-deep .nx-chip-text b { color: #fff; }
+html.site-deep .nx-chip-text small { color: var(--muted); }
+html.site-deep .nx-ticker { background: rgba(2, 26, 30, .62); border-color: rgba(var(--glow), .2); }
+html.site-deep .nx-ticker-set > span { color: #e8fbfb; }
+@media (max-width: 780px) {
+  html.site-deep .nx-veil, html.site-deep [dir="ltr"] .nx-veil {
+    background:
+      linear-gradient(to top, rgba(var(--veil), 1) 0%, rgba(var(--veil), 1) calc(100% - 52vh), rgba(var(--veil), .6) calc(100% - 38vh), rgba(var(--veil), .05) calc(100% - 22vh), rgba(var(--veil), .45) 100%);
+  }
+}
+
+/* الأزرار الثانوية والكروت العامة */
+html.site-deep .btn--outline { color: var(--text); border-color: rgba(var(--glow), .3); background: rgba(255, 255, 255, .04); }
+html.site-deep .btn--outline:hover { color: #fff; border-color: var(--neon-2); background: rgba(var(--glow), .12); }
+
+/* الختام: يفضل كتلة تركواز زاهية (هي اللمعة الوحيدة الفاتحة) */
+html.site-deep .home-cta { background: var(--grad); }

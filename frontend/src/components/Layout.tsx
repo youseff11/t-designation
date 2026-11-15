@@ -31,6 +31,13 @@ function useScrollTopOnNavigate() {
 export function Layout() {
   const { pathname } = useLocation()
   useScrollTopOnNavigate()
+  // ألوان الموقع العام (تيل غامق) متعرّفة على ‎html.site-deep‎ عشان ماتسرّبش
+  // للوحة والمحرر لما تتنقل لهم من غير ما الصفحة تتحمّل من جديد
+  useEffect(() => {
+    const root = document.documentElement
+    root.classList.add('site-deep')
+    return () => root.classList.remove('site-deep')
+  }, [])
 
   return (
     <>

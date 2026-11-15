@@ -73,7 +73,8 @@
     "maps": { "title": "اللوكيشن", "text": "يوصلوا من غير سؤال" },
     "qr": { "title": "QR الدعوة", "text": "تفتح بمسحة" },
     "calendar": { "title": "التقويم", "text": "محدش ينسى الميعاد" },
-    "venueQr": { "title": "دخول القاعة", "text": "QR على الباب" }
+    "venueQr": { "title": "دخول القاعة", "text": "QR على الباب" },
+    "mini": { "days": "يوم", "hours": "ساعة", "minutes": "دقيقة", "seconds": "ثانية", "coming": "جايين" }
   },
   "plans": {
     "eyebrow": "الأسعار",

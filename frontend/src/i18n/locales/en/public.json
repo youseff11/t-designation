@@ -100,7 +100,8 @@
     "venueQr": {
       "title": "Venue entry QR",
       "text": "Quick check-in at the door"
-    }
+    },
+    "mini": { "days": "days", "hours": "hrs", "minutes": "min", "seconds": "sec", "coming": "coming" }
   },
   "plans": {
     "eyebrow": "Pricing",
