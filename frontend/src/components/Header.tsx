@@ -98,7 +98,7 @@ export function Header() {
   const whatsappUrl = site?.whatsapp.url ?? ''
   const siteName = site ? pick(lang, site.name.ar, site.name.en) : ''
 
-  const spyIds = ['templates', 'reels', 'how', ...(plansPublic ? ['plans'] : []), 'faq']
+  const spyIds = ['templates', ...(plansPublic ? ['plans'] : []), 'how', 'reels', 'faq']
   const active = useScrollSpy(spyIds, pathname === '/')
 
   useEffect(() => {
@@ -168,17 +168,17 @@ export function Header() {
             <Link to={home('#templates')} className={spyClass('templates')}>
               {t('public.nav.templates')}
             </Link>
-            <Link to={home('#reels')} className={spyClass('reels')}>
-              {t('public.nav.reels')}
-            </Link>
-            <Link to={home('#how')} className={spyClass('how')}>
-              {t('public.nav.how')}
-            </Link>
             {plansPublic && (
               <Link to={home('#plans')} className={spyClass('plans')}>
                 {t('public.nav.plans')}
               </Link>
             )}
+            <Link to={home('#how')} className={spyClass('how')}>
+              {t('public.nav.how')}
+            </Link>
+            <Link to={home('#reels')} className={spyClass('reels')}>
+              {t('public.nav.reels')}
+            </Link>
             <Link to={home('#faq')} className={spyClass('faq')}>
               {t('public.nav.faq')}
             </Link>
