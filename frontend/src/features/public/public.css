@@ -3098,3 +3098,28 @@ html.site-deep .wa-chat-send { background: rgba(255, 255, 255, .06); color: var(
 html.site-deep .wa-chat-foot.has-text .wa-chat-send { background: var(--grad); color: var(--ink); box-shadow: 0 8px 20px -8px rgba(var(--glow), .8); }
 html.site-deep .wa-chat-send:focus-visible { outline-color: var(--neon-2); }
 @media (max-width: 600px) { html.site-deep .wa-chat { inset-block-end: calc(84px + env(safe-area-inset-bottom, 0px)); border-radius: 22px; } html.site-deep .wa-chat-avatar { width: 42px; height: 42px; padding: 6px; } }
+
+/* ================================================================
+   اللوجو الجديد (تيل + دهبي على أبيض): ألوانه زي ما هي، فبيتحط على
+   خلفية عاجي بشعرة دهبي عشان كلامه التيل الغامق يتقري فوق الموقع الغامق.
+   ================================================================ */
+html.site-deep .brand {
+  aspect-ratio: 760 / 181;
+  background-color: #fffcf5;
+  background-image: url("/static/images/logo-designation-wide.webp");
+  border-color: rgba(216, 183, 122, .75);
+  box-shadow: 0 10px 26px -14px rgba(0, 0, 0, .6), inset 0 0 0 3px rgba(255, 255, 255, .6);
+  backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+html.site-deep .brand:hover { opacity: 1; filter: brightness(1.03); }
+html.site-deep .brand.brand--stacked {
+  box-sizing: content-box; height: 130px; aspect-ratio: 560 / 518; padding: 14px 18px; border-radius: 26px;
+  background: #fffcf5 url("/static/images/logo-designation.webp") center / contain no-repeat;
+  background-origin: content-box; background-clip: padding-box;
+  border: 1px solid rgba(216, 183, 122, .75);
+}
+html.site-deep .foot-brand {
+  width: auto; height: 86px; aspect-ratio: 560 / 518; padding: 8px 10px; box-sizing: content-box;
+  border-radius: 18px; background: #fffcf5; border: 1px solid rgba(216, 183, 122, .7);
+}
+html.site-deep .wa-chat-avatar { background: #fffcf5; padding: 4px; }

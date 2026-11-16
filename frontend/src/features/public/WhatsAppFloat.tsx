@@ -136,7 +136,7 @@ export function WhatsAppFloat() {
         aria-label={label}
       >
         <header className="wa-chat-head">
-          <img className="wa-chat-avatar" src="/static/images/logo-mark.png" alt="" width="46" height="46" />
+          <img className="wa-chat-avatar" src="/static/images/logo-designation-mark.webp" alt="" width="46" height="46" />
           <div className="wa-chat-who">
             <strong>T DESIGNATION</strong>
             <small>{t('public.whatsapp.status')}</small>

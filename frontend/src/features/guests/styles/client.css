@@ -330,9 +330,11 @@
     box-shadow: 0 40px 70px -40px rgba(0, 0, 0, .85);
   }
   .client-followup .brand.client-followup-logo {
-    box-sizing: content-box; height: 78px; width: auto; aspect-ratio: 694 / 658;
-    margin: 0 0 14px; padding: 0; border: 0; border-radius: 0; box-shadow: none;
-    background: url("/static/images/logo-full-dark.png") center / contain no-repeat;
+    box-sizing: content-box; height: 96px; width: auto; aspect-ratio: 560 / 518;
+    margin: 0 0 14px; box-shadow: none;
+    padding: 10px 12px; border-radius: 20px; border: 1px solid rgba(216, 183, 122, .75);
+    background: #fffcf5 url("/static/images/logo-designation.webp") center / contain no-repeat;
+    background-origin: content-box; background-clip: padding-box;
     backdrop-filter: none; -webkit-backdrop-filter: none;
   }
   .client-followup-welcome h1 {
