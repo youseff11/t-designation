@@ -8,8 +8,8 @@
    ================================================================ */
 
 /* ---------------------------------------------------------- الثيم
-   المحرر بيتبع مظهر الموقع: data-theme على <html>. الافتراضي فاتح،
-   و[data-theme="dark"] بيقلب نفس الأسماء — فمفيش قاعدة محتاجة تتكرر. */
+   مظهر المحرر خاص بيه: ‎.is-dark‎ على ‎.ed-root‎ (من theme.ts). الافتراضي فاتح،
+   و‎.is-dark‎ بيقلب نفس الأسماء — فمفيش قاعدة محتاجة تتكرر. */
 .ed-root {
   --e-bg:        #f2f2f3;   /* منطقة الكانفس — رمادي خفيف عشان الجهاز الأبيض يبان */
   --e-panel:     #ffffff;
@@ -35,7 +35,7 @@
   --e-panel-w: 372px;
 }
 
-[data-theme="dark"] .ed-root {
+.ed-root.is-dark {
   --e-bg:        #0a0a0a;
   --e-panel:     #121212;
   --e-panel-2:   #1b1b1b;
@@ -625,7 +625,7 @@
    تلميع + فروق المظهر الفاتح
    ================================================================ */
 
-[data-theme="dark"] .ed-brand-logo { background-image: var(--site-logo-dark, url("/site-logo/dark.png")); }
+.ed-root.is-dark .ed-brand-logo { background-image: var(--site-logo-dark, url("/site-logo/dark.png")); }
 
 /* الشريط العلوي واللوحة بيرتفعوا شوية عن الكانفس بظل خفيف بدل خط جاف */
 .ed-top   { box-shadow: 0 1px 0 var(--e-line), 0 6px 18px -14px rgba(0, 0, 0, .35); }
@@ -682,8 +682,8 @@
 
 /* زر تبديل المظهر في الشريط العلوي */
 .ed-theme .i-moon { display: none; }
-[data-theme="dark"] .ed-theme .i-sun { display: none; }
-[data-theme="dark"] .ed-theme .i-moon { display: block; }
+.ed-root.is-dark .ed-theme .i-sun { display: none; }
+.ed-root.is-dark .ed-theme .i-moon { display: block; }
 .ed-theme svg { width: 17px; height: 17px; }
 
 /* مبدّل المقاس: الحالة النشطة كانت باهتة أوي في المظهر الفاتح */

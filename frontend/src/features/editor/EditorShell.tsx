@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 
 
 import { startAutosave } from './autosave'
+import { useEditorTheme } from './theme'
 import { IntroButton } from './frame/IntroButton'
 import { OverlayButtons } from './frame/OverlayButtons'
 import { PreviewPane } from './frame/PreviewPane'
@@ -47,6 +48,8 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
   const canRedo = useEditor((s) => s.future.length > 0)
   const blockCount = useEditor((s) => s.doc.blocks.length)
   const saving = useEditor((s) => s.saveStatus === 'saving')
+  const darkTheme = useEditorTheme((s) => s.theme === 'dark')
+  const toggleTheme = useEditorTheme((s) => s.toggle)
   const [moreOpen, setMoreOpen] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
 
@@ -67,7 +70,7 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
   const tabs: Tab[] = mode === 'invitation' ? ['blocks', 'inspector', 'theme', 'data', 'i18n', 'settings'] : ['blocks', 'inspector', 'theme', 'i18n', 'settings']
 
   return (
-    <div className="ed-root ed">
+    <div className={darkTheme ? 'ed-root ed is-dark' : 'ed-root ed'}>
       <header className="ed-top">
         <div className="ed-top-group">
           <Link className="ed-brand" to={meta?.backUrl || '/dashboard'} title={t('editor.top.back')}>
@@ -83,6 +86,22 @@ export function EditorShell({ schema }: { schema: EditorSchema }) {
           </span>
         </div>
         <div className="ed-top-group">
+          <button
+            type="button"
+            className="ed-btn ed-btn--icon ed-theme"
+            title={t('editor.top.theme')}
+            aria-label={t('editor.top.theme')}
+            aria-pressed={darkTheme}
+            onClick={toggleTheme}
+          >
+            <svg className="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" />
+              <path d="M12 2.6v2.1M12 19.3v2.1M2.6 12h2.1M19.3 12h2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M18.6 5.4l-1.5 1.5M6.9 17.1l-1.5 1.5" />
+            </svg>
+            <svg className="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.9 6.9 0 0 0 10.8 10.8Z" />
+            </svg>
+          </button>
           <button type="button" className="ed-btn ed-btn--icon" title={t('editor.top.undo')} disabled={!canUndo} onClick={undo}>
             ↶
           </button>
