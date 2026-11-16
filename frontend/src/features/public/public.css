@@ -2700,10 +2700,15 @@ html.site-deep .home-cta { background: var(--grad); }
     background-size: cover; background-position: 22% 40%;
     transform-origin: 30% 40%; translate: none;
   }
+  /* الصورة على التليفون فوق والكلام تحتها، فمفيش داعي نعكسها في الإنجليزي.
+     العكس (‎scale: -1 1‎) كان بيلف حوالين ‎transform-origin‎ ده فيزق الصورة
+     لجنب ويسيب نص المساحة فاضي. */
+  html [dir="ltr"] .nx-media, html[dir="ltr"] .nx-media { scale: none; }
   html .nx-veil,
   html [dir="ltr"] .nx-veil,
   html.site-deep .nx-veil,
-  html.site-deep [dir="ltr"] .nx-veil {
+  html.site-deep [dir="ltr"] .nx-veil,
+  html.site-deep[dir="ltr"] .nx-veil {
     background:
       linear-gradient(to bottom,
         rgba(var(--veil), .35) 0,
@@ -3123,3 +3128,16 @@ html.site-deep .foot-brand {
   border-radius: 18px; background: #fffcf5; border: 1px solid rgba(216, 183, 122, .7);
 }
 html.site-deep .wa-chat-avatar { background: #fffcf5; padding: 4px; }
+
+/* الفوتر: لوجو بحجم متناسق مع الأيقونات، وعلى التليفون كله في النص فوق بعض
+   ومسافة تحت عشان زرار الواتساب العايم مايغطيش الحقوق */
+html.site-deep .foot { padding-block: 30px; }
+html.site-deep .foot-inner { align-items: center; }
+html.site-deep .foot-brand { height: 64px; padding: 6px 8px; border-radius: 16px; }
+@media (max-width: 720px) {
+  html.site-deep .foot { padding-block: 30px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  html.site-deep .foot-inner { flex-direction: column; flex-wrap: nowrap; justify-content: center; gap: 18px; text-align: center; }
+  html.site-deep .foot-brand { order: 0; height: 60px; }
+  html.site-deep .foot-socials { order: 1; justify-content: center; }
+  html.site-deep .foot-inner > p { order: 2; width: auto; }
+}
