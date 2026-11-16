@@ -42,7 +42,7 @@ class SiteIconTests(TestCase):
         # من غير أيقونة مرفوعة: الرابط بيحوّل للافتراضية بدل 404
         response = self.client.get("/site-icon.png")
         self.assertEqual(response.status_code, 302)
-        self.assertIn("logo", response["Location"])
+        self.assertIn("images/site-icon.png", response["Location"])
 
     def test_upload_makes_a_square_transparent_png_and_serves_it(self):
         response = upload(self.client, image_bytes((300, 120)))

@@ -209,7 +209,7 @@ def site_icon(request):
     """
     path = siteicon.icon_path()
     if not path.is_file():
-        return HttpResponseRedirect(static("images/logo.jpeg"))
+        return HttpResponseRedirect(static("images/site-icon.png"))
     response = HttpResponse(path.read_bytes(), content_type="image/png")  # ملف صغير: نقراه كله (مفيش مقبض مفتوح يمنع الاستبدال على ويندوز)
     response["Cache-Control"] = "public, max-age=86400" if request.GET.get("v") else "no-cache"
     return response

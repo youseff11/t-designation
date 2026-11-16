@@ -11,7 +11,7 @@ interface SiteIcon {
   url: string
 }
 
-const DEFAULT_ICON = '/static/images/logo.jpeg'
+const DEFAULT_ICON = '/static/images/site-icon.png'
 const KEY = ['data', 'site-icon'] as const
 
 /** الأيقونة الجديدة تبان في تبويب المتصفح فوراً من غير ريفرش (الصفحات التانية بتاخدها من السيرفر). */
