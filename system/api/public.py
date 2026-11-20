@@ -19,6 +19,7 @@ from django.utils.datastructures import MultiValueDict
 
 from ..forms import OrderForm
 from ..models import FAQ, Plan, PlanAddon, Reel, SiteSetting, Template
+from ..templatetags import invite as tags
 from .http import ApiError, api_view, client_hash, json_body, json_response
 from .serializers import site_payload, template_card
 
@@ -106,7 +107,8 @@ def _reel_payload(reel: Reel) -> dict:
         "id": reel.pk,
         "title": reel.title_ar,
         "titleEn": reel.title_en,
-        "video": reel.video.url,
+        # ‎/media-video/‎ بيدعم Range (الآيفون مابيشغّلش من غيره) ونسخة الموبايل لو موجودة
+        "video": tags.video_url(reel.video.url),
         "poster": reel.poster.url if reel.poster else "",
     }
 

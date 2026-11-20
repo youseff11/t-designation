@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import secrets
 import uuid
 from decimal import Decimal
@@ -19,6 +20,8 @@ from django.utils.translation import get_language
 from . import blocks as blocks_engine
 from . import images
 from . import video as video_tools
+
+logger = logging.getLogger(__name__)
 
 
 def _pick(ar: str, en: str) -> str:
@@ -1135,6 +1138,8 @@ class Reel(TimeStampedModel):
             field = getattr(self, name)
             if old and (not field or field.name != old.name):
                 old.storage.delete(old.name)               # الملف القديم مالوش لازمة
+                if name == "video":                        # ونسخة الموبايل بتاعته
+                    old.storage.delete(video_tools.web_path(old.name))
         if self.video and not self.video._committed:       # فيديو جديد لسه ماتخزّنش
             original = self.video.file
             if not self.poster:
@@ -1146,4 +1151,11 @@ class Reel(TimeStampedModel):
             self.video.name = streamable.name
         if self.poster and not self.poster._committed:
             self.poster = images.compress_hero(self.poster.file)
+        fresh_video = bool(self.video) and (not previous or previous.video.name != self.video.name)
         super().save(*args, **kwargs)
+        if fresh_video:
+            # نسخة موبايل ‎720p/30fps‎ جنب الأصل — الرئيسية بتعرضها هي (‎video_url‎)
+            try:
+                video_tools.make_web_rendition(self.video.path)
+            except Exception:
+                logger.exception("web rendition failed for reel %s", self.pk)

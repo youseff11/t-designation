@@ -73,9 +73,39 @@ class HomeApiTests(PublicApiTestCase):
             reels = home["reels"]
         self.assertEqual([r["id"] for r in reels], [first.pk, second.pk])
         self.assertEqual(reels[0]["titleEn"], "First")
-        self.assertTrue(reels[0]["video"].startswith("/media/reels/"))
+        # بيعدّي على ‎/media-video/‎ (بيدعم Range — الآيفون مابيشغّلش من غيره)
+        self.assertTrue(reels[0]["video"].startswith("/media-video/reels/"))
         self.assertEqual(reels[0]["poster"], "")
         self.assertTrue(home["site"]["hasReels"])
+
+    def test_reel_upload_makes_mobile_rendition_and_api_serves_it(self):
+        import os
+        from unittest import mock
+        media = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media, True)
+        made = []
+
+        def fake_rendition(path, **_kw):
+            out = os.path.splitext(path)[0] + ".web.mp4"
+            open(out, "wb").close()
+            made.append(path)
+            return out
+
+        clip = lambda name: SimpleUploadedFile(name, b"not-really-a-video", content_type="video/mp4")
+        with override_settings(MEDIA_ROOT=media),                 mock.patch("system.models.video_tools.make_web_rendition", side_effect=fake_rendition):
+            reel = Reel.objects.create(title_ar="ر", video=clip("a.mp4"))
+            self.assertEqual(len(made), 1)
+            first = reel.video.path
+            video = self.client.get("/api/v1/public/home/").json()["reels"][0]["video"]
+            self.assertTrue(video.endswith(".web.mp4"), video)
+            self.assertTrue(video.startswith("/media-video/reels/"), video)
+            reel.title_ar = "تعديل العنوان بس"
+            reel.save()
+            self.assertEqual(len(made), 1)            # مفيش ترميز تاني من غير فيديو جديد
+            reel.video = clip("b.mp4")
+            reel.save()
+            self.assertEqual(len(made), 2)
+            self.assertFalse(os.path.exists(os.path.splitext(first)[0] + ".web.mp4"))
 
     def test_site_has_no_reels_by_default(self):
         self.assertFalse(self.client.get("/api/v1/public/home/").json()["site"]["hasReels"])

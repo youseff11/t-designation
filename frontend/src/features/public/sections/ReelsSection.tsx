@@ -58,7 +58,8 @@ function ReelCard({ reel, title, onOpen }: { reel: PublicReel; title: string; on
         muted
         loop
         playsInline
-        preload="metadata"
+        // فيه غلاف؟ مانحمّلش حاجة لحد ما الكارت يشتغل (٢٤ كارت × metadata كان بيخنق الموبايل)
+        preload={reel.poster ? 'none' : 'metadata'}
         tabIndex={-1}
       />
       <span className="reel-play" aria-hidden="true">
@@ -185,6 +186,73 @@ function ReelViewer({
   )
 }
 
+/**
+ * شريط الكروت + سهمين على الجنبين بيقلّبوا كارت كارت. الأسهم بتختفي لو كل الكروت
+ * باينة، وكل سهم بيتقفل لما توصل للآخر. شغّال في RTL (scrollLeft بيبقى سالب) وLTR.
+ */
+function ReelRail({ reels, onOpen }: { reels: PublicReel[]; onOpen: (i: number) => void }) {
+  const { t } = useTranslation()
+  const lang = useLang()
+  const rail = useRef<HTMLDivElement>(null)
+  const [edges, setEdges] = useState({ overflow: false, start: true, end: true })
+
+  const measure = useCallback(() => {
+    const el = rail.current
+    if (!el) return
+    const max = el.scrollWidth - el.clientWidth
+    const pos = Math.abs(el.scrollLeft)
+    setEdges({ overflow: max > 4, start: pos <= 4, end: pos >= max - 4 })
+  }, [])
+
+  useEffect(() => {
+    const el = rail.current
+    if (!el) return
+    measure()
+    el.addEventListener('scroll', measure, { passive: true })
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(measure) : null
+    ro?.observe(el)
+    return () => {
+      el.removeEventListener('scroll', measure)
+      ro?.disconnect()
+    }
+  }, [measure, reels.length])
+
+  const step = (dir: 1 | -1) => {
+    const el = rail.current
+    if (!el) return
+    const card = el.querySelector<HTMLElement>('.reel-card')
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    const by = (card?.offsetWidth ?? el.clientWidth * 0.8) + gap
+    const rtl = getComputedStyle(el).direction === 'rtl'
+    el.scrollBy({ left: by * dir * (rtl ? -1 : 1), behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+  }
+
+  const chevron = (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m9 5 7 7-7 7" />
+    </svg>
+  )
+  return (
+    <div className="vid-carousel" data-overflow={edges.overflow || undefined}>
+      <div ref={rail} className="reel-rail vid-rail" data-count={Math.min(reels.length, 3)}>
+        {reels.map((reel, i) => (
+          <ReelCard key={reel.id} reel={reel} title={pick(lang, reel.title, reel.titleEn)} onOpen={() => onOpen(i)} />
+        ))}
+      </div>
+      {edges.overflow && (
+        <>
+          <button type="button" className="vid-arrow vid-arrow--prev" onClick={() => step(-1)} disabled={edges.start} aria-label={t('public.reels.prev')}>
+            {chevron}
+          </button>
+          <button type="button" className="vid-arrow vid-arrow--next" onClick={() => step(1)} disabled={edges.end} aria-label={t('public.reels.next')}>
+            {chevron}
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 const POINTS = ['names', 'music', 'story'] as const
 
 /** عمود «خدمة الفيديو»: إننا بنعمل دعوات فيديو + نقط سريعة + زرار طلب على الواتساب */
@@ -224,7 +292,6 @@ function VideoService({ orderUrl }: { orderUrl?: string }) {
  */
 export function ReelsSection({ reels, orderUrl }: { reels: PublicReel[] | undefined; orderUrl?: string }) {
   const { t } = useTranslation()
-  const lang = useLang()
   const [open, setOpen] = useState<number | null>(null)
   const close = useCallback(() => setOpen(null), [])
   if (!reels) return null
@@ -240,11 +307,7 @@ export function ReelsSection({ reels, orderUrl }: { reels: PublicReel[] | undefi
             {t('public.reels.badge')}
           </span>
           {reels.length ? (
-            <div className="reel-rail vid-rail" data-count={Math.min(reels.length, 3)}>
-              {reels.map((reel, i) => (
-                <ReelCard key={reel.id} reel={reel} title={pick(lang, reel.title, reel.titleEn)} onOpen={() => setOpen(i)} />
-              ))}
-            </div>
+            <ReelRail reels={reels} onOpen={setOpen} />
           ) : (
             <p className="vid-empty">{t('public.reels.empty')}</p>
           )}
