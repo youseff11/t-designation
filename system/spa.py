@@ -67,3 +67,24 @@ def client_followup_shell(request, *args, **kwargs):
     })
     response["X-Robots-Tag"] = "noindex, nofollow"
     return response
+
+
+@ensure_csrf_cookie
+@never_cache
+@require_safe
+def reels_shell(request, *args, **kwargs):
+    """لينك الريلز للمشاركة (‎/reels/‎): ‎#reels‎ مابيوصلش السيرفر، فاللينك ده
+    بيطلّع معاينة «شاهد الآن تصميمات الفيديو» وReact بيودّي على قسم الريلز."""
+    en = (get_language() or "").startswith("en")
+    name = (getattr(settings, "SITE_NAME_EN", "") or settings.SITE_NAME) if en else settings.SITE_NAME
+    return render(request, "spa/shell.html", {
+        "boot": boot_payload(request),
+        "noindex": bool(settings.SPA_BASENAME),
+        "og_title": (f"Watch our video designs — {name}" if en
+                     else f"شاهد الآن تصميمات الفيديو — {name}"),
+        "og_desc": ("Premium video invitations with romantic music and a stunning look." if en
+                    else "تصميمات فيديو بجودة عالية، موسيقى رومانسية وتجربة بصرية مذهلة."),
+        "og_image": settings.SITE_URL + settings.STATIC_URL + "images/share-reels.jpg",
+        "og_image_w": 1200,
+        "og_image_h": 675,
+    })

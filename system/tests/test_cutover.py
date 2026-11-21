@@ -85,6 +85,15 @@ class CutoverTests(InviteBase):
         self.assertIn("images/share-site.jpg", home)
         self.assertNotIn("share-followup", home)
 
+    def test_reels_link_has_its_own_share_preview(self):
+        html = self.client.get("/reels/").content.decode()
+        self.assertIn("images/share-reels.jpg", html)
+        self.assertIn('property="og:image:height" content="675"', html)
+        self.assertNotIn("images/share-site.jpg", html)
+        home = self.client.get("/").content.decode()
+        self.assertNotIn("share-reels", home)
+        self.assertIn('property="og:image:height" content="630"', home)
+
     def test_qr_images_are_still_django(self):
         slug, token = self.inv.slug, self.guest.token
         png = self.client.get(f"/i/{slug}/g/{token}/qr.png")

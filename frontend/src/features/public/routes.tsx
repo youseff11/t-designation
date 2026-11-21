@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router-dom'
+import { Navigate, type RouteObject } from 'react-router-dom'
 
 import { GalleryPage } from './GalleryPage'
 
@@ -10,4 +10,8 @@ import { GalleryPage } from './GalleryPage'
  * معاينة القالب (‎templates/:slug/preview‎) صفحة مستقلة بتاعة B3.
  * ميزتك كلها (صفحات، hooks، types، CSS) جوّه ‎features/public/‎.
  */
-export const publicRoutes: RouteObject[] = [{ path: 'templates', element: <GalleryPage /> }]
+export const publicRoutes: RouteObject[] = [
+  { path: 'templates', element: <GalleryPage /> },
+  // لينك المشاركة للريلز: Django بيرد بمعاينة مخصوصة، وهنا بنودّي على قسم الريلز
+  { path: 'reels', element: <Navigate to="/#reels" replace /> },
+]

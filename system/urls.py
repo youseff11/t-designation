@@ -16,7 +16,7 @@ from django.urls import path, re_path
 
 from . import files
 from .api import invite_page
-from .spa import client_followup_shell, spa_shell
+from .spa import client_followup_shell, reels_shell, spa_shell
 
 
 def app_prefix_redirect(request, rest=""):
@@ -49,6 +49,7 @@ urlpatterns = [
     path("i/<slug:slug>/venue/<str:token>/", spa_shell, name="invitation_venue"),
     path("i/<slug:slug>/g/<str:token>/pass/", spa_shell, name="guest_pass"),
     path("templates/", spa_shell, name="template_gallery"),
+    path("reels/", reels_shell, name="reels"),
     path("login/", spa_shell, name="login"),
     path("dashboard/", spa_shell, name="dashboard"),
     path("", spa_shell, name="home"),

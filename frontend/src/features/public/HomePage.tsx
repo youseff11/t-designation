@@ -34,7 +34,23 @@ function useHashScroll(ready: boolean) {
   const { hash, key } = useLocation()
   useEffect(() => {
     if (!ready || !hash) return
-    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView()
+    const id = decodeURIComponent(hash.slice(1))
+    const go = () => document.getElementById(id)?.scrollIntoView()
+    go()
+    // صور القوالب بتحمّل بعد النزول وبتزق القسم لتحت — نفضل ماسكينه لحد ما
+    // الصفحة تهدى (٤ ثواني) أو الزائر يحرّك بنفسه.
+    if (!('ResizeObserver' in window)) return
+    const ro = new ResizeObserver(go)
+    ro.observe(document.body)
+    const stop = () => {
+      ro.disconnect()
+      clearTimeout(timer)
+      for (const ev of ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const) window.removeEventListener(ev, stop)
+    }
+    const timer = setTimeout(stop, 4000)
+    for (const ev of ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const)
+      window.addEventListener(ev, stop, { passive: true })
+    return stop
   }, [ready, hash, key])
 }
 
